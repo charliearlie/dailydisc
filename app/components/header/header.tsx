@@ -1,29 +1,51 @@
-import { Link } from "@remix-run/react"
-import { Music } from "lucide-react"
+import { Link } from "@remix-run/react";
+import { Music } from "lucide-react";
+import { useUser } from "~/contexts/user-context";
+import { Popover, PopoverContent, PopoverTrigger } from "../common/ui/popover";
+import { Button } from "../common/ui/button";
 
 export const Header = () => {
-    return (
-        <header className="flex items-center h-[60px] px-4 border-b border-gray-100 dark:border-gray-800 bg-primary">
-        <div className="flex items-center gap-2">
-          <Link className="flex items-center gap-2 text-xl font-semibold text-white" to="#">
-            <Music className="w-8 h-8" />
-            DailyDisc
-          </Link>
-        </div>
-        <nav className="ml-auto space-x-4 flex items-center">
+  const user = useUser();
+  const isLoggedIn = Boolean(user?.username);
+  return (
+    <header className="flex h-[60px] items-center border-b border-gray-100 bg-primary px-4 dark:border-gray-800">
+      <div className="flex items-center gap-2">
+        <Link
+          className="flex items-center gap-2 text-xl font-semibold text-white"
+          to="/"
+        >
+          <Music className="h-8 w-8" />
+          DailyDisc
+        </Link>
+      </div>
+      <nav className="ml-auto flex items-center space-x-4">
+        <Link
+          className="text-sm font-medium text-white transition-colors"
+          to="/"
+        >
+          Archive
+        </Link>
+        {isLoggedIn ? (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" className="text-white">
+                {user.username}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-32">
+              <Link to="/profile">Profile</Link>
+              <Link to="/logout">Logout</Link>
+            </PopoverContent>
+          </Popover>
+        ) : (
           <Link
             className="text-sm font-medium text-white transition-colors"
-            to="#"
+            to="/signup"
           >
-            Archive
+            Login
           </Link>
-          <Link
-            className="text-sm font-medium text-white transition-colors"
-            to="#"
-          >
-            About
-          </Link>
-        </nav>
-      </header>
-    )
-}
+        )}
+      </nav>
+    </header>
+  );
+};

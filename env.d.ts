@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const schema = z.object({
   NODE_ENV: z.enum(["production", "development", "test"] as const),
+  SESSION_SECRET: z.string(),
   TURSO_DATABASE_URL: z.string(),
   TURSO_AUTH_TOKEN: z.string(),
 });
@@ -18,7 +19,7 @@ export function init() {
   if (parsed.success === false) {
     console.error(
       "Invalid environment variables:",
-      parsed.error.flatten().fieldErrors
+      parsed.error.flatten().fieldErrors,
     );
 
     throw new Error("Invalid envirmonment variables");

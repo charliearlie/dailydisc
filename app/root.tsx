@@ -4,19 +4,29 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  json,
+  useLoaderData,
 } from "@remix-run/react";
-import type { LinksFunction } from "@remix-run/node";
+import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 
 import stylesheet from "~/styles/tailwind.css?url";
 import fontStylesheet from "~/styles/fonts.css?url";
 import { Header } from "~/components/header/header";
+import { UserProvider } from "./contexts/user-context";
+import { getUserFromRequestContext } from "./services/session";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
   { rel: "stylesheet", href: fontStylesheet },
 ];
 
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const user = await getUserFromRequestContext(request);
+  return json({ user });
+};
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const loaderData = useLoaderData<typeof loader>();
   return (
     <html lang="en">
       <head>
@@ -26,11 +36,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <Header />
-        <main className="flex-1">
-        {children}
-
-        </main>
+        <UserProvider
+          username={loaderData.user?.username}
+          userId={loaderData.user?.id}
+        >
+          <Header />
+          {children}
+        </UserProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

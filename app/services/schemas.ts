@@ -10,3 +10,9 @@ export const SignUpFormSchema = z.object({
   username: z.string().min(3),
   password: z.string().min(8),
 });
+
+const MAX_FILE_SIZE = 1024 * 1024 * 2;
+
+export const FileSchema = z.any().refine((file) => {
+  return !file || file?.size <= MAX_FILE_SIZE;
+}, `Max file size is 5MB.`);

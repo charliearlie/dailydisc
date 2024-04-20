@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { count, eq, gt, or } from "drizzle-orm";
+import { count, eq, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/drizzle/db.server";
 import { users } from "~/drizzle/schema.server";

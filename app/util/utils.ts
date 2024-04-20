@@ -1,6 +1,4 @@
-import type { SerializeFrom } from "@remix-run/node";
 import type { Navigation } from "@remix-run/react";
-import { useRouteLoaderData } from "@remix-run/react";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -13,23 +11,23 @@ export function cn(...inputs: ClassValue[]) {
  * If a condition fails, throw a new Error response
  */
 export function invariantResponse(
-  condition: any,
+  condition: unknown,
   message: string | (() => string),
-  responseInit?: ResponseInit
+  responseInit?: ResponseInit,
 ): asserts condition {
   if (!condition) {
     throw new Response(
       typeof message === "function"
         ? message()
         : message || "An invariant failed. Provide a message to explain why",
-      { status: 400, ...responseInit }
+      { status: 400, ...responseInit },
     );
   }
 }
 
 export function isFormInPendingState(
   navigation: Navigation,
-  formAction: string
+  formAction: string,
 ) {
   return (
     navigation.state !== "idle" &&

@@ -1,11 +1,6 @@
-import {
-  ActionFunctionArgs,
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { ActionFunctionArgs, json, type MetaFunction } from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
-import { PlayCircle, StarIcon } from "lucide-react";
+import { PlayCircle } from "lucide-react";
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { z } from "zod";
@@ -15,8 +10,9 @@ import { Button } from "~/components/common/ui/button";
 import { FormField } from "~/components/form/form-field";
 import { FormFieldTextArea } from "~/components/form/form-field-text-area";
 import { db } from "~/drizzle/db.server";
-import { reviews } from "~/drizzle/schema.server";
+import { albums, reviews } from "~/drizzle/schema.server";
 import { useUser } from "~/contexts/user-context";
+import { eq } from "drizzle-orm";
 
 const ReviewFormSchema = z.object({
   albumId: z.string(),
@@ -36,8 +32,10 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader = async ({}: LoaderFunctionArgs) => {
+export const loader = async () => {
+  const today = new Date();
   const albumOfTheDay = await db.query.albums.findFirst({
+    where: eq(albums.listenDate, today),
     with: {
       artistsToAlbums: {
         with: {
@@ -49,8 +47,8 @@ export const loader = async ({}: LoaderFunctionArgs) => {
 
   if (albumOfTheDay) {
     const artists = albumOfTheDay.artistsToAlbums.map((data) => data.artist);
-    const { genre, id, image, title } = albumOfTheDay;
-    return json({ genre, id, image, title, artists });
+    const { genre, id, image, year, title } = albumOfTheDay;
+    return json({ genre, id, image, title, year, artists });
   }
 
   return json(null);
@@ -103,9 +101,9 @@ export default function Index() {
     },
   });
 
-  if (!loaderData) return <p>Album today is borked</p>;
+  if (!loaderData) return <p>Coming 22nd April</p>;
 
-  const { artists, genre, id, image, title } = loaderData;
+  const { artists, genre, id, image, year, title } = loaderData;
   return (
     <main className="flex-1">
       <section className="container space-y-8 py-8 text-center md:py-16 lg:space-y-12">
@@ -114,25 +112,26 @@ export default function Index() {
             Album of the Day
           </h1>
           <p className="mx-auto max-w-[600px] text-gray-500 dark:text-gray-400 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-            Explore today's featured album and share your thoughts.
+            Explore today&apos;s featured album and share your thoughts.
           </p>
         </div>
         <div className="mx-auto max-w-sm space-y-4">
           <Link
             to="https://music.apple.com/us/album/exile-on-main-st-2010-remaster/1440872228?uo=4"
-            className="group relative mx-auto block h-[300px] w-[300px] cursor-pointer overflow-hidden rounded-lg border-4 border-primary bg-accent duration-300 hover:-translate-y-1 hover:scale-110"
+            className="group relative mx-auto block h-[250px] w-[250px] cursor-pointer overflow-hidden rounded-lg border-4 border-primary bg-accent duration-300 hover:-translate-y-1 hover:scale-110"
             target="_blank"
             aria-label="Listen to the album on Apple Music"
+            rel="noopener noreferrer"
           >
             <img
               alt={`${title} album artwork`}
-              height="300"
+              height="250"
               src={image!}
               style={{
-                aspectRatio: "300/300",
+                aspectRatio: "250/250",
                 objectFit: "cover",
               }}
-              width="300"
+              width="250"
             />
             <div className="absolute inset-0 flex items-center justify-center transition-all ease-in-out group-hover:bg-black group-hover:opacity-60">
               <PlayCircle
@@ -142,7 +141,7 @@ export default function Index() {
             </div>
           </Link>
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold tracking-tighter">
+            <h2 className="text-3xl font-bold tracking-tight">
               <Link
                 aria-label={`View reviews for ${title}`}
                 to={`/albums/${id}`}
@@ -151,10 +150,14 @@ export default function Index() {
               </Link>
             </h2>
             {artists.map((artist) => (
-              <p key={artist.id} className="text-sm font-medium leading-none">
+              <p
+                key={artist.id}
+                className="text-lg font-medium leading-none tracking-tighter"
+              >
                 {artist.name}
               </p>
             ))}
+            <p className="text-sm tracking-wider">{year}</p>
             <Badge>{genre}</Badge>
           </div>
           {isLoggedIn ? (

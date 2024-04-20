@@ -30,6 +30,10 @@ export const albums = sqliteTable("albums", {
   title: text("title").notNull(),
   genre: text("genre"),
   image: text("image"),
+  year: text("year").notNull(),
+  appleMusicUrl: text("apple_music_url"),
+  spotifyUrl: text("spotify_url"),
+  listenDate: integer("listen_date", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),

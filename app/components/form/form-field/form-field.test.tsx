@@ -1,4 +1,3 @@
-import "@testing-library/jest-dom";
 import { render } from "@testing-library/react";
 
 import { FormField } from "./form-field";
@@ -9,7 +8,7 @@ describe("FormField", () => {
     const inputName = "username";
 
     const { container, getByLabelText } = render(
-      <FormField label={label} name={inputName} />
+      <FormField label={label} name={inputName} />,
     );
 
     const input = getByLabelText(label);
@@ -26,7 +25,7 @@ describe("FormField", () => {
       "Username must be at least 6 characters long",
     ];
     const { getByText } = render(
-      <FormField label={label} name={inputName} errors={errors} />
+      <FormField label={label} name={inputName} errors={errors} />,
     );
     errors.forEach((error) => {
       expect(getByText(error)).toBeInTheDocument();
@@ -41,7 +40,7 @@ describe("FormField", () => {
       "Username must be at least 6 characters long",
     ];
     const { getByLabelText } = render(
-      <FormField label={label} name={inputName} errors={errors} />
+      <FormField label={label} name={inputName} errors={errors} />,
     );
 
     const inputElement = getByLabelText(label);

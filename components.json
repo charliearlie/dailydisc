@@ -11,7 +11,7 @@
     "prefix": ""
   },
   "aliases": {
-    "components": "app/components/common",
-    "utils": "app/util/utils"
+    "components": "~/components/common",
+    "utils": "~/util/utils"
   }
 }

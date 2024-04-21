@@ -34,6 +34,11 @@ module.exports = {
         "plugin:react-hooks/recommended",
         "plugin:jsx-a11y/recommended",
       ],
+      rules: {
+        "react/prop-types": "off",
+        "jsx-a11y/heading-has-content": "off",
+        "no-async-promise-executor": "off",
+      },
       settings: {
         react: {
           version: "detect",

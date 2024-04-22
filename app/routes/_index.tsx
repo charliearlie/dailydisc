@@ -48,9 +48,16 @@ export const loader = async () => {
   });
 
   if (albumOfTheDay) {
+    const albumReviews = await db.query.reviews.findMany({
+      where: eq(reviews.albumId, albumOfTheDay?.id!),
+      with: {
+        user: true,
+      },
+    });
+
     const artists = albumOfTheDay.artistsToAlbums.map((data) => data.artist);
     const { genre, id, image, year, title } = albumOfTheDay;
-    return json({ genre, id, image, title, year, artists });
+    return json({ genre, id, image, title, year, artists, albumReviews });
   }
 
   return json(null);
@@ -71,13 +78,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   }
 
-  const { albumId, favouriteTrack, rating, review } = submission.value;
-
-  console.log("submission.value", submission.value);
+  const { albumId, favouriteTrack, rating, review, userId } = submission.value;
 
   await db.insert(reviews).values({
     albumId: Number(albumId),
-    userId: 1,
+    userId: Number(userId),
     rating,
     review,
     favouriteTrack,
@@ -107,7 +112,7 @@ export default function Index() {
 
   if (!loaderData) return <p>Coming 22nd April</p>;
 
-  const { artists, genre, id, image, year, title } = loaderData;
+  const { albumReviews, artists, genre, id, image, year, title } = loaderData;
   return (
     <main className="flex-1">
       <section className="container space-y-8 py-8 text-center md:py-16 lg:space-y-12">
@@ -185,10 +190,16 @@ export default function Index() {
                   {...getInputProps(fields.review, { type: "text" })}
                 />
                 <input hidden name="albumId" value={loaderData.id} />
-                <input hidden name="userId" value={loaderData.id} />
+                <input hidden name="userId" value={user.userId} />
               </div>
-              <Button className="w-full" type="submit">
-                Submit Review
+              <Button
+                className="w-full"
+                disabled={actionData?.status === "success"}
+                type="submit"
+              >
+                {actionData?.status === "success"
+                  ? "Review submitted"
+                  : "Submit Review"}
               </Button>
             </Form>
           ) : (
@@ -197,6 +208,17 @@ export default function Index() {
             </Button>
           )}
         </div>
+      </section>
+      <section>
+        <h3>Reviews</h3>
+        {albumReviews.map((review) => (
+          <div key={review.id} className="border border-gray-200 p-4">
+            <h4>{review.user.username}</h4>
+            <p>Rating: {review.rating}/10</p>
+            <p>Favourite track: {review.favouriteTrack}</p>
+            {review.review && <p>{review.review}</p>}
+          </div>
+        ))}
       </section>
     </main>
   );

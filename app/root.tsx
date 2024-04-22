@@ -14,6 +14,7 @@ import fontStylesheet from "~/styles/fonts.css?url";
 import { Header } from "~/components/header/header";
 import { UserProvider } from "./contexts/user-context";
 import { getUserFromRequestContext } from "./services/session";
+import { ErrorBoundaryComponent } from "./components/error-boundary";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
@@ -25,24 +26,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return json({ user });
 };
 
-export function Layout({ children }: { children: React.ReactNode }) {
-  const loaderData = useLoaderData<typeof loader>();
+function Document({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta charSet="utf-8" />
         <Links />
       </head>
       <body>
-        <UserProvider
-          username={loaderData.user?.username}
-          userId={loaderData.user?.id}
-        >
-          <Header />
-          {children}
-        </UserProvider>
+        {children}
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -50,6 +44,39 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+export function Layout({ children }: { children: React.ReactNode }) {
+  const loaderData = useLoaderData<typeof loader>();
+  return (
+    <Document>
+      <Header />
+      <UserProvider
+        username={loaderData.user?.username}
+        userId={loaderData.user?.id}
+      >
+        <Outlet />
+      </UserProvider>
+    </Document>
+  );
+}
+
 export default function App() {
-  return <Outlet />;
+  const loaderData = useLoaderData<typeof loader>();
+  return (
+    <UserProvider
+      username={loaderData.user?.username}
+      userId={loaderData.user?.id}
+    >
+      <Outlet />
+    </UserProvider>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <Document>
+      <div className="flex-1">
+        <ErrorBoundaryComponent />
+      </div>
+    </Document>
+  );
 }

@@ -1,4 +1,9 @@
-import { ActionFunctionArgs, json, type MetaFunction } from "@remix-run/node";
+import {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  json,
+  type MetaFunction,
+} from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
 import { PlayCircle } from "lucide-react";
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
@@ -13,6 +18,7 @@ import { db } from "~/drizzle/db.server";
 import { albums, reviews } from "~/drizzle/schema.server";
 import { useUser } from "~/contexts/user-context";
 import { eq } from "drizzle-orm";
+import { getUserFromRequestContext } from "~/services/session";
 
 const ReviewFormSchema = z.object({
   albumId: z.string(),
@@ -33,7 +39,8 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader = async () => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const user = await getUserFromRequestContext(request);
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0); // This is hideous. Find better way
   const albumOfTheDay = await db.query.albums.findFirst({
@@ -55,9 +62,22 @@ export const loader = async () => {
       },
     });
 
+    const hasUserReviewed = albumReviews.some(
+      (album) => album.userId === user?.id,
+    );
+
     const artists = albumOfTheDay.artistsToAlbums.map((data) => data.artist);
     const { genre, id, image, year, title } = albumOfTheDay;
-    return json({ genre, id, image, title, year, artists, albumReviews });
+    return json({
+      genre,
+      id,
+      image,
+      title,
+      year,
+      artists,
+      albumReviews,
+      hasUserReviewed,
+    });
   }
 
   return json(null);
@@ -112,7 +132,16 @@ export default function Index() {
 
   if (!loaderData) return <p>Coming 22nd April</p>;
 
-  const { albumReviews, artists, genre, id, image, year, title } = loaderData;
+  const {
+    albumReviews,
+    artists,
+    genre,
+    hasUserReviewed,
+    id,
+    image,
+    year,
+    title,
+  } = loaderData;
   return (
     <main className="flex-1">
       <section className="container space-y-8 py-8 text-center md:py-16 lg:space-y-12">
@@ -169,7 +198,7 @@ export default function Index() {
             <p className="text-sm tracking-wider">{year}</p>
             <Badge>{genre}</Badge>
           </div>
-          {isLoggedIn ? (
+          {isLoggedIn && !hasUserReviewed ? (
             <Form method="post" className="space-y-4" {...getFormProps(form)}>
               <div className="space-y-2">
                 <FormField
@@ -202,7 +231,8 @@ export default function Index() {
                   : "Submit Review"}
               </Button>
             </Form>
-          ) : (
+          ) : null}
+          {!isLoggedIn && (
             <Button asChild className="w-full">
               <Link to="/signup">Login to submit a review</Link>
             </Button>

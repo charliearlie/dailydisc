@@ -19,6 +19,7 @@ const ReviewFormSchema = z.object({
   rating: z.number().int().min(1).max(10),
   favouriteTrack: z.string().min(1),
   review: z.string().optional(),
+  userId: z.string(),
 });
 
 export const meta: MetaFunction = () => {
@@ -34,6 +35,7 @@ export const meta: MetaFunction = () => {
 
 export const loader = async () => {
   const today = new Date();
+  today.setHours(1, 0, 0, 0); // This is hideous. Find better way
   const albumOfTheDay = await db.query.albums.findFirst({
     where: eq(albums.listenDate, today),
     with: {
@@ -69,7 +71,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   }
 
-  const { albumId, favouriteTrack, rating, review } = submission.value;
+  const { albumId, favouriteTrack, rating, review, userId } = submission.value;
+
+  console.log("submission.value", submission.value);
 
   await db.insert(reviews).values({
     albumId: Number(albumId),
@@ -181,6 +185,7 @@ export default function Index() {
                   {...getInputProps(fields.review, { type: "text" })}
                 />
                 <input hidden name="albumId" value={loaderData.id} />
+                <input hidden name="userId" value={loaderData.id} />
               </div>
               <Button className="w-full" type="submit">
                 Submit Review

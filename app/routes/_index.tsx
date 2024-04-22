@@ -36,6 +36,7 @@ export const meta: MetaFunction = () => {
 export const loader = async () => {
   const today = new Date();
   today.setHours(1, 0, 0, 0); // This is hideous. Find better way
+  console.log("today", today);
   const albumOfTheDay = await db.query.albums.findFirst({
     where: eq(albums.listenDate, today),
     with: {
@@ -71,7 +72,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   }
 
-  const { albumId, favouriteTrack, rating, review, userId } = submission.value;
+  const { albumId, favouriteTrack, rating, review } = submission.value;
 
   console.log("submission.value", submission.value);
 

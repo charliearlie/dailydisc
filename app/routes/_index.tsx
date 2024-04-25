@@ -68,7 +68,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   if (albumOfTheDay) {
     const albumReviews = await db.query.reviews.findMany({
-      where: eq(reviews.albumId, albumOfTheDay?.id!),
+      where: eq(reviews.albumId, albumOfTheDay.id),
       with: {
         user: true,
       },

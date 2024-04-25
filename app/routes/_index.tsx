@@ -50,42 +50,45 @@ export const meta: MetaFunction = () => {
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { searchParams } = new URL(request.url);
   const dateParam = searchParams.get("date");
-
   const user = await getUserFromRequestContext(request);
-  const date = dateParam ? new Date(dateParam) : new Date();
-  date.setUTCHours(0, 0, 0, 0); // This is hideous. Find better way
+  const todaysDate = new Date();
+  const albumDate = dateParam ? new Date(dateParam) : todaysDate;
 
-  const albumOfTheDay = await db.query.albums.findFirst({
-    where: eq(albums.listenDate, date),
-    with: {
-      artistsToAlbums: {
-        with: {
-          artist: true,
+  if (albumDate <= todaysDate) {
+    albumDate.setUTCHours(0, 0, 0, 0); // This is hideous. Find better way
+
+    const albumOfTheDay = await db.query.albums.findFirst({
+      where: eq(albums.listenDate, albumDate),
+      with: {
+        artistsToAlbums: {
+          with: {
+            artist: true,
+          },
         },
       },
-    },
-  });
-
-  if (albumOfTheDay) {
-    const albumReviews = await db.query.reviews.findMany({
-      where: eq(reviews.albumId, albumOfTheDay.id),
-      with: {
-        user: true,
-      },
     });
 
-    const hasUserReviewed = albumReviews.some(
-      (album) => album.userId === user?.id,
-    );
+    if (albumOfTheDay) {
+      const albumReviews = await db.query.reviews.findMany({
+        where: eq(reviews.albumId, albumOfTheDay.id),
+        with: {
+          user: true,
+        },
+      });
 
-    const artists = albumOfTheDay.artistsToAlbums.map((data) => data.artist);
-    return json({
-      archiveDate: date.toISOString(),
-      album: albumOfTheDay,
-      artists,
-      albumReviews,
-      hasUserReviewed,
-    });
+      const hasUserReviewed = albumReviews.some(
+        (album) => album.userId === user?.id,
+      );
+
+      const artists = albumOfTheDay.artistsToAlbums.map((data) => data.artist);
+      return json({
+        archiveDate: albumDate.toISOString(),
+        album: albumOfTheDay,
+        artists,
+        albumReviews,
+        hasUserReviewed,
+      });
+    }
   }
 
   return json(null);
@@ -93,11 +96,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
-  const intent = formData.get("intent");
 
-  if (intent === "change-date") {
-    console.log("date", formData.get("date"));
-  }
   const submission = await parseWithZod(formData, {
     schema: ReviewFormSchema,
   });
@@ -146,7 +145,7 @@ export default function Index() {
     },
   });
 
-  if (!loaderData) return <p>Random album selection failed</p>;
+  if (!loaderData) return <p>Album has not been selected yet..</p>;
 
   const handleDateChange = async (date: Date) => {
     const formattedDate = format(date, "yyyy-MM-dd");

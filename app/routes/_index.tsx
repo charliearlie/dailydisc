@@ -116,7 +116,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   await db.insert(reviews).values({
     albumId: Number(albumId),
     userId: Number(userId),
-    rating,
+    rating: Math.floor(rating * 2),
     review,
     favouriteTrack,
   });
@@ -267,7 +267,7 @@ export default function Index() {
         {albumReviews.map((review) => (
           <div key={review.id} className="border border-gray-200 p-4">
             <h4>{review.user.username}</h4>
-            <p>Rating: {review.rating}/10</p>
+            <p>Rating: {review.rating / 2}/10</p>
             <p>Favourite track: {review.favouriteTrack}</p>
             {review.review && <p>{review.review}</p>}
           </div>

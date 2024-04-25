@@ -4,11 +4,18 @@ import {
   json,
   type MetaFunction,
 } from "@remix-run/node";
-import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  useActionData,
+  useLoaderData,
+  useNavigate,
+} from "@remix-run/react";
 import { PlayCircle } from "lucide-react";
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { z } from "zod";
+import { format } from "date-fns";
 
 import { Badge } from "~/components/common/ui/badge";
 import { Button } from "~/components/common/ui/button";
@@ -19,6 +26,7 @@ import { albums, reviews } from "~/drizzle/schema.server";
 import { useUser } from "~/contexts/user-context";
 import { eq } from "drizzle-orm";
 import { getUserFromRequestContext } from "~/services/session";
+import { DatePicker } from "~/components/common/date-picker";
 
 const ReviewFormSchema = z.object({
   albumId: z.string(),
@@ -40,11 +48,15 @@ export const meta: MetaFunction = () => {
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const { searchParams } = new URL(request.url);
+  const dateParam = searchParams.get("date");
+
   const user = await getUserFromRequestContext(request);
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0); // This is hideous. Find better way
+  const date = dateParam ? new Date(dateParam) : new Date();
+  date.setUTCHours(0, 0, 0, 0); // This is hideous. Find better way
+
   const albumOfTheDay = await db.query.albums.findFirst({
-    where: eq(albums.listenDate, today),
+    where: eq(albums.listenDate, date),
     with: {
       artistsToAlbums: {
         with: {
@@ -56,7 +68,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   if (albumOfTheDay) {
     const albumReviews = await db.query.reviews.findMany({
-      where: eq(reviews.albumId, albumOfTheDay?.id!),
+      where: eq(reviews.albumId, albumOfTheDay.id),
       with: {
         user: true,
       },
@@ -67,13 +79,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     );
 
     const artists = albumOfTheDay.artistsToAlbums.map((data) => data.artist);
-    const { genre, id, image, year, title } = albumOfTheDay;
     return json({
-      genre,
-      id,
-      image,
-      title,
-      year,
+      archiveDate: date.toISOString(),
+      album: albumOfTheDay,
       artists,
       albumReviews,
       hasUserReviewed,
@@ -85,6 +93,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
+  const intent = formData.get("intent");
+
+  if (intent === "change-date") {
+    console.log("date", formData.get("date"));
+  }
   const submission = await parseWithZod(formData, {
     schema: ReviewFormSchema,
   });
@@ -118,8 +131,11 @@ export default function Index() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
+  const navigate = useNavigate();
+
   const user = useUser();
   const isLoggedIn = Boolean(user?.username);
+
   const [form, fields] = useForm({
     id: "review-form",
     lastResult: actionData?.result,
@@ -130,28 +146,35 @@ export default function Index() {
     },
   });
 
-  if (!loaderData) return <p>Coming 22nd April</p>;
+  if (!loaderData) return <p>Random album selection failed</p>;
 
-  const {
-    albumReviews,
-    artists,
-    genre,
-    hasUserReviewed,
-    id,
-    image,
-    year,
-    title,
-  } = loaderData;
+  const handleDateChange = async (date: Date) => {
+    const formattedDate = format(date, "yyyy-MM-dd");
+    navigate(`/?date=${formattedDate}`);
+  };
+
+  const { album, albumReviews, archiveDate, artists, hasUserReviewed } =
+    loaderData;
+  const { id, title, image, genre, year } = album;
+
   return (
     <main className="flex-1">
       <section className="container space-y-8 py-8 text-center md:py-16 lg:space-y-12">
-        <div className="space-y-2">
+        <div className="flex flex-col justify-center space-y-2">
           <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl/none">
             Album of the Day
           </h1>
           <p className="mx-auto max-w-[600px] text-gray-500 dark:text-gray-400 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
             Explore today&apos;s featured album and share your thoughts.
           </p>
+          <div className="mx-auto flex w-44">
+            <DatePicker
+              name="date"
+              defaultDate={new Date(archiveDate)}
+              onSelect={handleDateChange}
+              range={{ start: new Date("2024-04-22"), end: new Date() }}
+            />
+          </div>
         </div>
         <div className="mx-auto max-w-sm space-y-4">
           <Link
@@ -218,7 +241,7 @@ export default function Index() {
                   placeholder="What did you think of the album?"
                   {...getInputProps(fields.review, { type: "text" })}
                 />
-                <input hidden name="albumId" value={loaderData.id} />
+                <input hidden name="albumId" value={loaderData.album.id} />
                 <input hidden name="userId" value={user.userId} />
               </div>
               <Button

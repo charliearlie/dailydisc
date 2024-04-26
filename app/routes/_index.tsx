@@ -27,6 +27,7 @@ import { useUser } from "~/contexts/user-context";
 import { eq } from "drizzle-orm";
 import { getUserFromRequestContext } from "~/services/session";
 import { DatePicker } from "~/components/common/date-picker";
+import { ReviewList } from "~/components/reviews/review-list";
 
 const ReviewFormSchema = z.object({
   albumId: z.string(),
@@ -261,16 +262,8 @@ export default function Index() {
           )}
         </div>
       </section>
-      <section>
-        <h3>Reviews</h3>
-        {albumReviews.map((review) => (
-          <div key={review.id} className="border border-gray-200 p-4">
-            <h4>{review.user.username}</h4>
-            <p>Rating: {review.rating / 2}/10</p>
-            <p>Favourite track: {review.favouriteTrack}</p>
-            {review.review && <p>{review.review}</p>}
-          </div>
-        ))}
+      <section className="container max-w-screen-md space-y-8 py-8 md:py-16 lg:space-y-12">
+        <ReviewList reviews={albumReviews} />
       </section>
     </main>
   );

@@ -31,7 +31,7 @@ import { ReviewList } from "~/components/reviews/review-list";
 
 const ReviewFormSchema = z.object({
   albumId: z.string(),
-  rating: z.number().int().min(1).max(10),
+  rating: z.number().multipleOf(0.5).min(1).max(10),
   favouriteTrack: z.string().min(1),
   review: z.string().optional(),
   userId: z.string(),

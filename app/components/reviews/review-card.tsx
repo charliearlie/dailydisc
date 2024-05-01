@@ -1,7 +1,4 @@
-import { format, formatDistance, subDays } from "date-fns";
-import { Card } from "../common/ui/card";
-import CardContent from "../common/ui/card/card-content";
-import CardHeader from "../common/ui/card/card-header";
+import { formatDistance } from "date-fns";
 import { Review } from "./types";
 
 type Props = {

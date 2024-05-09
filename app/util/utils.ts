@@ -1,6 +1,8 @@
-import type { Navigation } from "@remix-run/react";
+import { SerializeFrom } from "@remix-run/node";
+import { useRouteLoaderData, type Navigation } from "@remix-run/react";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { RouteId } from "./types/route-id";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -56,4 +58,8 @@ export function camelCaseToHumanReadable(str: string) {
   const titleCase = withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1);
 
   return titleCase;
+}
+
+export function useRouteLoaderDataTyped<T = unknown>(routeId: RouteId) {
+  return useRouteLoaderData(routeId) as SerializeFrom<T>;
 }

@@ -1,0 +1,1 @@
+export type RouteId = "root" | "routes/resource.album-details" | "routes/resource.artist" | "routes/resource.album" | "routes/add-artist" | "routes/add-album" | "routes/_index" | "routes/logout" | "routes/signup" | "routes/login" | "routes/test"

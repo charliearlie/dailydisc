@@ -28,11 +28,26 @@ import { eq } from "drizzle-orm";
 import { getUserFromRequestContext } from "~/services/session";
 import { DatePicker } from "~/components/common/date-picker";
 import { ReviewList } from "~/components/reviews/review-list";
+import { getAlbumDetails } from "~/services/itunes.api.server";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "~/components/common/ui/tabs";
+import { Label } from "~/components/common/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/common/ui/select";
 
 const ReviewFormSchema = z.object({
   albumId: z.string(),
   rating: z.number().multipleOf(0.5).min(1).max(10),
-  favouriteTrack: z.string().min(1),
+  favouriteTracks: z.array(z.string()),
   review: z.string().optional(),
   userId: z.string(),
 });
@@ -81,10 +96,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         (album) => album.userId === user?.id,
       );
 
+      const tracks = await getAlbumDetails(
+        Number(albumOfTheDay.appleMusicCollectionId),
+      );
+
       const artists = albumOfTheDay.artistsToAlbums.map((data) => data.artist);
       return json({
         archiveDate: albumDate.toISOString(),
-        album: albumOfTheDay,
+        album: { ...albumOfTheDay, tracks },
         artists,
         albumReviews,
         hasUserReviewed,
@@ -111,14 +130,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   }
 
-  const { albumId, favouriteTrack, rating, review, userId } = submission.value;
+  const { albumId, favouriteTracks, rating, review, userId } = submission.value;
+
+  console.log("favouriteTracks", favouriteTracks);
 
   await db.insert(reviews).values({
     albumId: Number(albumId),
     userId: Number(userId),
     rating: Math.floor(rating * 2),
     review,
-    favouriteTrack,
+    favouriteTrack: favouriteTracks.map((track) => track.trim()).join(" | "),
   });
 
   return json({
@@ -155,7 +176,9 @@ export default function Index() {
 
   const { album, albumReviews, archiveDate, artists, hasUserReviewed } =
     loaderData;
-  const { id, title, image, genre, year } = album;
+  const { id, title, image, genre, tracks, year } = album;
+
+  const favouriteTracks = fields.favouriteTracks.getFieldList();
 
   return (
     <main className="flex-1">
@@ -230,11 +253,46 @@ export default function Index() {
                   placeholder="1-10"
                   {...getInputProps(fields.rating, { type: "number" })}
                 />
-                <FormField
-                  label="Favourite track"
-                  placeholder="Enter your favourite track"
-                  {...getInputProps(fields.favouriteTrack, { type: "text" })}
-                />
+                <div className="mb-8 flex w-full flex-col gap-1.5">
+                  <Label className="font-bold" htmlFor="category">
+                    Favourite tracks
+                  </Label>
+                  {favouriteTracks.map((favTrack) => (
+                    <Select key={favTrack.id} name={favTrack.name}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select track" />
+                      </SelectTrigger>
+                      <SelectContent className="h-48">
+                        {tracks.map((track) => {
+                          if (track.title) {
+                            return (
+                              <SelectItem
+                                className="cursor-pointer"
+                                key={track.id}
+                                value={track.title}
+                              >
+                                {track.title}
+                              </SelectItem>
+                            );
+                          }
+                        })}
+                      </SelectContent>
+                    </Select>
+                  ))}
+                  <div className="flex justify-center pb-8 pt-4">
+                    <Button
+                      className="w-full"
+                      variant="outline"
+                      {...form.insert.getButtonProps({
+                        name: fields.favouriteTracks.name,
+                      })}
+                    >
+                      {favouriteTracks.length === 0
+                        ? "Add track"
+                        : "Add another track"}
+                    </Button>
+                  </div>
+                </div>
                 <FormFieldTextArea
                   className="min-h-[100px] resize-none"
                   label="Your Review (optional)"
@@ -263,7 +321,37 @@ export default function Index() {
         </div>
       </section>
       <section className="container max-w-screen-md space-y-8 py-8 md:py-16 lg:space-y-12">
-        <ReviewList reviews={albumReviews} />
+        <Tabs defaultValue="account" className="w-full">
+          <TabsList className="w-full">
+            <TabsTrigger className="w-full" value="account">
+              Reviews
+            </TabsTrigger>
+            <TabsTrigger className="w-full" value="password">
+              Track list
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="account">
+            <ReviewList reviews={albumReviews} />
+          </TabsContent>
+          <TabsContent value="password">
+            <div className="flex flex-col space-y-4">
+              {tracks.map((track) => (
+                <div
+                  key={track.id}
+                  className="flex items-center justify-between space-y-4"
+                >
+                  <div className="flex flex-col">
+                    <p className="text-lg font-medium">{track.title}</p>
+                    <p className="m-0 text-xs font-light">{track.artist}</p>
+                  </div>
+                  <p className="text-sm font-light">
+                    {format(new Date(track.trackTimeMillis!), "mm:ss")}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       </section>
     </main>
   );

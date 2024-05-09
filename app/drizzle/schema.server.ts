@@ -32,6 +32,7 @@ export const albums = sqliteTable("albums", {
   image: text("image"),
   year: text("year").notNull(),
   appleMusicUrl: text("apple_music_url"),
+  appleMusicCollectionId: text("apple_music_collection_id"),
   spotifyUrl: text("spotify_url"),
   listenDate: integer("listen_date", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" })

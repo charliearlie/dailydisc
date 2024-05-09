@@ -1,10 +1,3 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "../common/ui/accordion";
-import { Button } from "../common/ui/button";
 import { ReviewCard } from "./review-card";
 import { Review } from "./types";
 

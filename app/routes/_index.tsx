@@ -258,7 +258,7 @@ export default function Index() {
                     Favourite tracks
                   </Label>
                   {favouriteTracks.map((favTrack) => (
-                    <Select name={favTrack.name}>
+                    <Select key={favTrack.id} name={favTrack.name}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select track" />
                       </SelectTrigger>

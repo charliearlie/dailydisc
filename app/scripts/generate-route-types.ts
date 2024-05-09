@@ -17,11 +17,11 @@ const Schema: z.ZodType<Route> = RouteSchema.extend({
 });
 
 async function main() {
-  let { $ } = await import("execa");
+  const { $ } = await import("execa");
 
-  let { stdout } = await $`npx remix routes --json`;
-  let routes = Schema.array().parse(JSON.parse(stdout));
-  let ids = routes.flatMap((route) => iteration(route));
+  const { stdout } = await $`npx remix routes --json`;
+  const routes = Schema.array().parse(JSON.parse(stdout));
+  const ids = routes.flatMap((route) => iteration(route));
 
   await writeFile(
     resolve("./app/util/types/route-id.d.ts"),

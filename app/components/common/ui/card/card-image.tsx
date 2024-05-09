@@ -7,7 +7,7 @@ type CardImageProps = {
 
 type Props = ImgHTMLAttributes<HTMLImageElement> & CardImageProps;
 
-export default function CardImage({ to, alt, ...imageProps }: Props) {
+export function CardImage({ to, alt, ...imageProps }: Props) {
   return (
     <Link to={to} className="flex w-full cursor-pointer rounded">
       <img

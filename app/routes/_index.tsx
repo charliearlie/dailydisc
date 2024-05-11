@@ -11,7 +11,6 @@ import {
   useLoaderData,
   useNavigate,
 } from "@remix-run/react";
-import { PlayCircle } from "lucide-react";
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { z } from "zod";
@@ -43,6 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/common/ui/select";
+import { AlbumPopover } from "~/components/album/album-popover";
 
 const ReviewFormSchema = z.object({
   albumId: z.string(),
@@ -132,8 +132,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const { albumId, favouriteTracks, rating, review, userId } = submission.value;
 
-  console.log("favouriteTracks", favouriteTracks);
-
   await db.insert(reviews).values({
     albumId: Number(albumId),
     userId: Number(userId),
@@ -176,7 +174,16 @@ export default function Index() {
 
   const { album, albumReviews, archiveDate, artists, hasUserReviewed } =
     loaderData;
-  const { id, title, image, genre, tracks, year } = album;
+  const {
+    id,
+    appleMusicCollectionId,
+    appleMusicUrl,
+    title,
+    image,
+    genre,
+    tracks,
+    year,
+  } = album;
 
   const favouriteTracks = fields.favouriteTracks.getFieldList();
 
@@ -200,30 +207,12 @@ export default function Index() {
           </div>
         </div>
         <div className="mx-auto max-w-sm space-y-4">
-          <Link
-            to="https://music.apple.com/us/album/exile-on-main-st-2010-remaster/1440872228?uo=4"
-            className="group relative mx-auto block h-[250px] w-[250px] cursor-pointer overflow-hidden rounded-lg border-4 border-primary bg-accent duration-300 hover:-translate-y-1 hover:scale-110"
-            target="_blank"
-            aria-label="Listen to the album on Apple Music"
-            rel="noopener noreferrer"
-          >
-            <img
-              alt={`${title} album artwork`}
-              height="250"
-              src={image!}
-              style={{
-                aspectRatio: "250/250",
-                objectFit: "cover",
-              }}
-              width="250"
-            />
-            <div className="absolute inset-0 flex items-center justify-center transition-all ease-in-out group-hover:bg-black group-hover:opacity-60">
-              <PlayCircle
-                strokeWidth={1}
-                className="hidden h-full w-full group-hover:block"
-              />
-            </div>
-          </Link>
+          <AlbumPopover
+            image={image!}
+            title={title}
+            appleMusicId={appleMusicCollectionId!}
+            appleMusicUrl={appleMusicUrl!}
+          />
           <div className="space-y-2">
             <h2 className="text-3xl font-bold tracking-tight">
               <Link

@@ -65,51 +65,43 @@ export const meta: MetaFunction = () => {
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const { searchParams } = new URL(request.url);
-  const dateParam = searchParams.get("date");
   const user = await getUserFromRequestContext(request);
   const todaysDate = new Date();
-  const albumDate = dateParam ? new Date(dateParam) : todaysDate;
-
-  if (albumDate <= todaysDate) {
-    albumDate.setUTCHours(0, 0, 0, 0); // This is hideous. Find better way
-
-    const albumOfTheDay = await db.query.albums.findFirst({
-      where: eq(albums.listenDate, albumDate),
-      with: {
-        artistsToAlbums: {
-          with: {
-            artist: true,
-          },
+  const albumOfTheDay = await db.query.albums.findFirst({
+    where: eq(albums.id, 194),
+    with: {
+      artistsToAlbums: {
+        with: {
+          artist: true,
         },
+      },
+    },
+  });
+
+  if (albumOfTheDay) {
+    const albumReviews = await db.query.reviews.findMany({
+      where: eq(reviews.albumId, albumOfTheDay.id),
+      with: {
+        user: true,
       },
     });
 
-    if (albumOfTheDay) {
-      const albumReviews = await db.query.reviews.findMany({
-        where: eq(reviews.albumId, albumOfTheDay.id),
-        with: {
-          user: true,
-        },
-      });
+    const hasUserReviewed = albumReviews.some(
+      (album) => album.userId === user?.id,
+    );
 
-      const hasUserReviewed = albumReviews.some(
-        (album) => album.userId === user?.id,
-      );
+    const tracks = await getAlbumDetails(
+      Number(albumOfTheDay.appleMusicCollectionId),
+    );
 
-      const tracks = await getAlbumDetails(
-        Number(albumOfTheDay.appleMusicCollectionId),
-      );
-
-      const artists = albumOfTheDay.artistsToAlbums.map((data) => data.artist);
-      return json({
-        archiveDate: albumDate.toISOString(),
-        album: { ...albumOfTheDay, tracks },
-        artists,
-        albumReviews,
-        hasUserReviewed,
-      });
-    }
+    const artists = albumOfTheDay.artistsToAlbums.map((data) => data.artist);
+    return json({
+      archiveDate: todaysDate.toISOString(),
+      album: { ...albumOfTheDay, tracks },
+      artists,
+      albumReviews,
+      hasUserReviewed,
+    });
   }
 
   return json(null);
@@ -236,7 +228,7 @@ export default function Index() {
             <p className="text-sm tracking-wider">{year}</p>
             <Badge>{genre}</Badge>
           </div>
-          {isLoggedIn && !hasUserReviewed ? (
+          {isLoggedIn && (
             <Form method="post" className="space-y-4" {...getFormProps(form)}>
               <div className="space-y-2">
                 <FormField
@@ -294,17 +286,11 @@ export default function Index() {
                 <input hidden name="albumId" value={loaderData.album.id} />
                 <input hidden name="userId" value={user.userId} />
               </div>
-              <Button
-                className="w-full"
-                disabled={actionData?.status === "success"}
-                type="submit"
-              >
-                {actionData?.status === "success"
-                  ? "Review submitted"
-                  : "Submit Review"}
+              <Button className="w-full" type="submit">
+                Submit Review
               </Button>
             </Form>
-          ) : null}
+          )}
           {!isLoggedIn && (
             <Button asChild className="w-full">
               <Link to="/signup">Login to submit a review</Link>

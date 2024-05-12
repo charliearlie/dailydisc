@@ -63,3 +63,10 @@ export function camelCaseToHumanReadable(str: string) {
 export function useRouteLoaderDataTyped<T = unknown>(routeId: RouteId) {
   return useRouteLoaderData(routeId) as SerializeFrom<T>;
 }
+
+export function removeFeaturedArtists(trackName: string) {
+  trackName = trackName.replace(/\s*\(feat\.\s*[^)]+\)/g, "");
+  trackName = trackName.replace(/\s*\[feat\.\s*[^\]]+\]/g, "");
+
+  return trackName.trim();
+}

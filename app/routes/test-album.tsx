@@ -167,8 +167,7 @@ export default function Index() {
     navigate(`/?date=${formattedDate}`);
   };
 
-  const { album, albumReviews, archiveDate, artists, hasUserReviewed } =
-    loaderData;
+  const { album, albumReviews, archiveDate, artists } = loaderData;
   const {
     id,
     appleMusicCollectionId,

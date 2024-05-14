@@ -91,7 +91,7 @@ export default function ArchivePage() {
           </SelectGroup>
         </SelectContent>
       </Select>
-      <section className="grid grid-cols-1 gap-6 px-4 py-8 sm:grid-cols-3 md:grid-cols-4 md:px-6 lg:grid-cols-5 ">
+      <section className="grid grid-cols-1 gap-6 px-4 py-8 sm:grid-cols-2 md:grid-cols-3 md:px-6 lg:grid-cols-4 ">
         {archivedAlbums.map((album) => (
           <Card className="shadow-md" key={album.id}>
             <CardImage

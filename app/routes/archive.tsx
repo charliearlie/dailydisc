@@ -3,7 +3,17 @@ import { Link, useLoaderData } from "@remix-run/react";
 import { format } from "date-fns";
 import { asc, lt } from "drizzle-orm";
 import { MessageCircle, Star } from "lucide-react";
+import { useState } from "react";
 import { Card, CardImage } from "~/components/common/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/common/ui/select";
 import { db } from "~/drizzle/db.server";
 import { albums } from "~/drizzle/schema.server";
 
@@ -40,9 +50,47 @@ export const loader = async () => {
 
 export default function ArchivePage() {
   const archivedAlbums = useLoaderData<typeof loader>();
+  const [albums, setAlbums] = useState(archivedAlbums);
+
+  const sortAlbums = (value: string) => {
+    if (value === "listenDate") {
+      setAlbums(archivedAlbums);
+    }
+
+    setAlbums(
+      archivedAlbums.sort((a, b) => {
+        if (a.averageRating === "" && b.averageRating === "") {
+          return 0;
+        }
+
+        if (a.averageRating === "") {
+          return 1;
+        }
+
+        if (b.averageRating === "") {
+          return -1;
+        }
+
+        return Number(b.averageRating) - Number(a.averageRating);
+      }),
+    );
+  };
+
   return (
     <main className="container space-y-8 py-8 text-center md:py-16 lg:space-y-12">
       <h1 className="text-3xl font-semibold">Daily Disc archive</h1>
+      <Select onValueChange={sortAlbums}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Sort by most recent" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectLabel>Sorting options</SelectLabel>
+            <SelectItem value="listenDate">Most recent</SelectItem>
+            <SelectItem value="banana">Rating</SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
       <section className="grid grid-cols-1 gap-6 px-4 py-8 sm:grid-cols-3 md:grid-cols-4 md:px-6 lg:grid-cols-5 ">
         {archivedAlbums.map((album) => (
           <Card className="shadow-md" key={album.id}>
@@ -52,7 +100,7 @@ export default function ArchivePage() {
               alt="Album Cover"
             />
             <div className="relative p-4">
-              <h3 className="mb-1 h-16 text-lg font-semibold">
+              <h3 className="mb-1 h-16 text-start text-lg font-semibold">
                 <Link className="hover:underline" to="#">
                   {album.title}
                 </Link>

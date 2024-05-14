@@ -21,7 +21,7 @@ export const Header = () => {
       <nav className="ml-auto flex items-center space-x-4">
         <Link
           className="text-sm font-medium text-white transition-colors"
-          to="/"
+          to="/archive"
         >
           Archive
         </Link>

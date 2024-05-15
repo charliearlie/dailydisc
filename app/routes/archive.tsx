@@ -1,7 +1,7 @@
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { format } from "date-fns";
-import { asc, lt } from "drizzle-orm";
+import { asc, desc, lt } from "drizzle-orm";
 import { MessageCircle, Star } from "lucide-react";
 import { Card, CardImage } from "~/components/common/ui/card";
 import {
@@ -27,7 +27,7 @@ export const loader = async () => {
         },
       },
     },
-    orderBy: [asc(albums.listenDate)],
+    orderBy: [desc(albums.listenDate)],
   });
 
   const albumsWithAverageRating = archivedAlbums.map((album) => {
@@ -61,7 +61,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         },
       },
     },
-    orderBy: [asc(albums.listenDate)],
+    orderBy: [desc(albums.listenDate)],
   });
 
   const albumsWithAverageRating = archivedAlbums.map((album) => {
@@ -116,20 +116,22 @@ export default function ArchivePage() {
   };
 
   return (
-    <main className="container space-y-8 py-8 text-center md:py-16 lg:space-y-12">
+    <main className="space-y-8 py-8 text-center md:container md:py-16 lg:space-y-12">
       <h1 className="text-3xl font-semibold">Daily Disc archive</h1>
-      <Select onValueChange={sortAlbums}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Sort by most recent" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>Sorting options</SelectLabel>
-            <SelectItem value="listenDate">Most recent</SelectItem>
-            <SelectItem value="banana">Rating</SelectItem>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+      <div className="px-4 md:container md:px-6">
+        <Select onValueChange={sortAlbums}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Sort by most recent" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Sorting options</SelectLabel>
+              <SelectItem value="listenDate">Most recent</SelectItem>
+              <SelectItem value="banana">Rating</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
       <section className="grid grid-cols-1 gap-6 px-4 py-8 sm:grid-cols-2 md:grid-cols-3 md:px-6 lg:grid-cols-4 ">
         {archivedAlbums.map((album) => (
           <Card className="shadow-md" key={album.id}>

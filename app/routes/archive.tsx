@@ -3,7 +3,6 @@ import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { format } from "date-fns";
 import { asc, lt } from "drizzle-orm";
 import { MessageCircle, Star } from "lucide-react";
-import { useState } from "react";
 import { Card, CardImage } from "~/components/common/ui/card";
 import {
   Select,

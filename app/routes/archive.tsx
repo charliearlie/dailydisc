@@ -1,5 +1,5 @@
-import { json } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { ActionFunctionArgs, json } from "@remix-run/node";
+import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { format } from "date-fns";
 import { asc, lt } from "drizzle-orm";
 import { MessageCircle, Star } from "lucide-react";
@@ -48,32 +48,72 @@ export const loader = async () => {
   return json(albumsWithAverageRating);
 };
 
-export default function ArchivePage() {
-  const archivedAlbums = useLoaderData<typeof loader>();
-  const [albums, setAlbums] = useState(archivedAlbums);
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+  const sort = formData.get("sort");
 
-  const sortAlbums = (value: string) => {
-    if (value === "listenDate") {
-      setAlbums(archivedAlbums);
-    }
+  const archivedAlbums = await db.query.albums.findMany({
+    where: lt(albums.listenDate, new Date()),
+    with: {
+      reviews: true,
+      artistsToAlbums: {
+        with: {
+          artist: true,
+        },
+      },
+    },
+    orderBy: [asc(albums.listenDate)],
+  });
 
-    setAlbums(
-      archivedAlbums.sort((a, b) => {
-        if (a.averageRating === "" && b.averageRating === "") {
-          return 0;
-        }
-
-        if (a.averageRating === "") {
-          return 1;
-        }
-
-        if (b.averageRating === "") {
-          return -1;
-        }
-
-        return Number(b.averageRating) - Number(a.averageRating);
-      }),
+  const albumsWithAverageRating = archivedAlbums.map((album) => {
+    const totalRating = album.reviews.reduce(
+      (acc, review) => acc + review.rating,
+      0,
     );
+
+    const averageRating = totalRating / album.reviews.length / 2;
+
+    return {
+      ...album,
+      averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
+    };
+  });
+
+  if (sort === "listenDate") {
+    return json(albumsWithAverageRating);
+  }
+
+  return json(
+    albumsWithAverageRating.sort((a, b) => {
+      if (a.averageRating === "" && b.averageRating === "") {
+        return 0;
+      }
+
+      if (a.averageRating === "") {
+        return 1;
+      }
+
+      if (b.averageRating === "") {
+        return -1;
+      }
+
+      return Number(b.averageRating) - Number(a.averageRating);
+    }),
+  );
+};
+
+export default function ArchivePage() {
+  const fetcher = useFetcher<typeof loader>();
+  const loaderData = useLoaderData<typeof loader>();
+
+  const archivedAlbums = fetcher.data || loaderData;
+
+  const sortAlbums = async (value: string) => {
+    const formData = new FormData();
+    formData.append("sort", value);
+    fetcher.submit(formData, {
+      method: "POST",
+    });
   };
 
   return (

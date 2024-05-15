@@ -165,9 +165,7 @@ export default function ArchivePage() {
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {album.year}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {new Date(album.listenDate!).toLocaleDateString()}
-                </p>
+                <p className="">{format(album.listenDate!, "MMMM dd yyyy")}</p>
               </div>
             </div>
           </Card>

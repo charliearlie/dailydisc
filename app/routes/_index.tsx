@@ -4,22 +4,12 @@ import {
   json,
   type MetaFunction,
 } from "@remix-run/node";
-import {
-  Form,
-  Link,
-  useActionData,
-  useLoaderData,
-  useNavigate,
-} from "@remix-run/react";
-import { getFormProps, getInputProps, useForm } from "@conform-to/react";
-import { getZodConstraint, parseWithZod } from "@conform-to/zod";
-import { z } from "zod";
+import { Link, useLoaderData, useNavigate } from "@remix-run/react";
+import { parseWithZod } from "@conform-to/zod";
 import { format } from "date-fns";
 
 import { Badge } from "~/components/common/ui/badge";
 import { Button } from "~/components/common/ui/button";
-import { FormField } from "~/components/form/form-field";
-import { FormFieldTextArea } from "~/components/form/form-field-text-area";
 import { db } from "~/drizzle/db.server";
 import { albums, reviews } from "~/drizzle/schema.server";
 import { useUser } from "~/contexts/user-context";
@@ -34,24 +24,11 @@ import {
   TabsList,
   TabsTrigger,
 } from "~/components/common/ui/tabs";
-import { Label } from "~/components/common/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/common/ui/select";
 import { AlbumPopover } from "~/components/album/album-popover";
 import { removeFeaturedArtists } from "~/util/utils";
-
-const ReviewFormSchema = z.object({
-  albumId: z.string(),
-  rating: z.number().multipleOf(0.5).min(1).max(10),
-  favouriteTracks: z.array(z.string()),
-  review: z.string().optional(),
-  userId: z.string(),
-});
+import { ReviewFormSchema } from "~/components/reviews/types";
+import { ReviewForm } from "~/components/reviews/review-form";
+import { ErrorBoundaryComponent } from "~/components/error-boundary";
 
 export const meta: MetaFunction = () => {
   return [
@@ -93,9 +70,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         },
       });
 
-      const hasUserReviewed = albumReviews.some(
+      const userReview = albumReviews.find(
         (album) => album.userId === user?.id,
       );
+
+      const hasUserReviewed = !!userReview;
 
       const tracks = await getAlbumDetails(
         Number(albumOfTheDay.appleMusicCollectionId),
@@ -108,6 +87,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         artists,
         albumReviews,
         hasUserReviewed,
+        userReview,
       });
     }
   }
@@ -151,22 +131,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function Index() {
   const loaderData = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
 
   const navigate = useNavigate();
 
   const user = useUser();
   const isLoggedIn = Boolean(user?.username);
-
-  const [form, fields] = useForm({
-    id: "review-form",
-    lastResult: actionData?.result,
-    shouldValidate: "onBlur",
-    constraint: getZodConstraint(ReviewFormSchema),
-    onValidate({ formData }) {
-      return parseWithZod(formData, { schema: ReviewFormSchema });
-    },
-  });
 
   if (!loaderData) return <p>Album has not been selected yet..</p>;
 
@@ -187,8 +156,6 @@ export default function Index() {
     tracks,
     year,
   } = album;
-
-  const favouriteTracks = fields.favouriteTracks.getFieldList();
 
   return (
     <main className="flex-1">
@@ -236,75 +203,7 @@ export default function Index() {
             <p className="text-sm tracking-wider">{year}</p>
             <Badge>{genre}</Badge>
           </div>
-          {isLoggedIn && !hasUserReviewed ? (
-            <Form method="post" className="space-y-4" {...getFormProps(form)}>
-              <div className="space-y-2">
-                <FormField
-                  className="m-auto w-20"
-                  label="Rating"
-                  placeholder="1-10"
-                  {...getInputProps(fields.rating, { type: "number" })}
-                />
-                <div className="mb-8 flex w-full flex-col gap-1.5">
-                  <Label className="font-bold" htmlFor="category">
-                    Favourite tracks
-                  </Label>
-                  {favouriteTracks.map((favTrack) => (
-                    <Select key={favTrack.id} name={favTrack.name}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select track" />
-                      </SelectTrigger>
-                      <SelectContent className="h-48">
-                        {tracks.map((track) => {
-                          if (track.title) {
-                            return (
-                              <SelectItem
-                                className="cursor-pointer"
-                                key={track.id}
-                                value={track.title}
-                              >
-                                {track.title}
-                              </SelectItem>
-                            );
-                          }
-                        })}
-                      </SelectContent>
-                    </Select>
-                  ))}
-                  <div className="flex justify-center pb-8 pt-4">
-                    <Button
-                      className="w-full"
-                      variant="outline"
-                      {...form.insert.getButtonProps({
-                        name: fields.favouriteTracks.name,
-                      })}
-                    >
-                      {favouriteTracks.length === 0
-                        ? "Add track"
-                        : "Add another track"}
-                    </Button>
-                  </div>
-                </div>
-                <FormFieldTextArea
-                  className="min-h-[100px] resize-none"
-                  label="Your Review (optional)"
-                  placeholder="What did you think of the album?"
-                  {...getInputProps(fields.review, { type: "text" })}
-                />
-                <input hidden name="albumId" value={loaderData.album.id} />
-                <input hidden name="userId" value={user.userId} />
-              </div>
-              <Button
-                className="w-full"
-                disabled={actionData?.status === "success"}
-                type="submit"
-              >
-                {actionData?.status === "success"
-                  ? "Review submitted"
-                  : "Submit Review"}
-              </Button>
-            </Form>
-          ) : null}
+          {isLoggedIn && !hasUserReviewed ? <ReviewForm /> : null}
           {!isLoggedIn && (
             <Button asChild className="w-full">
               <Link to="/signup">Login to submit a review</Link>
@@ -346,5 +245,28 @@ export default function Index() {
         </Tabs>
       </section>
     </main>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <ErrorBoundaryComponent
+      statusHandlers={{
+        404: () => (
+          <div className="p-4">
+            <h2 className="text-3xl font-semibold">This page does not exist</h2>
+            <Link to="/">Go back home</Link>
+          </div>
+        ),
+        500: () => (
+          <div className="p-4">
+            <h2 className="text-3xl font-semibold">
+              Something went wrong on our end
+            </h2>
+            <Link to="/">Go back home</Link>
+          </div>
+        ),
+      }}
+    />
   );
 }

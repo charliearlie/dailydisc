@@ -282,8 +282,13 @@ export default function Index() {
                   placeholder="What did you think of the album?"
                   {...getInputProps(fields.review, { type: "text" })}
                 />
-                <input hidden name="albumId" value={loaderData.album.id} />
-                <input hidden name="userId" value={user.userId} />
+                <input
+                  hidden
+                  readOnly
+                  name="albumId"
+                  value={loaderData.album.id}
+                />
+                <input hidden readOnly name="userId" value={user.userId} />
               </div>
               <Button className="w-full" type="submit">
                 Submit Review

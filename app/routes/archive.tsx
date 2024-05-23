@@ -160,7 +160,7 @@ export default function ArchivePage() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
-                    <p className="">{format(album.listenDate!, "MMMM dd")}</p>
+                    <p className="">{format(album.listenDate!, "eee d MMM")}</p>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="p-4">
@@ -176,18 +176,34 @@ export default function ArchivePage() {
               alt="Album Cover"
             />
             <div className="relative p-4">
-              <h3 className="mb-1 h-16 text-start text-lg font-semibold">
+              <h3 className="mb-1 h-14 text-start text-lg font-semibold">
                 <Link className="hover:underline" to="#">
                   {album.title}
                 </Link>
               </h3>
-              <div className="flex items-center justify-between">
-                <p className="mb-2 text-gray-500 dark:text-gray-300">
+              <div className="flex items-center justify-between pt-2">
+                <p className="mb-2 text-sm text-gray-500 dark:text-gray-300">
                   <Artists
                     artists={album.artistsToAlbums.map(
                       (link) => link.artist.name,
                     )}
                   />
+                </p>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <p className="text-sm font-semibold">{album.year}</p>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Album release year</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-500 dark:text-gray-300">
+                  {album.genre}
                 </p>
                 <div className="flex items-center gap-2">
                   <p className="flex items-center gap-1 text-sm">
@@ -199,19 +215,6 @@ export default function ArchivePage() {
                     {album.averageRating || ""}
                   </p>
                 </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-500 dark:text-gray-300">
-                  {album.genre}
-                </p>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>{album.year}</TooltipTrigger>
-                    <TooltipContent>
-                      <p>Album release year</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
               </div>
             </div>
           </Card>

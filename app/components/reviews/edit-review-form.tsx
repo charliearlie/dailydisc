@@ -8,9 +8,6 @@ import { DialogClose, DialogFooter } from "../common/ui/dialog";
 
 export const EditReviewForm = ({ userReview }: { userReview: Review }) => {
   const fetcher = useFetcher();
-  const user = useUser();
-
-  console.log("userReview", userReview);
 
   return (
     <fetcher.Form method="post" action="/resource/edit" className="space-y-4">

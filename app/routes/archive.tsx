@@ -13,6 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/common/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/common/ui/tooltip";
 import { db } from "~/drizzle/db.server";
 import { albums } from "~/drizzle/schema.server";
 
@@ -107,6 +113,20 @@ export default function ArchivePage() {
 
   const archivedAlbums = fetcher.data || loaderData;
 
+  const Artists = ({ artists }: { artists: string[] }) => {
+    return (
+      <p>
+        {artists.map((artist, index) => {
+          return (
+            <span key={artist}>
+              {artist}
+              {`${index === artists.length - 1 ? "" : ", "}`}
+            </span>
+          );
+        })}
+      </p>
+    );
+  };
   const sortAlbums = async (value: string) => {
     const formData = new FormData();
     formData.append("sort", value);
@@ -132,9 +152,24 @@ export default function ArchivePage() {
           </SelectContent>
         </Select>
       </div>
-      <section className="grid grid-cols-1 gap-6 px-4 py-8 sm:grid-cols-2 md:grid-cols-3 md:px-6 lg:grid-cols-4 ">
+      <h2 className="text-xl">2024</h2>
+      <section className="grid grid-cols-1 gap-6 px-4 py-8 sm:grid-cols-2 md:px-6 lg:grid-cols-3">
         {archivedAlbums.map((album) => (
           <Card className="shadow-md" key={album.id}>
+            <div className="flex h-8 items-center justify-center bg-transparent">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <p className="">{format(album.listenDate!, "MMMM dd")}</p>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="p-4">
+                      The date the album was picked randomly to be listened to.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <CardImage
               to={`/?date=${format(album.listenDate!, "yyyy-MM-dd")}`}
               src={album.image!}
@@ -147,8 +182,12 @@ export default function ArchivePage() {
                 </Link>
               </h3>
               <div className="flex items-center justify-between">
-                <p className="mb-2 text-gray-500 dark:text-gray-400">
-                  {album.genre}
+                <p className="mb-2 text-gray-500 dark:text-gray-300">
+                  <Artists
+                    artists={album.artistsToAlbums.map(
+                      (link) => link.artist.name,
+                    )}
+                  />
                 </p>
                 <div className="flex items-center gap-2">
                   <p className="flex items-center gap-1 text-sm">
@@ -162,10 +201,17 @@ export default function ArchivePage() {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {album.year}
+                <p className="text-sm text-gray-500 dark:text-gray-300">
+                  {album.genre}
                 </p>
-                <p className="">{format(album.listenDate!, "MMMM dd yyyy")}</p>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>{album.year}</TooltipTrigger>
+                    <TooltipContent>
+                      <p>Album release year</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           </Card>

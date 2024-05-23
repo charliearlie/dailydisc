@@ -11,7 +11,7 @@ export function CardImage({ to, alt, ...imageProps }: Props) {
   return (
     <Link to={to} className="flex w-full cursor-pointer rounded">
       <img
-        className="h-64 w-full rounded-t-lg object-cover"
+        className="aspect-square w-full object-cover"
         loading="lazy"
         width="100%"
         alt={alt}

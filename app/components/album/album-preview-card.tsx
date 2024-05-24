@@ -61,11 +61,11 @@ export const AlbumPreviewCard = ({
           </Link>
         </h3>
         <div className="mb-2 flex items-center justify-between pt-2">
-          <p className="font-semibold text-gray-500 dark:text-gray-300">
+          <div className="font-semibold text-gray-500 dark:text-gray-300">
             <Artists
               artists={album.artistsToAlbums.map((link) => link.artist.name)}
             />
-          </p>
+          </div>
 
           <TooltipProvider>
             <Tooltip>

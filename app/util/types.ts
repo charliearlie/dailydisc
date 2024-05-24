@@ -38,3 +38,9 @@ export type AppleMusicAlbumDetailsResult = {
   trackTimeMillis?: number;
   isStreamable?: boolean;
 };
+
+export type ReplaceDateProperties<T> = Omit<T, "createdAt" | "updatedAt"> & {
+  createdAt: string;
+  updatedAt: string;
+  listenDate: string;
+};

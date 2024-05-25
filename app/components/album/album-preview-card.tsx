@@ -38,7 +38,9 @@ export const AlbumPreviewCard = ({
   return (
     <Link to={`/?date=${format(new Date(album.listenDate!), "yyyy-MM-dd")}`}>
       <Card
-        className={"shadow-md transition-transform hover:scale-105"}
+        className={
+          "shadow-md transition-transform hover:scale-105 hover:overflow-visible"
+        }
         key={album.id}
       >
         <div className="flex items-center justify-between border-b-2 border-accent bg-transparent p-4 font-semibold">
@@ -47,7 +49,7 @@ export const AlbumPreviewCard = ({
               <TooltipTrigger className="justify-self-center">
                 <p className="">{format(album.listenDate!, "eee d MMM")}</p>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="z-30">
                 <p className="p-4">
                   The date the album was picked randomly to be listened to.
                 </p>

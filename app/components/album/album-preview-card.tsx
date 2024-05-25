@@ -10,6 +10,7 @@ import {
 } from "~/components/common/ui/tooltip";
 import { Badge } from "../common/ui/badge";
 import { getArchiveAlbums } from "~/services/album";
+import { useUser } from "~/contexts/user-context";
 
 export const AlbumPreviewCard = ({
   album,
@@ -18,6 +19,7 @@ export const AlbumPreviewCard = ({
     listenDate: string | null;
   };
 }) => {
+  const user = useUser();
   const Artists = ({ artists }: { artists: string[] }) => {
     return (
       <p>
@@ -54,9 +56,9 @@ export const AlbumPreviewCard = ({
           </TooltipProvider>
           {album.usersRating ? (
             <Badge variant="secondary">My rating: {album.usersRating}</Badge>
-          ) : (
+          ) : user.userId ? (
             <Badge variant="destructive">Unreviewed</Badge>
-          )}
+          ) : null}
         </div>
         <CardImage src={album.image!} alt="Album Cover" />
         <div className="relative p-4">

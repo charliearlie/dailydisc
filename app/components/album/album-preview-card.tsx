@@ -66,20 +66,22 @@ export const AlbumPreviewCard = ({
               artists={album.artistsToAlbums.map((link) => link.artist.name)}
             />
           </div>
-
+          <Badge className="text-sm">{album.genre}</Badge>
+        </div>
+        <div className="flex items-center justify-between">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
-                <p className="font-semibold">{album.year}</p>
+                <p className="font-semibold text-gray-500 dark:text-gray-300">
+                  {album.year}
+                </p>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Album release year</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        </div>
-        <div className="flex items-center justify-between">
-          <Badge className="text-sm">{album.genre}</Badge>
+
           <div className="flex items-center gap-2">
             <p className="flex items-center gap-1 text-sm">
               <MessageCircle height={16} width={16} />

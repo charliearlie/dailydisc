@@ -47,7 +47,9 @@ export const AlbumPreviewCard = ({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger className="justify-self-center">
-                <p className="">{format(album.listenDate!, "eee d MMM")}</p>
+                <p className="">
+                  {format(album.listenDate!, "eee d MMM ''yy")}
+                </p>
               </TooltipTrigger>
               <TooltipContent className="z-30">
                 <p className="p-4">

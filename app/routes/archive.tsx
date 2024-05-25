@@ -81,7 +81,6 @@ export default function ArchivePage() {
           </SelectContent>
         </Select>
       </div>
-      <h2 className="text-xl">2024</h2>
       <section className="grid grid-cols-1 gap-6 px-4 py-8 sm:grid-cols-2 md:px-6 lg:grid-cols-3">
         {archivedAlbums.map((album) => (
           <AlbumPreviewCard album={album} key={album.id} />

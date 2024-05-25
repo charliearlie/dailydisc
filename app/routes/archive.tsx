@@ -1,6 +1,5 @@
-import { ActionFunctionArgs, json } from "@remix-run/node";
+import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
-import { desc, lt } from "drizzle-orm";
 import { AlbumPreviewCard } from "~/components/album/album-preview-card";
 import {
   Select,
@@ -11,21 +10,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/common/ui/select";
-import { db } from "~/drizzle/db.server";
-import { albums } from "~/drizzle/schema.server";
 import { getArchiveAlbums } from "~/services/album";
+import { getUserFromRequestContext } from "~/services/session";
 
-export const loader = async () => {
-  const archivedAlbums = await getArchiveAlbums();
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const user = await getUserFromRequestContext(request);
+  const archivedAlbums = await getArchiveAlbums(user?.id);
 
   return json(archivedAlbums);
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
+  const user = await getUserFromRequestContext(request);
   const formData = await request.formData();
   const sort = formData.get("sort");
 
-  const archivedAlbums = await getArchiveAlbums();
+  const archivedAlbums = await getArchiveAlbums(user?.id);
 
   if (sort === "listenDate") {
     return json(archivedAlbums);

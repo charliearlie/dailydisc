@@ -3,7 +3,6 @@ import { FormField } from "../form/form-field";
 import { Review } from "./types";
 import { Button } from "../common/ui/button";
 import { FormFieldTextArea } from "../form/form-field-text-area";
-import { useUser } from "~/contexts/user-context";
 import { DialogClose, DialogFooter } from "../common/ui/dialog";
 
 export const EditReviewForm = ({ userReview }: { userReview: Review }) => {

@@ -1,22 +1,16 @@
-import { Link } from "@remix-run/react";
 import type { ImgHTMLAttributes } from "react";
 
-type CardImageProps = {
-  to: string;
-};
-
-type Props = ImgHTMLAttributes<HTMLImageElement> & CardImageProps;
-
-export function CardImage({ to, alt, ...imageProps }: Props) {
+export function CardImage({
+  alt,
+  ...imageProps
+}: ImgHTMLAttributes<HTMLImageElement>) {
   return (
-    <Link to={to} className="flex w-full cursor-pointer rounded">
-      <img
-        className="aspect-square w-full object-cover"
-        loading="lazy"
-        width="100%"
-        alt={alt}
-        {...imageProps}
-      />
-    </Link>
+    <img
+      className="aspect-square w-full object-cover drop-shadow"
+      loading="lazy"
+      width="100%"
+      alt={alt}
+      {...imageProps}
+    />
   );
 }

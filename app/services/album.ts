@@ -2,13 +2,14 @@ import { desc, lt } from "drizzle-orm";
 import { db } from "~/drizzle/db.server";
 import { albums } from "~/drizzle/schema.server";
 
-export const getArchiveAlbums = async () => {
+export const getArchiveAlbums = async (userId?: number) => {
   const archivedAlbums = await db.query.albums.findMany({
     where: lt(albums.listenDate, new Date()),
     with: {
       reviews: {
         columns: {
           rating: true,
+          userId: true,
         },
       },
       artistsToAlbums: {
@@ -40,9 +41,13 @@ export const getArchiveAlbums = async () => {
 
     const averageRating = totalRating / album.reviews.length / 2;
 
+    const usersRating =
+      album.reviews.find((review) => review.userId === userId)?.rating || null;
+
     return {
       ...album,
       averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
+      usersRating: usersRating ? usersRating / 2 : null,
     };
   });
 

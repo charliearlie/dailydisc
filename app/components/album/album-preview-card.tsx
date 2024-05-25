@@ -34,66 +34,70 @@ export const AlbumPreviewCard = ({
   };
 
   return (
-    <Card className="shadow-md" key={album.id}>
-      <div className="flex h-8 items-center justify-center bg-transparent font-semibold">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <p className="">{format(album.listenDate!, "eee d MMM")}</p>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="p-4">
-                The date the album was picked randomly to be listened to.
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
-      <CardImage
-        to={`/?date=${format(album.listenDate!, "yyyy-MM-dd")}`}
-        src={album.image!}
-        alt="Album Cover"
-      />
-      <div className="relative p-4">
-        <h3 className="mb-1 h-14 text-start text-lg font-semibold">
-          <Link className="hover:underline" to="#">
-            {album.title}
-          </Link>
-        </h3>
-        <div className="mb-2 flex items-center justify-between pt-2">
-          <div className="font-semibold text-gray-500 dark:text-gray-300">
-            <Artists
-              artists={album.artistsToAlbums.map((link) => link.artist.name)}
-            />
-          </div>
-          <Badge className="text-sm">{album.genre}</Badge>
-        </div>
-        <div className="flex items-center justify-between">
+    <Link to={`/?date=${format(new Date(album.listenDate!), "yyyy-MM-dd")}`}>
+      <Card
+        className={"shadow-md transition-transform hover:scale-105"}
+        key={album.id}
+      >
+        <div className="flex items-center justify-between border-b-2 border-accent bg-transparent p-4 font-semibold">
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger>
-                <p className="font-semibold text-gray-500 dark:text-gray-300">
-                  {album.year}
-                </p>
+              <TooltipTrigger className="justify-self-center">
+                <p className="">{format(album.listenDate!, "eee d MMM")}</p>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Album release year</p>
+                <p className="p-4">
+                  The date the album was picked randomly to be listened to.
+                </p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+          {album.usersRating ? (
+            <Badge variant="secondary">My rating: {album.usersRating}</Badge>
+          ) : (
+            <Badge variant="destructive">Unreviewed</Badge>
+          )}
+        </div>
+        <CardImage src={album.image!} alt="Album Cover" />
+        <div className="relative p-4">
+          <h3 className="mb-1 h-14 text-start text-lg font-semibold hover:underline">
+            {album.title}
+          </h3>
+          <div className="mb-2 flex items-center justify-between pt-2">
+            <div className="font-semibold text-gray-500 dark:text-gray-300">
+              <Artists
+                artists={album.artistsToAlbums.map((link) => link.artist.name)}
+              />
+            </div>
+            <Badge className="text-sm">{album.genre}</Badge>
+          </div>
+          <div className="flex items-center justify-between">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <p className="font-semibold text-gray-500 dark:text-gray-300">
+                    {album.year}
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Album release year</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
-          <div className="flex items-center gap-2">
-            <p className="flex items-center gap-1 text-sm">
-              <MessageCircle height={16} width={16} />
-              {album.reviews.length}
-            </p>
-            <p className="flex items-center gap-1 text-sm">
-              <Star height={16} width={16} />
-              {album.averageRating || ""}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="flex items-center gap-1 text-sm">
+                <MessageCircle height={16} width={16} />
+                {album.reviews.length}
+              </p>
+              <p className="flex items-center gap-1 text-sm">
+                <Star height={16} width={16} />
+                {album.averageRating || ""}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </Link>
   );
 };

@@ -3,6 +3,12 @@ import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import { z } from "zod";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/common/ui/accordion";
 import { Button } from "~/components/common/ui/button";
 import { FormField } from "~/components/form/form-field";
 import { FormFieldTextArea } from "~/components/form/form-field-text-area";
@@ -72,7 +78,21 @@ export default function AddArtistRoute() {
         />
         <Button type="submit">Add artist</Button>
       </Form>
-      <p>Number of artists in DB: {loaderData.length}</p>
+
+      <p>Number of artists DB: {loaderData.length}</p>
+
+      <Accordion type="single">
+        <AccordionItem value="Artists">
+          <AccordionTrigger>Artists</AccordionTrigger>
+          <AccordionContent>
+            <ul>
+              {loaderData.map((artist) => (
+                <li>{artist.name}</li>
+              ))}
+            </ul>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 }

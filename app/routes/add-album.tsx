@@ -17,6 +17,7 @@ import { ImageUpload } from "~/components/image-upload";
 import { db } from "~/drizzle/db.server";
 import { albums, artists, artistsToAlbums } from "~/drizzle/schema.server";
 import { uploadImages } from "~/services/cloudinary";
+import { getAppleMusicCollectionIdFromUrl } from "~/services/itunes.api.server";
 import { FileSchema } from "~/services/schemas";
 
 const AddAlbumSchema = z.object({
@@ -46,6 +47,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     submission.value;
 
   const [image] = await uploadImages(artwork);
+  const appleMusicCollectionId =
+    getAppleMusicCollectionIdFromUrl(appleMusicUrl);
+
+  console.log({ appleMusicUrl, appleMusicCollectionId });
 
   const [album] = await db
     .insert(albums)
@@ -55,6 +60,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       genre,
       image,
       appleMusicUrl,
+      appleMusicCollectionId,
     })
     .returning();
 

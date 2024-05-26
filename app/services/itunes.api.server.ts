@@ -31,3 +31,14 @@ export const getAlbumDetails = async (albumId: number) => {
 
   return tracks;
 };
+
+export const getAppleMusicCollectionIdFromUrl = (url?: string) => {
+  if (!url) {
+    return null;
+  }
+
+  const lastSlashIndex = url.lastIndexOf("/");
+  const lastParam = url.substring(lastSlashIndex + 1);
+
+  return lastParam;
+};

@@ -72,9 +72,7 @@ export default function AddArtistRoute() {
         />
         <Button type="submit">Add artist</Button>
       </Form>
-
-      <p>{JSON.stringify(loaderData.map((d) => d.name))}</p>
-      <p>Number of artists: {loaderData.length}</p>
+      <p>Number of artists in DB: {loaderData.length}</p>
     </div>
   );
 }

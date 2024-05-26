@@ -5,6 +5,9 @@ const schema = z.object({
   SESSION_SECRET: z.string(),
   TURSO_DATABASE_URL: z.string(),
   TURSO_AUTH_TOKEN: z.string(),
+  SPOTIFY_CLIENT_ID: z.string(),
+  SPOTIFY_CLIENT_SECRET: z.string(),
+  SPOTIFY_ACCESS_TOKEN: z.string(),
 });
 
 declare global {

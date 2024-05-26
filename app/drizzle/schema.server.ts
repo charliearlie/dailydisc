@@ -54,7 +54,7 @@ export const albumsRelations = relations(albums, ({ many }) => ({
 
 export const artists = sqliteTable("artists", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  name: text("name").notNull(),
+  name: text("name").notNull().unique(),
   bio: text("bio"),
   image: text("image"),
   createdAt: integer("created_at", { mode: "timestamp" })

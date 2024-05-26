@@ -66,7 +66,7 @@ export const AlbumPreviewCard = ({
         </div>
         <CardImage src={album.image!} alt="Album Cover" />
         <div className="relative p-4">
-          <h3 className="mb-1 h-14 text-start text-lg font-semibold hover:underline">
+          <h3 className="mb-1 h-14 overflow-hidden text-start text-lg font-semibold hover:underline">
             {album.title}
           </h3>
           <div className="mb-2 flex items-center justify-between pt-2">

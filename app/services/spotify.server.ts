@@ -43,7 +43,7 @@ export const getSpotifyToken = async (): Promise<{
 
 export const getNewAlbums = async (token: string): Promise<Album[]> => {
   const response = await fetch(
-    "https://api.spotify.com/v1/browse/new-releases?limit=24",
+    "https://api.spotify.com/v1/browse/new-releases?limit=50",
     {
       method: "GET",
       headers: { Authorization: "Bearer " + token },
@@ -51,6 +51,8 @@ export const getNewAlbums = async (token: string): Promise<Album[]> => {
   );
 
   const data = await response.json();
+
+  console.log("New albums from Spotify API", data);
 
   if (data.albums) {
     return data.albums.items.map((album: SpotifyAlbum) => ({

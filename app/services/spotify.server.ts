@@ -52,7 +52,7 @@ export const getNewAlbums = async (token: string): Promise<Album[]> => {
 
   const data = await response.json();
 
-  console.log("New albums from Spotify API", data);
+  console.log("New albums from Spotify API", JSON.stringify(data));
 
   if (data.albums) {
     return data.albums.items.map((album: SpotifyAlbum) => ({

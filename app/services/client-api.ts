@@ -14,7 +14,7 @@ export const getNewAlbums = async (token: string): Promise<Album[]> => {
 
   if (data.albums) {
     return data.albums.items
-      .filter((album: SpotifyAlbum) => album.type === "album")
+      .filter((album: SpotifyAlbum) => album.album_type === "album")
       .map((album: SpotifyAlbum) => ({
         artists: album.artists.map((artist) => ({
           id: artist.id,

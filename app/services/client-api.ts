@@ -15,20 +15,22 @@ export const getNewAlbums = async (token: string): Promise<Album[]> => {
   console.log("New albums from Spotify API", JSON.stringify(data));
 
   if (data.albums) {
-    return data.albums.items.map((album: SpotifyAlbum) => ({
-      artists: album.artists.map((artist) => ({
-        id: artist.id,
-        name: artist.name,
-        url: artist.external_urls.spotify,
-      })),
-      id: album.id,
-      image: album.images[0].url,
-      name: album.name,
-      releaseDate: album.release_date,
-      totalTracks: album.total_tracks,
-      type: album.album_type,
-      url: album.external_urls.spotify,
-    }));
+    return data.albums.items
+      .filter((album: SpotifyAlbum) => album.type === "album")
+      .map((album: SpotifyAlbum) => ({
+        artists: album.artists.map((artist) => ({
+          id: artist.id,
+          name: artist.name,
+          url: artist.external_urls.spotify,
+        })),
+        id: album.id,
+        image: album.images[0].url,
+        name: album.name,
+        releaseDate: album.release_date,
+        totalTracks: album.total_tracks,
+        type: album.album_type,
+        url: album.external_urls.spotify,
+      }));
   }
 
   console.error("No albums found from Spotify API", data);

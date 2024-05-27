@@ -25,6 +25,13 @@ export const Header = () => {
         >
           Archive
         </Link>
+        <Link
+          className="text-sm font-medium text-white transition-colors"
+          to="/discover"
+          prefetch="intent"
+        >
+          Discover
+        </Link>
         {isLoggedIn ? (
           <Popover>
             <PopoverTrigger asChild>

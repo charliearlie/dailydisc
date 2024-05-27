@@ -1,4 +1,8 @@
-import { createCookieSessionStorage, redirect } from "@remix-run/node";
+import {
+  createCookie,
+  createCookieSessionStorage,
+  redirect,
+} from "@remix-run/node";
 import { getUserById } from "./user";
 
 const sessionStorage = createCookieSessionStorage({
@@ -11,6 +15,8 @@ const sessionStorage = createCookieSessionStorage({
     secure: process.env.NODE_ENV === "production",
   },
 });
+
+export const spotifyCookie = createCookie("spotifyAccessToken");
 
 const USER_SESSION_KEY = "userId";
 

@@ -31,6 +31,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return json(archivedAlbums);
   }
 
+  if (sort === "userRating") {
+    console.log("sorting by user rating");
+    return json(
+      archivedAlbums.sort((a, b) => {
+        const ratingA = a.usersRating ?? -1;
+        const ratingB = b.usersRating ?? -1;
+
+        return ratingB - ratingA;
+      }),
+    );
+  }
+
   return json(
     archivedAlbums.sort((a, b) => {
       if (a.averageRating === "" && b.averageRating === "") {
@@ -76,7 +88,8 @@ export default function ArchivePage() {
             <SelectGroup>
               <SelectLabel>Sorting options</SelectLabel>
               <SelectItem value="listenDate">Most recent</SelectItem>
-              <SelectItem value="banana">Rating</SelectItem>
+              <SelectItem value="userRating">My rating</SelectItem>
+              <SelectItem value="accumulativeRating">Rating</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>

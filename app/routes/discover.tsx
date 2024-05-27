@@ -20,11 +20,8 @@ export default function DiscoverPage() {
       <h2 className="text-xl">New releases</h2>
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {loaderData.newAlbums.map((album) => (
-          <Link to={`/`}>
-            <Card
-              key={album.id}
-              className="shadow-md transition-transform hover:scale-105"
-            >
+          <Link to={`/`} key={album.id}>
+            <Card className="shadow-md transition-transform hover:scale-105">
               <CardImage src={album.image} alt={album.name} />
               <CardContent>
                 <h3 className="mb-1 h-14 overflow-hidden text-start text-lg font-semibold hover:underline">

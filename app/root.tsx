@@ -50,8 +50,8 @@ export function Layout() {
     <Document>
       <Header />
       <UserProvider
-        username={loaderData.user?.username}
-        userId={loaderData.user?.id}
+        username={loaderData?.user?.username}
+        userId={loaderData?.user?.id}
       >
         <Outlet />
       </UserProvider>
@@ -63,8 +63,8 @@ export default function App() {
   const loaderData = useLoaderData<typeof loader>();
   return (
     <UserProvider
-      username={loaderData.user?.username}
-      userId={loaderData.user?.id}
+      username={loaderData?.user?.username}
+      userId={loaderData?.user?.id}
     >
       <Outlet />
     </UserProvider>

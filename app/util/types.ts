@@ -44,3 +44,18 @@ export type ReplaceDateProperties<T> = Omit<T, "createdAt" | "updatedAt"> & {
   updatedAt: string;
   listenDate: string;
 };
+
+export interface Album {
+  artists: {
+    id: string;
+    name: string;
+    url: string;
+  }[];
+  id: string;
+  image: string;
+  name: string;
+  releaseDate: string;
+  totalTracks: number;
+  type: string;
+  url: string;
+}

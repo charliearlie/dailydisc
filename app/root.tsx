@@ -48,11 +48,11 @@ export function Layout() {
   const loaderData = useLoaderData<typeof loader>();
   return (
     <Document>
-      <Header />
       <UserProvider
         username={loaderData?.user?.username}
         userId={loaderData?.user?.id}
       >
+        <Header />
         <Outlet />
       </UserProvider>
     </Document>

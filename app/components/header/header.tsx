@@ -6,7 +6,9 @@ import { Button } from "../common/ui/button";
 
 export const Header = () => {
   const user = useUser();
+  console.log("user", user);
   const isLoggedIn = Boolean(user?.username);
+  console.log("isLoggedIn", isLoggedIn);
   return (
     <header className="flex h-[60px] items-center border-b border-gray-100 bg-primary px-4 dark:border-gray-800">
       <div className="flex items-center gap-2">
@@ -35,11 +37,14 @@ export const Header = () => {
         {isLoggedIn ? (
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" className="text-white">
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-inherit hover:opacity-90"
+              >
                 {user.username}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-32">
+            <PopoverContent className="flex w-32 flex-col p-4">
               <Link to="/profile">Profile</Link>
               <Link to="/logout">Logout</Link>
             </PopoverContent>

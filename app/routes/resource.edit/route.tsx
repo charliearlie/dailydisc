@@ -26,13 +26,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const { reviewId, favouriteTracks, rating, review, userId } =
     submission.value;
 
-  console.log(
-    "userId === `${loggedInUserId}`",
-    userId === `${loggedInUserId}`,
-    userId,
-    loggedInUserId,
-  );
-
   if (userId === `${loggedInUserId}`) {
     await db
       .update(reviews)

@@ -1,15 +1,40 @@
-import { useFetcher } from "@remix-run/react";
+import { Form, useFetcher } from "@remix-run/react";
 import { FormField } from "../form/form-field";
 import { Review } from "./types";
 import { Button } from "../common/ui/button";
 import { FormFieldTextArea } from "../form/form-field-text-area";
 import { DialogClose, DialogFooter } from "../common/ui/dialog";
+import { useEffect } from "react";
+import { useToast } from "../common/ui/use-toast";
+import { useMediaQuery } from "~/hooks/use-media-query";
+import { DrawerClose, DrawerFooter } from "../common/ui/drawer";
 
-export const EditReviewForm = ({ userReview }: { userReview: Review }) => {
+export const EditReviewForm = ({
+  onSubmit,
+  userReview,
+}: {
+  onSubmit: () => void;
+  userReview: Review;
+}) => {
   const fetcher = useFetcher();
+  const { toast } = useToast();
 
   return (
-    <fetcher.Form method="post" action="/resource/edit" className="space-y-4">
+    <Form
+      method="post"
+      onSubmit={(event) => {
+        const formData = new FormData(event.currentTarget);
+        fetcher.submit(formData, {
+          method: "POST",
+          action: "/resource/edit",
+        });
+        onSubmit();
+        toast({
+          title: "Your review has successfully been edited",
+        });
+      }}
+      className="space-y-4"
+    >
       <div className="space-y-2">
         <FormField
           name="rating"
@@ -34,13 +59,9 @@ export const EditReviewForm = ({ userReview }: { userReview: Review }) => {
         <input hidden name="reviewId" readOnly value={userReview.id} />
         <input hidden name="userId" readOnly value={userReview.userId} />
       </div>
-      <DialogFooter>
-        <DialogClose>
-          <Button className="w-full" type="submit">
-            Save changes
-          </Button>
-        </DialogClose>
-      </DialogFooter>
-    </fetcher.Form>
+      <Button className="w-full" type="submit">
+        Save changes
+      </Button>
+    </Form>
   );
 };

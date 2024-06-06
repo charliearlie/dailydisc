@@ -50,8 +50,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const appleMusicCollectionId =
     getAppleMusicCollectionIdFromUrl(appleMusicUrl);
 
-  console.log({ appleMusicUrl, appleMusicCollectionId });
-
   const [album] = await db
     .insert(albums)
     .values({

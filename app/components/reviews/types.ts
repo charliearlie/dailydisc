@@ -35,3 +35,7 @@ export const EditReviewFormSchema = BaseReviewFormSchema.extend({
   favouriteTracks: z.string(),
   reviewId: z.string(),
 });
+
+export const DeleteReviewSchema = z.object({
+  reviewId: z.string(),
+});

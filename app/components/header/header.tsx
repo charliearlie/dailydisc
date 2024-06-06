@@ -6,9 +6,7 @@ import { Button } from "../common/ui/button";
 
 export const Header = () => {
   const user = useUser();
-  console.log("user", user);
   const isLoggedIn = Boolean(user?.username);
-  console.log("isLoggedIn", isLoggedIn);
   return (
     <header className="flex h-[60px] items-center border-b border-gray-100 bg-primary px-4 dark:border-gray-800">
       <div className="flex items-center gap-2">

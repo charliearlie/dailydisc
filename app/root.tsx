@@ -15,10 +15,15 @@ import { Header } from "~/components/header/header";
 import { UserProvider } from "./contexts/user-context";
 import { getUserFromRequestContext } from "./services/session";
 import { ErrorBoundaryComponent } from "./components/error-boundary";
+import { Toaster } from "./components/common/ui/toaster";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
   { rel: "stylesheet", href: fontStylesheet },
+  {
+    rel: "icon",
+    href: "https://fav.farm/🎵",
+  },
 ];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -54,6 +59,7 @@ export function Layout() {
       >
         <Header />
         <Outlet />
+        <Toaster />
       </UserProvider>
     </Document>
   );

@@ -46,8 +46,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export const loader = async () => {
   const allArtists = await db.select().from(artists);
 
-  console.log(allArtists);
-
   return json(allArtists.sort((a, b) => a.name.localeCompare(b.name)));
 };
 

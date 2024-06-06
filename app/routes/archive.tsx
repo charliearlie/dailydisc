@@ -32,7 +32,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   if (sort === "userRating") {
-    console.log("sorting by user rating");
     return json(
       archivedAlbums.sort((a, b) => {
         const ratingA = a.usersRating ?? -1;

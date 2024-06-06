@@ -32,7 +32,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       .set({
         favouriteTrack: favouriteTracks,
         rating: rating * 2,
-        review,
+        review: review || "",
       })
       .where(eq(reviews.id, Number(reviewId)));
   }

@@ -98,7 +98,7 @@ export const AlbumPreviewCard = ({
               </p>
               <p className="flex items-center gap-1 text-sm">
                 <Star height={16} width={16} />
-                {album.averageRating || ""}
+                {album.usersRating ? album.averageRating : ""}
               </p>
             </div>
           </div>

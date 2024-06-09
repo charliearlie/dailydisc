@@ -212,19 +212,25 @@ export default function Index() {
         </div>
       </section>
       <section className="container max-w-screen-md space-y-8 py-8 md:py-16 lg:space-y-12">
-        <Tabs defaultValue="account" className="w-full">
+        <Tabs
+          defaultValue={hasUserReviewed ? "reviews" : "tracklist"}
+          className="w-full"
+        >
           <TabsList className="w-full">
-            <TabsTrigger className="w-full" value="account">
+            <TabsTrigger className="w-full" value="reviews">
               Reviews
             </TabsTrigger>
-            <TabsTrigger className="w-full" value="password">
+            <TabsTrigger className="w-full" value="tracklist">
               Track list
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="account">
-            <ReviewList reviews={albumReviews} />
+          <TabsContent value="reviews">
+            <ReviewList
+              hasUserReviewed={hasUserReviewed}
+              reviews={albumReviews}
+            />
           </TabsContent>
-          <TabsContent value="password">
+          <TabsContent value="tracklist">
             <div className="flex flex-col space-y-4">
               {tracks.map((track) => (
                 <div

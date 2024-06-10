@@ -98,10 +98,7 @@ export default function ArchivePage() {
   return (
     <main className="space-y-8 py-8 text-center md:container md:py-16 lg:space-y-12">
       <h1 className="text-3xl font-semibold">Daily Disc archive</h1>
-      <h2 className="text-xl">
-        So far you have reviewed {userReviewedAlbumsCount} /{" "}
-        {archivedAlbums.length} albums
-      </h2>
+      <ReviewedText />
       <div className="px-4 md:container md:px-6">
         <Select onValueChange={sortAlbums}>
           <SelectTrigger className="w-[180px]">

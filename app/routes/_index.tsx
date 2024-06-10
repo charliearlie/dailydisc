@@ -83,7 +83,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       const artists = albumOfTheDay.artistsToAlbums.map((data) => data.artist);
       return json({
         archiveDate: albumDate.toISOString(),
-        album: { ...albumOfTheDay, tracks },
+        album: {
+          ...albumOfTheDay,
+          tracks,
+          newRelease:
+            !dateParam && albumOfTheDay.year === "2024" ? true : false,
+        },
         artists,
         albumReviews,
         hasUserReviewed,
@@ -201,6 +206,11 @@ export default function Index() {
               </p>
             ))}
             <p className="text-sm tracking-wider">{year}</p>
+            {album.newRelease && (
+              <Badge variant="secondary" className="text-medium font-medium">
+                🗓️ New release
+              </Badge>
+            )}
             <Badge>{genre}</Badge>
           </div>
           {isLoggedIn && !hasUserReviewed ? <ReviewForm /> : null}

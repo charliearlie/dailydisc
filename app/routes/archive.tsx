@@ -66,6 +66,9 @@ export default function ArchivePage() {
   const loaderData = useLoaderData<typeof loader>();
 
   const archivedAlbums = fetcher.data || loaderData;
+  const userReviewedAlbumsCount = archivedAlbums.filter(
+    (album) => album.usersRating !== null,
+  ).length;
 
   const sortAlbums = async (value: string) => {
     const formData = new FormData();
@@ -75,9 +78,30 @@ export default function ArchivePage() {
     });
   };
 
+  const ReviewedText = () => {
+    if (userReviewedAlbumsCount < archivedAlbums.length) {
+      return (
+        <h2 className="text-xl">
+          So far you have reviewed {userReviewedAlbumsCount} /{" "}
+          {archivedAlbums.length} albums
+        </h2>
+      );
+    }
+
+    return (
+      <h2 className="text-xl">
+        ⭐️ You have reviewed all {archivedAlbums.length} albums selected so far
+      </h2>
+    );
+  };
+
   return (
     <main className="space-y-8 py-8 text-center md:container md:py-16 lg:space-y-12">
       <h1 className="text-3xl font-semibold">Daily Disc archive</h1>
+      <h2 className="text-xl">
+        So far you have reviewed {userReviewedAlbumsCount} /{" "}
+        {archivedAlbums.length} albums
+      </h2>
       <div className="px-4 md:container md:px-6">
         <Select onValueChange={sortAlbums}>
           <SelectTrigger className="w-[180px]">

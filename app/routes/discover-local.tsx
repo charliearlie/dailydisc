@@ -2,8 +2,10 @@ import { LoaderFunctionArgs, json } from "@vercel/remix";
 import { Link, useLoaderData } from "@remix-run/react";
 import { format } from "date-fns";
 import { Card, CardContent, CardImage } from "~/components/common/ui/card";
-import { getSpotifyToken, getNewAlbums } from "~/services/spotify.server";
+import { getNewAlbums, getSpotifyToken } from "~/services/spotify.server";
 import { parseVercelId } from "~/util/utils";
+
+export const config = { runtime: "edge" };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const tokenData = await getSpotifyToken();
@@ -13,7 +15,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return json({ newAlbums, parsedVercelId });
 };
 
-export default function DiscoverPage() {
+export default function DiscoverLocalPage() {
   const { newAlbums, parsedVercelId } = useLoaderData<typeof loader>();
 
   console.log("parsedVercelId", parsedVercelId);

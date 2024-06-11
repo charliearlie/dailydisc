@@ -47,7 +47,7 @@ export const AlbumPreviewCard = ({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger className="justify-self-center">
-                <p className="">
+                <p className="@sm:hidden">
                   {format(album.listenDate!, "eee d MMM ''yy")}
                 </p>
               </TooltipTrigger>
@@ -75,7 +75,6 @@ export const AlbumPreviewCard = ({
                 artists={album.artistsToAlbums.map((link) => link.artist.name)}
               />
             </div>
-            <Badge className="text-sm">{album.genre}</Badge>
           </div>
           <div className="flex items-center justify-between">
             <TooltipProvider>

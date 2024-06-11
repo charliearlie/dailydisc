@@ -85,7 +85,7 @@ export default function AddArtistRoute() {
           <AccordionContent>
             <ul>
               {loaderData.map((artist) => (
-                <li>{artist.name}</li>
+                <li key={artist.id}>{artist.name}</li>
               ))}
             </ul>
           </AccordionContent>

@@ -1,8 +1,9 @@
-import { LoaderFunctionArgs, json } from "@remix-run/node";
-import { spotifyCookie } from "~/services/session";
+import { json } from "@remix-run/node";
 import { getSpotifyToken } from "~/services/spotify.server";
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const config = { runtime: "edge" };
+
+export const loader = async () => {
   const tokenData = await getSpotifyToken();
 
   const response = await fetch(

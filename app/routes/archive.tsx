@@ -96,7 +96,7 @@ export default function ArchivePage() {
   };
 
   return (
-    <main className="space-y-8 py-8 text-center md:container md:py-16 lg:space-y-12">
+    <main className="xl:max space-y-8 py-8 text-center md:container md:py-16 lg:space-y-12">
       <h1 className="text-3xl font-semibold">Daily Disc archive</h1>
       <ReviewedText />
       <div className="px-4 md:container md:px-6">
@@ -114,7 +114,7 @@ export default function ArchivePage() {
           </SelectContent>
         </Select>
       </div>
-      <section className="grid grid-cols-1 gap-6 px-4 py-8 sm:grid-cols-2 md:px-6 lg:grid-cols-3">
+      <section className="grid grid-cols-1 gap-6 px-4 py-8 md:grid-cols-2 md:px-6 lg:grid-cols-4 xl:grid-cols-4">
         {archivedAlbums.map((album) => (
           <AlbumPreviewCard album={album} key={album.id} />
         ))}

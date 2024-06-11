@@ -10,12 +10,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const newAlbums = await getNewAlbums(tokenData.access_token);
   const parsedVercelId = parseVercelId(request.headers.get("x-vercel-id"));
+  const region = process.env.VERCEL_REGION;
+  if (!region) {
+    throw new Error("`VERCEL_REGION` is not defined");
+  }
 
-  return json({ newAlbums, parsedVercelId });
+  return json({ newAlbums, parsedVercelId, region });
 };
 
 export default function DiscoverPage() {
-  const { newAlbums, parsedVercelId } = useLoaderData<typeof loader>();
+  const { newAlbums, parsedVercelId, region } = useLoaderData<typeof loader>();
 
   console.log("parsedVercelId", parsedVercelId);
 
@@ -27,6 +31,7 @@ export default function DiscoverPage() {
         Proxy region: {parsedVercelId.proxyRegion}. Compute region:{" "}
         {parsedVercelId.computeRegion}
       </h3>
+      <h4>Region: {region}</h4>
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {newAlbums.map((album) => (
           <Link to={`/`} key={album.id}>

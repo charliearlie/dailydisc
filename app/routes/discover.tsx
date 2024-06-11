@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs, json } from "@vercel/remix";
+import { LoaderFunctionArgs, json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { format } from "date-fns";
 import { Card, CardContent, CardImage } from "~/components/common/ui/card";

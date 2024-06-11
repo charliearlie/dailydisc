@@ -2,10 +2,46 @@ import { LoaderFunctionArgs, json } from "@vercel/remix";
 import { Link, useLoaderData } from "@remix-run/react";
 import { format } from "date-fns";
 import { Card, CardContent, CardImage } from "~/components/common/ui/card";
-import { getNewAlbums, getSpotifyToken } from "~/services/spotify.server";
+import { getSpotifyToken } from "~/services/spotify.server";
 import { parseVercelId } from "~/util/utils";
+import { SpotifyAlbum } from "~/util/types/spotify/spotify-response-types";
+import { Album } from "~/util/types";
 
 export const config = { runtime: "edge" };
+
+const getNewAlbums = async (token: string): Promise<Album[]> => {
+  const response = await fetch(
+    "https://api.spotify.com/v1/browse/new-releases?limit=50",
+    {
+      method: "GET",
+      headers: { Authorization: "Bearer " + token },
+    },
+  );
+
+  const data = await response.json();
+
+  console.log("New albums from Spotify API", JSON.stringify(data));
+
+  if (data.albums) {
+    return data.albums.items.map((album: SpotifyAlbum) => ({
+      artists: album.artists.map((artist) => ({
+        id: artist.id,
+        name: artist.name,
+        url: artist.external_urls.spotify,
+      })),
+      id: album.id,
+      image: album.images[0].url,
+      name: album.name,
+      releaseDate: album.release_date,
+      totalTracks: album.total_tracks,
+      type: album.album_type,
+      url: album.external_urls.spotify,
+    }));
+  }
+
+  console.error("No albums found from Spotify API", data);
+  return [];
+};
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const tokenData = await getSpotifyToken();

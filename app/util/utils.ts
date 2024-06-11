@@ -73,6 +73,7 @@ export function removeFeaturedArtists(trackName: string) {
 
 export function parseVercelId(id: string | null) {
   const parts = id?.split(":").filter(Boolean);
+  console.log("parts", parts);
   if (!parts) {
     console.log('"x-vercel-id" header not present. Running on localhost?');
     return { proxyRegion: "localhost", computeRegion: "localhost" };

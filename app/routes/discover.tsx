@@ -2,7 +2,7 @@ import { LoaderFunctionArgs, json } from "@vercel/remix";
 import { Link, useLoaderData } from "@remix-run/react";
 import { format } from "date-fns";
 import { Card, CardContent, CardImage } from "~/components/common/ui/card";
-import { getSpotifyToken, getNewAlbums } from "~/services/spotify.server";
+import { getSpotifyToken, getNewAlbums } from "~/services/spotify-node.server";
 import { parseVercelId } from "~/util/utils";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -10,16 +10,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const newAlbums = await getNewAlbums(tokenData.access_token);
   const parsedVercelId = parseVercelId(request.headers.get("x-vercel-id"));
-  const region = process.env.VERCEL_REGION;
-  if (!region) {
-    throw new Error("`VERCEL_REGION` is not defined");
-  }
 
-  return json({ newAlbums, parsedVercelId, region });
+  return json({ newAlbums, parsedVercelId });
 };
 
 export default function DiscoverPage() {
-  const { newAlbums, parsedVercelId, region } = useLoaderData<typeof loader>();
+  const { newAlbums, parsedVercelId } = useLoaderData<typeof loader>();
 
   console.log("parsedVercelId", parsedVercelId);
 
@@ -31,7 +27,6 @@ export default function DiscoverPage() {
         Proxy region: {parsedVercelId.proxyRegion}. Compute region:{" "}
         {parsedVercelId.computeRegion}
       </h3>
-      <h4>Region: {region}</h4>
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {newAlbums.map((album) => (
           <Link to={`/`} key={album.id}>

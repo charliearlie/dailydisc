@@ -7,6 +7,7 @@ import { parseVercelId } from "~/util/utils";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const tokenData = await getSpotifyToken();
+
   const newAlbums = await getNewAlbums(tokenData.access_token);
   const parsedVercelId = parseVercelId(request.headers.get("x-vercel-id"));
 

@@ -1,5 +1,7 @@
 import { SpotifyAlbum } from "~/util/types/spotify/spotify-response-types";
 
+export const config = { runtime: "edge" };
+
 export interface Album {
   artists: {
     id: string;

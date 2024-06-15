@@ -22,10 +22,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function DiscoverPage() {
   const { newAlbums, parsedVercelId } = useLoaderData<typeof loader>();
 
-  console.log("parsedVercelId", parsedVercelId);
-
   return (
-    <main className="space-y-8 py-8 text-center md:container md:py-16 lg:space-y-12">
+    <main className="space-y-8 px-4 py-8 text-center md:container md:py-16 lg:space-y-12">
       <h1 className="text-3xl font-semibold">Discover</h1>
       <h2 className="text-xl">New releases</h2>
       <h3>

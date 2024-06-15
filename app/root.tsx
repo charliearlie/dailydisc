@@ -59,6 +59,25 @@ export function Layout() {
       >
         <Header />
         <Outlet />
+        <footer className="bg-accent py-4 md:py-8">
+          <div className="container mx-auto flex flex-col items-center justify-between px-4 md:flex-row md:px-6">
+            <p className="text-accent-foreground">
+              &copy; {new Date().getFullYear()} DailyDisc
+            </p>
+            <p className="text-accent-foreground">
+              Developed by{" "}
+              <span className="font-medium text-primary hover:opacity-80">
+                <a
+                  href="https://www.github.com/charliearlie"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  charliearlie
+                </a>
+              </span>
+            </p>
+          </div>
+        </footer>
         <Toaster />
       </UserProvider>
     </Document>

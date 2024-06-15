@@ -1,5 +1,5 @@
 import { json } from "@remix-run/node";
-import { getSpotifyToken } from "~/services/spotify.server";
+import { getSpotifyToken } from "~/services/music-services/spotify.server";
 
 export const config = { runtime: "edge" };
 

@@ -1,9 +1,14 @@
-import { LoaderFunctionArgs, json } from "@remix-run/node";
+import { LoaderFunctionArgs, json } from "@vercel/remix";
 import { Link, useLoaderData } from "@remix-run/react";
 import { format } from "date-fns";
 import { Card, CardContent, CardImage } from "~/components/common/ui/card";
-import { getSpotifyToken, getNewAlbums } from "~/services/spotify-node.server";
+import {
+  getSpotifyToken,
+  getNewAlbums,
+} from "~/services/music-services/spotify.server";
 import { parseVercelId } from "~/util/utils";
+
+export const config = { runtime: "edge" };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const tokenData = await getSpotifyToken();
@@ -29,7 +34,7 @@ export default function DiscoverPage() {
       </h3>
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {newAlbums.map((album) => (
-          <Link to={`/`} key={album.id}>
+          <Link to={`/album/${album.id}`} key={album.id}>
             <Card className="shadow-md transition-transform hover:scale-105">
               <CardImage src={album.image} alt={album.name} />
               <CardContent>

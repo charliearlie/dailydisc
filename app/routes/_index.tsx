@@ -207,11 +207,11 @@ export default function Index() {
             ))}
             <p className="text-sm tracking-wider">{year}</p>
             {album.newRelease && (
-              <Badge variant="secondary" className="text-medium font-medium">
+              <Badge variant="secondary" className="text-base font-medium">
                 🗓️ New release
               </Badge>
             )}
-            <Badge>{genre}</Badge>
+            <Badge className="text-base">{genre}</Badge>
           </div>
           {isLoggedIn && !hasUserReviewed ? <ReviewForm /> : null}
           {!isLoggedIn && (

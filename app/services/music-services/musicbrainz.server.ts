@@ -5,21 +5,49 @@ export const fetchFurtherAlbumInfoFromMusicBrainz = async ({
   album: string;
   artist: string;
 }) => {
-  const searchResponse = await fetch(
-    `http://musicbrainz.org/ws/2/release/?query=album:${encodeURIComponent(album)}%20AND%20artist:${encodeURIComponent(artist)}&fmt=json`,
-  );
+  const uri = `https://itunes.apple.com/search?term=${album.replace(
+    " ",
+    "+",
+  )}+${album.replace(" ", "+")}&media=music&entity=album`;
+  const searchResponse = await fetch(uri);
 
   const data = await searchResponse.json();
 
-  const closestMatch = data.releases[0];
+  console.log("data", data);
 
-  const detailsResponse = await fetch(
-    `http://musicbrainz.org/ws/2/release/${closestMatch.id}?inc=artist-credits+labels+recordings&fmt=json`,
-  );
+  return {};
+};
 
-  const details = await detailsResponse.json();
+interface ArtistCredit {
+  name: string;
+}
 
-  console.log("Album details from MusicBrainz API", JSON.stringify(details));
+interface ReleaseGroup {
+  title: string;
+  "artist-credit": ArtistCredit[];
+}
 
-  return details;
+interface MusicBrainzResponse {
+  "release-groups": ReleaseGroup[];
+}
+
+export const fetchTrendingAlbums = async () => {
+  const url = "https://musicbrainz.org/ws/2/release-group/";
+  const params = new URLSearchParams({
+    query: "primarytype:album AND status:official",
+    fmt: "json",
+    limit: "10",
+    offset: "0",
+  });
+  const searchResponse = await fetch(`${url}?${params.toString()}`);
+
+  const data: MusicBrainzResponse = await searchResponse.json();
+  const albums = data["release-groups"];
+
+  albums.forEach((album) => {
+    const artists = album["artist-credit"]
+      .map((artist) => artist.name)
+      .join(", ");
+    console.log(`Album: ${JSON.stringify(album)}, Artist(s): ${artists}`);
+  });
 };

@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { Card, CardContent, CardImage } from "~/components/common/ui/card";
 import {
   getSpotifyToken,
-  getNewAlbums,
+  getAlbumsFromPlaylist,
 } from "~/services/music-services/spotify.server";
 import { parseVercelId } from "~/util/utils";
 
@@ -12,11 +12,10 @@ export const config = { runtime: "edge" };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const tokenData = await getSpotifyToken();
-
-  const newAlbums = await getNewAlbums(tokenData.access_token);
+  const eggs = await getAlbumsFromPlaylist();
   const parsedVercelId = parseVercelId(request.headers.get("x-vercel-id"));
 
-  return json({ newAlbums, parsedVercelId });
+  return json({ newAlbums: eggs, parsedVercelId });
 };
 
 export default function DiscoverPage() {

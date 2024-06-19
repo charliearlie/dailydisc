@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { ScrollableRow } from "~/components/common/ui/scrollable-row";
 import { Card, CardImage } from "~/components/common/ui/card";
 import { PlayCircle } from "lucide-react";
+import { fetchFurtherAlbumInfoFromMusicBrainz } from "~/services/music-services/musicbrainz.server";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   invariantResponse(params.spotifyId, "Expected params.spotifyId");
@@ -26,6 +27,11 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   const relatedAlbums = await getAlbumsByArtist({
     artistId: album.artists[0]?.id,
     exclude: album.id,
+  });
+
+  const furtherDetails = await fetchFurtherAlbumInfoFromMusicBrainz({
+    album: album.name,
+    artist: album.artists[0]?.name,
   });
 
   return json({ album, relatedAlbums });

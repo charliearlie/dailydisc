@@ -3,7 +3,7 @@ import {
   SpotifyAlbumFullDetails,
   SpotifyArtist,
 } from "~/util/types/spotify/spotify-response-types";
-import { fetchFurtherAlbumInfoFromMusicBrainz } from "./musicbrainz.server";
+// import { fetchFurtherAlbumInfoFromMusicBrainz } from "./musicbrainz.server";
 
 export const config = { runtime: "edge" };
 
@@ -59,7 +59,10 @@ export const getNewAlbums = async (token: string): Promise<Album[]> => {
 
   const data = await response.json();
 
-  console.log("New albums from Spotify API", JSON.stringify(data));
+  console.log(
+    "Number of new albums from Spotify API",
+    data.albums.items.length,
+  );
 
   if (data.albums) {
     return data.albums.items.map((album: SpotifyAlbum) => ({
@@ -91,15 +94,12 @@ export const getAlbumInfo = async (albumId: string, token: string) => {
 
   const data: SpotifyAlbumFullDetails = await response.json();
 
-  console.log(
-    `Album details for ${albumId} from Spotify API`,
-    JSON.stringify(data),
-  );
+  console.log(`Album title for ${albumId} from Spotify API`, data.name);
 
-  const description = await fetchFurtherAlbumInfoFromMusicBrainz({
-    album: data.name,
-    artist: data.artists[0].name,
-  });
+  // const description = await fetchFurtherAlbumInfoFromMusicBrainz({
+  //   album: data.name,
+  //   artist: data.artists[0].name,
+  // });
 
   return {
     artists: await getAlbumArtistsInfo(data.artists.map((artist) => artist.id)),
@@ -110,7 +110,6 @@ export const getAlbumInfo = async (albumId: string, token: string) => {
     name: data.name,
     id: data.id,
     releaseDate: data.release_date,
-    description,
     spotifyId: data.id,
     totalTracks: data.total_tracks,
     tracks: data.tracks.items.map((track) => ({
@@ -158,7 +157,10 @@ export const getAlbumArtistsInfo = async (
 
   const data = await response.json();
 
-  console.log("Artists from Spotify API", JSON.stringify(data));
+  console.log(
+    "Artists from Spotify API",
+    JSON.stringify(data.artists.map((artist: SpotifyArtist) => artist.name)),
+  );
 
   return data.artists.map((artist: SpotifyArtist) => ({
     followers: artist.followers.total,
@@ -193,7 +195,7 @@ export const getAlbumsByArtist = async ({
 
   const data = await response.json();
 
-  console.log(`Albums for artistId: ${artistId}`, JSON.stringify(data.items));
+  console.log(`Number of albums for artistId ${artistId}: ${data.total}`);
 
   if (data.items) {
     return data.items
@@ -216,6 +218,62 @@ export const getAlbumsByArtist = async ({
         type: album.album_type,
         url: album.external_urls.spotify,
       }));
+  }
+
+  return [];
+};
+
+export const getAlbumsFromPlaylist = async (): Promise<Album[]> => {
+  const playlistId = "1ClfxQ4O37FafAAGnvctsc";
+
+  const token = await getSpotifyToken();
+
+  const response = await fetch(
+    `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`,
+    {
+      method: "GET",
+      headers: { Authorization: "Bearer " + token.access_token },
+    },
+  );
+
+  const data = await response.json();
+
+  const albumIds = data.items
+    .map((album: { track: { album: SpotifyAlbum } }) => album.track.album.id)
+    .join(",");
+
+  const albumResponse = await fetch(
+    `https://api.spotify.com/v1/albums?ids=${albumIds}`,
+    {
+      method: "GET",
+      headers: { Authorization: "Bearer " + token.access_token },
+    },
+  );
+
+  const albumData = await albumResponse.json();
+
+  console.log("Number of tracks from playlist", albumData.albums.length);
+  if (albumData.albums) {
+    return albumData.albums
+      .map((album: SpotifyAlbum) => ({
+        artists: album.artists.map((artist) => ({
+          id: artist.id,
+          name: artist.name,
+          url: artist.external_urls.spotify,
+        })),
+        id: album.id,
+        image: album.images[0].url,
+        name: album.name,
+        primaryArtist: album.artists[0].name,
+        releaseDate: album.release_date,
+        totalTracks: album.total_tracks,
+        type: album.album_type,
+        url: album.external_urls.spotify,
+      }))
+      .sort(
+        (a: Album, b: Album) =>
+          new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime(),
+      );
   }
 
   return [];

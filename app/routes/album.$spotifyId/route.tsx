@@ -18,7 +18,6 @@ import { format } from "date-fns";
 import { ScrollableRow } from "~/components/common/ui/scrollable-row";
 import { Card, CardImage } from "~/components/common/ui/card";
 import { PlayCircle } from "lucide-react";
-import { fetchFurtherAlbumInfoFromMusicBrainz } from "~/services/music-services/musicbrainz.server";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   invariantResponse(params.spotifyId, "Expected params.spotifyId");

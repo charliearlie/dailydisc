@@ -2,10 +2,7 @@ import { LoaderFunctionArgs, json } from "@vercel/remix";
 import { Link, useLoaderData } from "@remix-run/react";
 import { format } from "date-fns";
 import { Card, CardContent, CardImage } from "~/components/common/ui/card";
-import {
-  getSpotifyToken,
-  getAlbumsFromPlaylist,
-} from "~/services/music-services/spotify.server";
+import { getAlbumsFromPlaylist } from "~/services/music-services/spotify.server";
 import { parseVercelId } from "~/util/utils";
 
 export const config = { runtime: "edge" };

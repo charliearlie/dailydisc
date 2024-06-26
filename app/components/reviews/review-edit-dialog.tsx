@@ -39,10 +39,7 @@ export function ReviewEditDialog({ review }: { review: Review }) {
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>
-              Are you sure you want to delete your review?
-            </DialogTitle>
-            <DialogDescription>This action cannot be undone.</DialogDescription>
+            <DialogTitle>Edit your review</DialogTitle>
           </DialogHeader>
           <EditReviewForm onSubmit={() => setOpen(false)} userReview={review} />
           <DialogClose asChild>
@@ -62,10 +59,7 @@ export function ReviewEditDialog({ review }: { review: Review }) {
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle>
-            Are you sure you want to delete your review?
-          </DrawerTitle>
-          <DrawerDescription>This action cannot be undone.</DrawerDescription>
+          <DrawerTitle>Edit your review</DrawerTitle>
         </DrawerHeader>
         <DrawerFooter>
           <EditReviewForm onSubmit={() => setOpen(false)} userReview={review} />

@@ -1,10 +1,10 @@
-import { desc, lt } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db } from "~/drizzle/db.server";
 import { albums } from "~/drizzle/schema.server";
 
 export const getArchiveAlbums = async (userId?: number) => {
   const archivedAlbums = await db.query.albums.findMany({
-    where: lt(albums.listenDate, new Date()),
+    where: eq(albums.archived, 1),
     with: {
       reviews: {
         columns: {

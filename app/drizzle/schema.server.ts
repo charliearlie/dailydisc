@@ -41,6 +41,12 @@ export const albums = sqliteTable("albums", {
   updatedAt: integer("updated_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
+  active: integer("active")
+    .notNull()
+    .default(sql`(0)`),
+  archived: integer("archived")
+    .notNull()
+    .default(sql`(0)`),
 });
 
 export const albumsRelations = relations(albums, ({ many }) => ({

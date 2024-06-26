@@ -1,6 +1,5 @@
 export const fetchFurtherAlbumInfoFromMusicBrainz = async ({
   album,
-  artist,
 }: {
   album: string;
   artist: string;

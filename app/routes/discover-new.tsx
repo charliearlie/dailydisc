@@ -11,7 +11,6 @@ import { parseVercelId } from "~/util/utils";
 export const config = { runtime: "edge" };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const tokenData = await getSpotifyToken();
   const eggs = await getAlbumsFromPlaylist();
   const parsedVercelId = parseVercelId(request.headers.get("x-vercel-id"));
 

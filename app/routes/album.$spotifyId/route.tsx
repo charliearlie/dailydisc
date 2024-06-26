@@ -29,11 +29,6 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     exclude: album.id,
   });
 
-  const furtherDetails = await fetchFurtherAlbumInfoFromMusicBrainz({
-    album: album.name,
-    artist: album.artists[0]?.name,
-  });
-
   return json({ album, relatedAlbums });
 };
 

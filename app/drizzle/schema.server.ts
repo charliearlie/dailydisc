@@ -27,6 +27,7 @@ export const users = sqliteTable("users", {
  */
 export const albums = sqliteTable("albums", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  description: text("description"),
   title: text("title").notNull(),
   genre: text("genre"),
   image: text("image"),

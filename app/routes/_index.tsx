@@ -259,7 +259,9 @@ export default function Index() {
         {isLoggedIn ? (
           <Card className="mx-auto max-w-lg ">
             <CardContent className="p-8">
-              <h3 className="text-start text-2xl font-semibold">Rate album</h3>
+              <h3 className="py-4 text-start text-2xl font-semibold">
+                Review album
+              </h3>
               <ReviewForm />
             </CardContent>
           </Card>

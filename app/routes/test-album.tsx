@@ -231,7 +231,7 @@ export default function Index() {
               {artists.map((artist) => (
                 <p
                   key={artist.id}
-                  className="text-lg font-medium leading-none tracking-tighter"
+                  className="text-lg font-semibold leading-none tracking-tighter"
                 >
                   {artist.name}
                 </p>
@@ -239,7 +239,7 @@ export default function Index() {
             </>
           )}
 
-          <p className="text-sm tracking-wider">{year}</p>
+          <p className="text-sm font-semibold tracking-wider">{year}</p>
           <Badge className="text-base">{genre}</Badge>
         </div>
       </section>

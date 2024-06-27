@@ -11,7 +11,6 @@ import { Button } from "~/components/common/ui/button";
 import {
   getAlbumInfo,
   getAlbumsByArtist,
-  getSpotifyToken,
 } from "~/services/music-services/spotify.server";
 import { invariantResponse } from "~/util/utils";
 import { format } from "date-fns";
@@ -21,8 +20,7 @@ import { PlayCircle } from "lucide-react";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   invariantResponse(params.spotifyId, "Expected params.spotifyId");
-  const tokenData = await getSpotifyToken();
-  const album = await getAlbumInfo(params.spotifyId, tokenData.access_token);
+  const album = await getAlbumInfo(params.spotifyId);
   const relatedAlbums = await getAlbumsByArtist({
     artistId: album.artists[0]?.id,
     exclude: album.id,

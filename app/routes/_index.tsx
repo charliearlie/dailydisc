@@ -29,6 +29,16 @@ import { removeFeaturedArtists } from "~/util/utils";
 import { ReviewFormSchema } from "~/components/reviews/types";
 import { ReviewForm } from "~/components/reviews/review-form";
 import { ErrorBoundaryComponent } from "~/components/error-boundary";
+import { getAlbumInfo } from "~/services/music-services/spotify.server";
+import { Avatar, AvatarImage } from "~/components/common/ui/avatar";
+import { AvatarFallback } from "@radix-ui/react-avatar";
+import { Card, CardContent } from "~/components/common/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/common/ui/accordion";
 
 export const meta: MetaFunction = () => {
   return [
@@ -83,19 +93,23 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         Number(albumOfTheDay.appleMusicCollectionId),
       );
 
+      const album = {
+        ...albumOfTheDay,
+        tracks,
+        newRelease: !dateParam && albumOfTheDay.year === "2024" ? true : false,
+      };
+
       const artists = albumOfTheDay.artistsToAlbums.map((data) => data.artist);
       return json({
         archiveDate: albumDate.toISOString(),
-        album: {
-          ...albumOfTheDay,
-          tracks,
-          newRelease:
-            !dateParam && albumOfTheDay.year === "2024" ? true : false,
-        },
+        album,
         artists,
         albumReviews,
         hasUserReviewed,
         userReview,
+        extraInfo: album.spotifyUrl
+          ? await getAlbumInfo(album.spotifyUrl)
+          : null,
       });
     }
   }
@@ -152,8 +166,14 @@ export default function Index() {
     navigate(`/?date=${formattedDate}`);
   };
 
-  const { album, albumReviews, archiveDate, artists, hasUserReviewed } =
-    loaderData;
+  const {
+    album,
+    albumReviews,
+    archiveDate,
+    artists,
+    extraInfo,
+    hasUserReviewed,
+  } = loaderData;
   const {
     id,
     appleMusicCollectionId,
@@ -191,77 +211,112 @@ export default function Index() {
             appleMusicId={appleMusicCollectionId!}
             appleMusicUrl={appleMusicUrl!}
           />
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight">
-              <Link
-                aria-label={`View reviews for ${title}`}
-                to={`/albums/${id}`}
-              >
-                {title}
-              </Link>
-            </h2>
-            {artists.map((artist) => (
-              <p
-                key={artist.id}
-                className="text-lg font-medium leading-none tracking-tighter"
-              >
-                {artist.name}
-              </p>
-            ))}
-            <p className="text-sm tracking-wider">{year}</p>
-            {album.newRelease && (
-              <Badge variant="secondary" className="text-base font-medium">
-                🗓️ New release
-              </Badge>
-            )}
-            <Badge className="text-base">{genre}</Badge>
-          </div>
-          {isLoggedIn && !hasUserReviewed ? <ReviewForm /> : null}
-          {!isLoggedIn && (
-            <Button asChild className="w-full">
-              <Link to="/signup">Login to submit a review</Link>
-            </Button>
+          <h2 className="text-3xl font-bold tracking-tight">
+            <Link aria-label={`View reviews for ${title}`} to={`/albums/${id}`}>
+              {title}
+            </Link>
+          </h2>
+          {extraInfo ? (
+            <>
+              {extraInfo.artists.map((artist) => (
+                <Link
+                  to={`/artist/${artist.id}`}
+                  className="flex flex-col items-center gap-2 hover:opacity-80"
+                  key={artist.id}
+                  aria-describedby="artist-name"
+                >
+                  <Avatar className="h-20 w-20 border border-primary bg-primary">
+                    <AvatarImage src={artist.images?.[0].url} />
+                    <AvatarFallback>{artist.name[0]}</AvatarFallback>
+                  </Avatar>
+                  <span
+                    id="artist-name"
+                    className="text-lg font-semibold leading-none tracking-tighter"
+                  >
+                    {artist.name}
+                  </span>
+                </Link>
+              ))}
+            </>
+          ) : (
+            <>
+              {artists.map((artist) => (
+                <p
+                  key={artist.id}
+                  className="text-lg font-medium leading-none tracking-tighter"
+                >
+                  {artist.name}
+                </p>
+              ))}
+            </>
           )}
+
+          <p className="text-sm tracking-wider">{year}</p>
+          <Badge className="text-base">{genre}</Badge>
         </div>
       </section>
+      <section className="container max-w-screen-md space-y-8 lg:space-y-12">
+        {isLoggedIn ? (
+          <Card className="mx-auto max-w-lg ">
+            <CardContent className="p-8">
+              <h3 className="text-start text-2xl font-semibold">Rate album</h3>
+              <ReviewForm />
+            </CardContent>
+          </Card>
+        ) : null}
+        {!isLoggedIn && (
+          <Button asChild className="w-full">
+            <Link to="/signup">Login to submit a review</Link>
+          </Button>
+        )}
+      </section>
       <section className="container max-w-screen-md space-y-8 py-8 md:py-16 lg:space-y-12">
-        <Tabs
-          defaultValue={hasUserReviewed ? "reviews" : "tracklist"}
-          className="w-full"
-        >
-          <TabsList className="w-full">
-            <TabsTrigger className="w-full" value="reviews">
-              Reviews
-            </TabsTrigger>
-            <TabsTrigger className="w-full" value="tracklist">
-              Track list
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="reviews">
-            <ReviewList
-              hasUserReviewed={hasUserReviewed}
-              reviews={albumReviews}
-            />
-          </TabsContent>
-          <TabsContent value="tracklist">
-            <div className="flex flex-col space-y-4">
-              {tracks.map((track) => (
-                <div
-                  key={track.id}
-                  className="flex items-center justify-between space-y-4"
-                >
-                  <div className="flex flex-col">
-                    <p className="text-lg font-medium">{track.title}</p>
-                    <p className="m-0 text-xs font-light">{track.artist}</p>
+        <Accordion type="single">
+          <AccordionItem value="reviews-and-tracklist">
+            <AccordionTrigger>Reviews & tracklist</AccordionTrigger>
+            <AccordionContent>
+              <Tabs
+                defaultValue={hasUserReviewed ? "reviews" : "tracklist"}
+                className="w-full"
+              >
+                <TabsList className="w-full">
+                  <TabsTrigger className="w-full" value="reviews">
+                    Reviews
+                  </TabsTrigger>
+                  <TabsTrigger className="w-full" value="tracklist">
+                    Track list
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="reviews">
+                  <ReviewList
+                    hasUserReviewed={hasUserReviewed}
+                    reviews={albumReviews}
+                  />
+                </TabsContent>
+                <TabsContent value="tracklist">
+                  <div className="flex flex-col space-y-4">
+                    {tracks.map((track) => (
+                      <div
+                        key={track.id}
+                        className="flex items-center justify-between space-y-4"
+                      >
+                        <div className="flex flex-col">
+                          <p className="text-lg font-medium">{track.title}</p>
+                          <p className="m-0 text-xs font-light">
+                            {track.artist}
+                          </p>
+                        </div>
+                        <p className="text-sm font-light">
+                          {format(new Date(track.trackTimeMillis!), "mm:ss")}
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-sm font-light">
-                    {format(new Date(track.trackTimeMillis!), "mm:ss")}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+                </TabsContent>
+              </Tabs>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </section>
     </main>
   );

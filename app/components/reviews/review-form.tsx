@@ -16,6 +16,7 @@ import { Button } from "../common/ui/button";
 import { FormFieldTextArea } from "../form/form-field-text-area";
 import { useUser } from "~/contexts/user-context";
 import { useId } from "react";
+import { X } from "lucide-react";
 
 export const ReviewForm = () => {
   const loaderData = useLoaderData<typeof loader>();
@@ -52,31 +53,41 @@ export const ReviewForm = () => {
           <Label className="font-bold" htmlFor="category">
             Favourite tracks
           </Label>
-          {favouriteTracks.map((favTrack) => (
-            <Select
-              key={favTrack.id}
-              name={favTrack.name}
-              value={favTrack.value}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select track" />
-              </SelectTrigger>
-              <SelectContent className="h-48">
-                {tracks.map((track) => {
-                  if (track.title) {
-                    return (
-                      <SelectItem
-                        className="cursor-pointer"
-                        key={track.id}
-                        value={track.title}
-                      >
-                        {track.title}
-                      </SelectItem>
-                    );
-                  }
+          {favouriteTracks.map((favTrack, index) => (
+            <div key={favTrack.id} className="flex">
+              <span className="basis-11/12">
+                <Select name={favTrack.name} value={favTrack.value}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select track" />
+                  </SelectTrigger>
+                  <SelectContent className="h-48">
+                    {tracks.map((track) => {
+                      if (track.title) {
+                        return (
+                          <SelectItem
+                            className="cursor-pointer"
+                            key={track.id}
+                            value={track.title}
+                          >
+                            {track.title}
+                          </SelectItem>
+                        );
+                      }
+                    })}
+                  </SelectContent>
+                </Select>
+              </span>
+              <Button
+                className="px-2"
+                variant="ghost"
+                {...form.remove.getButtonProps({
+                  name: fields.favouriteTracks.name,
+                  index: index,
                 })}
-              </SelectContent>
-            </Select>
+              >
+                <X className="text-destructive" strokeWidth={3} />
+              </Button>
+            </div>
           ))}
           <div className="flex justify-center pb-8 pt-4">
             <Button

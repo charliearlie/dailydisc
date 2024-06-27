@@ -86,10 +86,11 @@ export const getNewAlbums = async (token: string): Promise<Album[]> => {
   return [];
 };
 
-export const getAlbumInfo = async (albumId: string, token: string) => {
+export const getAlbumInfo = async (albumId: string) => {
+  const token = await getSpotifyToken();
   const response = await fetch(`https://api.spotify.com/v1/albums/${albumId}`, {
     method: "GET",
-    headers: { Authorization: "Bearer " + token },
+    headers: { Authorization: "Bearer " + token.access_token },
   });
 
   const data: SpotifyAlbumFullDetails = await response.json();

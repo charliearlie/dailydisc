@@ -50,27 +50,38 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const appleMusicCollectionId =
     getAppleMusicCollectionIdFromUrl(appleMusicUrl);
 
-  const [album] = await db
-    .insert(albums)
-    .values({
-      title,
-      year: String(releaseYear),
-      genre,
-      image,
-      appleMusicUrl,
-      appleMusicCollectionId,
-    })
-    .returning();
+  console.log("Number(artistId)", Number(artistId));
+  try {
+    console.log("HERE 1");
+    const [album] = await db
+      .insert(albums)
+      .values({
+        title,
+        year: String(releaseYear),
+        genre,
+        image,
+        appleMusicUrl,
+        appleMusicCollectionId,
+      })
+      .returning();
 
-  await db.insert(artistsToAlbums).values({
-    albumId: album.id,
-    artistId: Number(artistId),
-  });
+    console.log("HERE 2", album);
+    await db.insert(artistsToAlbums).values({
+      albumId: album.id,
+      artistId: Number(artistId),
+    });
 
-  return json({
-    result: submission.reply({ resetForm: true }),
-    status: "success" as const,
-  });
+    return json({
+      result: submission.reply({ resetForm: true }),
+      status: "success" as const,
+    });
+  } catch (error) {
+    console.error(error);
+    return json({
+      result: submission.reply({ resetForm: true }),
+      status: "error" as const,
+    });
+  }
 };
 
 export const loader = async () => {

@@ -4,23 +4,13 @@ import {
   json,
   type MetaFunction,
 } from "@remix-run/node";
-import {
-  Form,
-  Link,
-  useActionData,
-  useLoaderData,
-  useNavigate,
-} from "@remix-run/react";
-import { getFormProps, getInputProps, useForm } from "@conform-to/react";
-import { getZodConstraint, parseWithZod } from "@conform-to/zod";
+import { Link, useLoaderData, useNavigate } from "@remix-run/react";
+import { parseWithZod } from "@conform-to/zod";
 import { z } from "zod";
 import { format } from "date-fns";
 
 import { Badge } from "~/components/common/ui/badge";
 import { Button } from "~/components/common/ui/button";
-import { FormField } from "~/components/form/form-field";
-import { FormFieldTextArea } from "~/components/form/form-field-text-area";
-import { db } from "~/drizzle/db.server";
 import { albums, reviews } from "~/drizzle/schema.server";
 import { useUser } from "~/contexts/user-context";
 import { eq } from "drizzle-orm";
@@ -34,16 +24,20 @@ import {
   TabsList,
   TabsTrigger,
 } from "~/components/common/ui/tabs";
-import { Label } from "~/components/common/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/common/ui/select";
 import { AlbumPopover } from "~/components/album/album-popover";
 import { removeFeaturedArtists } from "~/util/utils";
+import { getAlbumInfo } from "~/services/music-services/spotify.server";
+import { Avatar } from "@radix-ui/react-avatar";
+import { AvatarFallback, AvatarImage } from "~/components/common/ui/avatar";
+import { Card, CardContent } from "~/components/common/ui/card";
+import { ReviewForm } from "~/components/reviews/review-form";
+import { db } from "~/drizzle/db.server";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/common/ui/accordion";
 
 const ReviewFormSchema = z.object({
   albumId: z.string(),
@@ -86,9 +80,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       },
     });
 
-    const hasUserReviewed = albumReviews.some(
-      (album) => album.userId === user?.id,
-    );
+    const userReview = albumReviews.find((album) => album.userId === user?.id);
+
+    const hasUserReviewed = !!userReview;
 
     const tracks = await getAlbumDetails(
       Number(albumOfTheDay.appleMusicCollectionId),
@@ -101,6 +95,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       artists,
       albumReviews,
       hasUserReviewed,
+      userReview,
+      extraInfo: albumOfTheDay.spotifyUrl
+        ? await getAlbumInfo(albumOfTheDay.spotifyUrl)
+        : null,
     });
   }
 
@@ -143,22 +141,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function Index() {
   const loaderData = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
 
   const navigate = useNavigate();
 
   const user = useUser();
   const isLoggedIn = Boolean(user?.username);
-
-  const [form, fields] = useForm({
-    id: "review-form",
-    lastResult: actionData?.result,
-    shouldValidate: "onBlur",
-    constraint: getZodConstraint(ReviewFormSchema),
-    onValidate({ formData }) {
-      return parseWithZod(formData, { schema: ReviewFormSchema });
-    },
-  });
 
   if (!loaderData) return <p>Album has not been selected yet..</p>;
 
@@ -167,7 +154,14 @@ export default function Index() {
     navigate(`/?date=${formattedDate}`);
   };
 
-  const { album, albumReviews, archiveDate, artists } = loaderData;
+  const {
+    album,
+    albumReviews,
+    archiveDate,
+    artists,
+    extraInfo,
+    hasUserReviewed,
+  } = loaderData;
   const {
     id,
     appleMusicCollectionId,
@@ -178,8 +172,6 @@ export default function Index() {
     tracks,
     year,
   } = album;
-
-  const favouriteTracks = fields.favouriteTracks.getFieldList();
 
   return (
     <main className="flex-1">
@@ -207,133 +199,112 @@ export default function Index() {
             appleMusicId={appleMusicCollectionId!}
             appleMusicUrl={appleMusicUrl!}
           />
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight">
-              <Link
-                aria-label={`View reviews for ${title}`}
-                to={`/albums/${id}`}
-              >
-                {title}
-              </Link>
-            </h2>
-            {artists.map((artist) => (
-              <p
-                key={artist.id}
-                className="text-lg font-medium leading-none tracking-tighter"
-              >
-                {artist.name}
-              </p>
-            ))}
-            <p className="text-sm tracking-wider">{year}</p>
-            <Badge>{genre}</Badge>
-          </div>
-          {isLoggedIn && (
-            <Form method="post" className="space-y-4" {...getFormProps(form)}>
-              <div className="space-y-2">
-                <FormField
-                  className="m-auto w-20"
-                  label="Rating"
-                  placeholder="1-10"
-                  {...getInputProps(fields.rating, { type: "number" })}
-                />
-                <div className="mb-8 flex w-full flex-col gap-1.5">
-                  <Label className="font-bold" htmlFor="category">
-                    Favourite tracks
-                  </Label>
-                  {favouriteTracks.map((favTrack) => (
-                    <Select key={favTrack.id} name={favTrack.name}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select track" />
-                      </SelectTrigger>
-                      <SelectContent className="h-48">
-                        {tracks.map((track) => {
-                          if (track.title) {
-                            return (
-                              <SelectItem
-                                className="cursor-pointer"
-                                key={track.id}
-                                value={track.title}
-                              >
-                                {track.title}
-                              </SelectItem>
-                            );
-                          }
-                        })}
-                      </SelectContent>
-                    </Select>
-                  ))}
-                  <div className="flex justify-center pb-8 pt-4">
-                    <Button
-                      className="w-full"
-                      variant="outline"
-                      {...form.insert.getButtonProps({
-                        name: fields.favouriteTracks.name,
-                      })}
-                    >
-                      {favouriteTracks.length === 0
-                        ? "Add track"
-                        : "Add another track"}
-                    </Button>
-                  </div>
-                </div>
-                <FormFieldTextArea
-                  className="min-h-[100px] resize-none"
-                  label="Your Review (optional)"
-                  placeholder="What did you think of the album?"
-                  {...getInputProps(fields.review, { type: "text" })}
-                />
-                <input
-                  hidden
-                  readOnly
-                  name="albumId"
-                  value={loaderData.album.id}
-                />
-                <input hidden readOnly name="userId" value={user.userId} />
-              </div>
-              <Button className="w-full" type="submit">
-                Submit Review
-              </Button>
-            </Form>
+          <h2 className="text-3xl font-bold tracking-tight">
+            <Link aria-label={`View reviews for ${title}`} to={`/albums/${id}`}>
+              {title}
+            </Link>
+          </h2>
+          {extraInfo ? (
+            <>
+              {extraInfo.artists.map((artist) => (
+                <Link
+                  to={`/artist/${artist.id}`}
+                  className="flex flex-col items-center gap-2 hover:opacity-80"
+                  key={artist.id}
+                  aria-describedby="artist-name"
+                >
+                  <Avatar className="h-20 w-20 border border-primary bg-primary">
+                    <AvatarImage src={artist.images?.[0].url} />
+                    <AvatarFallback>{artist.name[0]}</AvatarFallback>
+                  </Avatar>
+                  <span
+                    id="artist-name"
+                    className="text-lg font-semibold leading-none tracking-tighter"
+                  >
+                    {artist.name}
+                  </span>
+                </Link>
+              ))}
+            </>
+          ) : (
+            <>
+              {artists.map((artist) => (
+                <p
+                  key={artist.id}
+                  className="text-lg font-medium leading-none tracking-tighter"
+                >
+                  {artist.name}
+                </p>
+              ))}
+            </>
           )}
-          {!isLoggedIn && (
-            <Button asChild className="w-full">
-              <Link to="/signup">Login to submit a review</Link>
-            </Button>
-          )}
+
+          <p className="text-sm tracking-wider">{year}</p>
+          <Badge className="text-base">{genre}</Badge>
         </div>
       </section>
+      <section className="container max-w-screen-md space-y-8 lg:space-y-12">
+        {isLoggedIn ? (
+          <Card className="mx-auto max-w-lg ">
+            <CardContent className="p-8">
+              <h3 className="text-start text-2xl font-semibold">Rate album</h3>
+              <ReviewForm />
+            </CardContent>
+          </Card>
+        ) : null}
+        {!isLoggedIn && (
+          <Button asChild className="w-full">
+            <Link to="/signup">Login to submit a review</Link>
+          </Button>
+        )}
+      </section>
       <section className="container max-w-screen-md space-y-8 py-8 md:py-16 lg:space-y-12">
-        <Tabs defaultValue="account" className="w-full">
-          <TabsList className="w-full">
-            <TabsTrigger className="w-full" value="account">
-              Reviews
-            </TabsTrigger>
-            <TabsTrigger className="w-full" value="password">
-              Track list
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="account">
-            <ReviewList reviews={albumReviews} />
-          </TabsContent>
-          <TabsContent value="password">
-            <div className="flex flex-col space-y-4">
-              {tracks.map((track) => (
-                <div
-                  key={track.id}
-                  className="flex items-center justify-between space-y-4"
-                >
-                  <div className="flex flex-col">
-                    <p className="text-lg font-medium">{track.title}</p>
-                    <p className="m-0 text-xs font-light">{track.artist}</p>
+        <Accordion type="single">
+          <AccordionItem value="review-forn">
+            <AccordionTrigger>Reviews & tracklist</AccordionTrigger>
+            <AccordionContent>
+              <Tabs
+                defaultValue={hasUserReviewed ? "reviews" : "tracklist"}
+                className="w-full"
+              >
+                <TabsList className="w-full">
+                  <TabsTrigger className="w-full" value="reviews">
+                    Reviews
+                  </TabsTrigger>
+                  <TabsTrigger className="w-full" value="tracklist">
+                    Track list
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="reviews">
+                  <ReviewList
+                    hasUserReviewed={hasUserReviewed}
+                    reviews={albumReviews}
+                  />
+                </TabsContent>
+                <TabsContent value="tracklist">
+                  <div className="flex flex-col space-y-4">
+                    {tracks.map((track) => (
+                      <div
+                        key={track.id}
+                        className="flex items-center justify-between space-y-4"
+                      >
+                        <div className="flex flex-col">
+                          <p className="text-lg font-medium">{track.title}</p>
+                          <p className="m-0 text-xs font-light">
+                            {track.artist}
+                          </p>
+                        </div>
+                        <p className="text-sm font-light">
+                          {format(new Date(track.trackTimeMillis!), "mm:ss")}
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-sm font-light">
-                    {format(new Date(track.trackTimeMillis!), "mm:ss")}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+                </TabsContent>
+              </Tabs>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </section>
     </main>
   );

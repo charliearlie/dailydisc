@@ -10,4 +10,4 @@ jobs:
     steps:
       - name: Call pick album resource route
         run: |
-          curl -X GET https://dailydisc.club/api/pick-album -H "x-api-key: ${{ secrets.API_KEY }}"
+          curl -X GET https://www.dailydisc.club/api/pick-album -H "x-api-key: ${{ secrets.API_KEY }}"

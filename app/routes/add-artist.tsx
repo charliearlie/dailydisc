@@ -63,8 +63,8 @@ export default function AddArtistRoute() {
     },
   });
   return (
-    <div>
-      <h1>Add artist</h1>
+    <main className="container space-y-8 py-8 md:py-16 lg:space-y-12">
+      <h1 className="text-3xl font-semibold">Add artist</h1>
       <Form method="post" {...getFormProps(form)}>
         <FormField
           label="Name"
@@ -77,7 +77,7 @@ export default function AddArtistRoute() {
         <Button type="submit">Add artist</Button>
       </Form>
 
-      <p>Number of artists DB: {loaderData.length}</p>
+      <p>Number of artists in DB: {loaderData.length}</p>
 
       <Accordion type="single">
         <AccordionItem value="Artists">
@@ -91,6 +91,6 @@ export default function AddArtistRoute() {
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-    </div>
+    </main>
   );
 }

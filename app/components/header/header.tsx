@@ -42,9 +42,16 @@ export const Header = () => {
                 {user.username}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="flex w-32 flex-col p-4">
-              <Link to="/profile">Profile</Link>
-              <Link to="/logout">Logout</Link>
+            <PopoverContent className="flex w-48 flex-col p-4">
+              <Link className="p-2 hover:bg-accent" to="/add-album">
+                Submit album
+              </Link>
+              <Link className="p-2 hover:bg-accent" to="/profile">
+                Profile
+              </Link>
+              <Link className="p-2 hover:bg-accent" to="/logout">
+                Logout
+              </Link>
             </PopoverContent>
           </Popover>
         ) : (

@@ -1,7 +1,7 @@
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { ActionFunctionArgs, json } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
+import { Form, Link, useLoaderData } from "@remix-run/react";
 import { z } from "zod";
 import { Button } from "~/components/common/ui/button";
 import { Label } from "~/components/common/ui/label";
@@ -94,8 +94,8 @@ export default function AddArtistRoute() {
   });
 
   return (
-    <div>
-      <h1>Add album</h1>
+    <main className="container space-y-8 py-8 md:py-16 lg:space-y-12">
+      <h1 className="text-3xl font-semibold">Add album</h1>
       <Form method="post" encType="multipart/form-data" {...getFormProps(form)}>
         <ImageUpload
           className="h-[172px] w-[172px] basis-1/4 rounded-lg"
@@ -143,9 +143,15 @@ export default function AddArtistRoute() {
               ))}
             </SelectContent>
           </Select>
+          <span>
+            Cant find the artist in this list?{" "}
+            <Link className="text-primary underline" to="/add-artist">
+              Add artist
+            </Link>
+          </span>
         </div>
-        <Button type="submit">Add artist</Button>
+        <Button type="submit">Add album</Button>
       </Form>
-    </div>
+    </main>
   );
 }

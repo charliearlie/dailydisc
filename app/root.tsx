@@ -58,7 +58,9 @@ export function Layout() {
         userId={loaderData?.user?.id}
       >
         <Header />
-        <Outlet />
+        <div className=" min-h-[calc(100vh-148px)]">
+          <Outlet />
+        </div>
         <footer className="bg-accent py-4 md:py-8">
           <div className="container mx-auto flex flex-col items-center justify-between px-4 md:flex-row md:px-6">
             <p className="text-accent-foreground">

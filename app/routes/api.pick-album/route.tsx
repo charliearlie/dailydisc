@@ -17,6 +17,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     );
   }
 
+  console.log("Archiving yesterdays album");
+
   await db
     .update(albums)
     .set({
@@ -25,12 +27,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     })
     .where(eq(albums.active, 1));
 
+  console.log("Picking today's album");
+
   const [randomAlbum] = await db
     .select()
     .from(albums)
     .where(eq(albums.archived, 0))
     .orderBy(sql.raw("RANDOM()"))
     .limit(1);
+
+  console.log("Todays album is ", randomAlbum.title);
 
   const todaysDate = new Date();
   todaysDate.setUTCHours(0, 0, 0, 0);

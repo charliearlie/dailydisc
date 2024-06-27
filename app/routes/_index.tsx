@@ -52,10 +52,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     albumDate.setUTCHours(0, 0, 0, 0); // This is hideous. Find better way
 
     const albumOfTheDay = await db.query.albums.findFirst({
-      where:
-        albumDate == todaysDate
-          ? eq(albums.active, 1)
-          : eq(albums.listenDate, albumDate),
+      where: eq(albums.listenDate, albumDate),
       with: {
         artistsToAlbums: {
           with: {

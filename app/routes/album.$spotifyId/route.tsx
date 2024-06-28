@@ -17,6 +17,7 @@ import { format } from "date-fns";
 import { ScrollableRow } from "~/components/common/ui/scrollable-row";
 import { Card, CardImage } from "~/components/common/ui/card";
 import { PlayCircle } from "lucide-react";
+import { getDailyAlbumDate } from "~/services/album.server";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   invariantResponse(params.spotifyId, "Expected params.spotifyId");
@@ -26,17 +27,18 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     exclude: album.id,
   });
 
-  return json({ album, relatedAlbums });
+  const dailyAlbumDate = await getDailyAlbumDate(album.id);
+
+  return json({ album, dailyAlbumDate, relatedAlbums });
 };
 
 export default function AddArtistRoute() {
-  const { album, relatedAlbums } = useLoaderData<typeof loader>();
-
-  console.log("album.externalUrls", album.external_urls.spotify);
+  const { album, dailyAlbumDate, relatedAlbums } =
+    useLoaderData<typeof loader>();
 
   return (
     <main className="relative flex flex-col">
-      <section className="bg-background py-12 md:py-20 lg:py-24">
+      <section className="to-gradientend  bg-gradient-to-tl from-background via-accent py-12 md:py-20 lg:py-24">
         <div className="container mx-auto grid items-center gap-8 px-4 md:grid-cols-2 md:px-6">
           <div>
             <img
@@ -48,7 +50,7 @@ export default function AddArtistRoute() {
             />
           </div>
           <div className="flex flex-col space-y-4 sm:block">
-            <h1 className="self-center text-3xl font-bold text-primary md:text-4xl">
+            <h1 className="self-center text-3xl font-bold text-card-foreground md:text-4xl">
               {album.name}
             </h1>
             <div className="flex items-center gap-2 self-center">
@@ -79,23 +81,24 @@ export default function AddArtistRoute() {
                   className="flex flex-col items-center gap-2 hover:opacity-80"
                   key={artist.id}
                 >
-                  <Avatar className="h-24 w-24 border border-primary bg-primary">
+                  <Avatar className="h-24 w-24 border-2 border-primary-foreground bg-primary-foreground">
                     <AvatarImage src={artist.images?.[0].url} />
                     <AvatarFallback>{artist.name[0]}</AvatarFallback>
                   </Avatar>
-                  <span className="font-medium text-orange-500">
-                    {artist.name}
-                  </span>
+                  <span className="font-medium">{artist.name}</span>
                 </a>
               ))}
             </div>
-            <p>
-              This album takes you on a sonic journey through diverse landscapes
-              of sound. Each track blends unique melodies and rhythms, creating
-              an immersive experience that captures the essence of musical
-              exploration. From upbeat tempos to soothing harmonies, this
-              collection offers something for every listener.{" "}
-            </p>
+            <p className="hidden md:block md:h-24"></p>
+            {dailyAlbumDate && (
+              <Link
+                className="font-semibold text-primary hover:underline"
+                to={`/?date=${format(new Date(dailyAlbumDate), "yyyy-MM-dd")}`}
+              >
+                Album of the day:{" "}
+                {format(new Date(dailyAlbumDate), "eee d MMM ''yy")}
+              </Link>
+            )}
             <div className="flex flex-col gap-2 text-gray-300">
               {album.copyrights?.[0].text}
             </div>

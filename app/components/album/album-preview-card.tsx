@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from "~/components/common/ui/tooltip";
 import { Badge } from "../common/ui/badge";
-import { getArchiveAlbums } from "~/services/album";
+import { getArchiveAlbums } from "~/services/album.server";
 import { useUser } from "~/contexts/user-context";
 
 export const AlbumPreviewCard = ({

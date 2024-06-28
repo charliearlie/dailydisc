@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/common/ui/select";
-import { getArchiveAlbums } from "~/services/album";
+import { getArchiveAlbums } from "~/services/album.server";
 import { getUserFromRequestContext } from "~/services/session";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

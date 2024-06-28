@@ -8,7 +8,7 @@ export const Header = () => {
   const user = useUser();
   const isLoggedIn = Boolean(user?.username);
   return (
-    <header className="flex h-[60px] items-center border-b border-gray-100 bg-primary px-4 dark:border-gray-800">
+    <header className="flex h-[60px] items-center bg-primary px-4">
       <div className="flex items-center gap-2">
         <Link
           className="flex items-center gap-2 text-xl font-semibold text-white"

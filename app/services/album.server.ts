@@ -53,3 +53,11 @@ export const getArchiveAlbums = async (userId?: number) => {
 
   return albumsWithAverageRating;
 };
+
+export const getDailyAlbumDate = async (spotifyId: string) => {
+  const album = await db.query.albums.findFirst({
+    where: eq(albums.spotifyUrl, spotifyId),
+  });
+
+  return album?.listenDate;
+};

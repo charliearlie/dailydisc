@@ -181,6 +181,7 @@ export default function Index() {
     title,
     image,
     genre,
+    spotifyUrl,
     tracks,
     year,
   } = album;
@@ -212,7 +213,7 @@ export default function Index() {
             appleMusicUrl={appleMusicUrl!}
           />
           <h2 className="text-3xl font-bold tracking-tight">
-            <Link aria-label={`View reviews for ${title}`} to={`/albums/${id}`}>
+            <Link aria-label={`View reviews for ${title}`} to={`/album/${spotifyUrl}`}>
               {title}
             </Link>
           </h2>

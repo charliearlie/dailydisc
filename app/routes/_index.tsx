@@ -181,6 +181,7 @@ export default function Index() {
     title,
     image,
     genre,
+    spotifyUrl,
     tracks,
     year,
   } = album;
@@ -212,7 +213,7 @@ export default function Index() {
             appleMusicUrl={appleMusicUrl!}
           />
           <h2 className="text-3xl font-bold tracking-tight">
-            <Link aria-label={`View reviews for ${title}`} to={`/albums/${id}`}>
+            <Link aria-label={`View reviews for ${title}`} to={`/album/${spotifyUrl}`}>
               {title}
             </Link>
           </h2>
@@ -256,7 +257,7 @@ export default function Index() {
         </div>
       </section>
       <section className="container max-w-screen-md space-y-8 lg:space-y-12">
-        {isLoggedIn ? (
+        {isLoggedIn && !hasUserReviewed ? (
           <Card className="mx-auto max-w-lg ">
             <CardContent className="p-8">
               <h3 className="py-4 text-start text-2xl font-semibold">

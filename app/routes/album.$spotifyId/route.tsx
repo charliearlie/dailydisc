@@ -14,8 +14,7 @@ import {
 } from "~/services/music-services/spotify.server";
 import { invariantResponse } from "~/util/utils";
 import { format } from "date-fns";
-import { ScrollableRow } from "~/components/common/ui/scrollable-row";
-import { Card, CardImage } from "~/components/common/ui/card";
+import { Card } from "~/components/common/ui/card";
 import { PlayCircle } from "lucide-react";
 import { getDailyAlbumDate } from "~/services/album.server";
 import { RelatedAlbums } from "~/components/album/related-albums";

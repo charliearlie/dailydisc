@@ -6,7 +6,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "../common/ui/carousel";
-import { AlbumPreviewCard } from "./album-preview-card";
 import { Link } from "@remix-run/react";
 import { Card, CardImage } from "../common/ui/card";
 import { format } from "date-fns";

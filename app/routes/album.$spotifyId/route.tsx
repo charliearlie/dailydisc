@@ -18,6 +18,7 @@ import { ScrollableRow } from "~/components/common/ui/scrollable-row";
 import { Card, CardImage } from "~/components/common/ui/card";
 import { PlayCircle } from "lucide-react";
 import { getDailyAlbumDate } from "~/services/album.server";
+import { RelatedAlbums } from "~/components/album/related-albums";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   invariantResponse(params.spotifyId, "Expected params.spotifyId");
@@ -140,32 +141,9 @@ export default function AddArtistRoute() {
           <h2 className="mb-8 text-2xl font-bold text-orange-500 md:text-3xl">
             Related Albums
           </h2>
-          <ScrollableRow className="gap-4">
-            {relatedAlbums.map((album) => (
-              <li
-                key={album.id}
-                className="snap-start hover:scale-105 hover:overflow-visible"
-              >
-                <Link to={`/album/${album.id}`}>
-                  <Card
-                    className={"shadow-md transition-transform"}
-                    key={album.id}
-                  >
-                    <CardImage src={album.image} alt="Album Cover" />
-                    <div className="relative p-4">
-                      <h3 className="mb-1 h-14 overflow-hidden text-start text-lg font-semibold hover:underline">
-                        {album.name}
-                      </h3>
-                      <h4 className="mb-2 text-sm font-medium">
-                        {album.primaryArtist}
-                      </h4>
-                      <p>{format(album.releaseDate, "yyyy")}</p>
-                    </div>
-                  </Card>
-                </Link>
-              </li>
-            ))}
-          </ScrollableRow>
+          <div className="gap-4 px-10">
+            <RelatedAlbums albums={relatedAlbums} />
+          </div>
         </div>
       </section>
       {/* <div className="fixed bottom-0 right-0 z-10 h-14 w-full bg-background">

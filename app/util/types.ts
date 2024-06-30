@@ -54,6 +54,7 @@ export interface Album {
   id: string;
   image: string;
   name: string;
+  primaryArtist: string;
   releaseDate: string;
   totalTracks: number;
   type: string;

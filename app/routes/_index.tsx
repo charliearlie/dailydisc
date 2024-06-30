@@ -175,7 +175,6 @@ export default function Index() {
     hasUserReviewed,
   } = loaderData;
   const {
-    id,
     appleMusicCollectionId,
     appleMusicUrl,
     title,
@@ -187,13 +186,13 @@ export default function Index() {
   } = album;
 
   return (
-    <main className="flex-1">
-      <section className="container space-y-8 py-8 text-center md:py-16 lg:space-y-12">
+    <main className="to-gradientend flex-1 bg-gradient-to-tl from-background via-background">
+      <section className="container  space-y-8 py-8 text-center md:py-16 lg:space-y-12">
         <div className="flex flex-col justify-center space-y-2">
           <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl/none">
             Album of the Day
           </h1>
-          <p className="mx-auto max-w-[600px] text-gray-500 dark:text-gray-400 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+          <p className="mx-auto max-w-[600px] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
             Explore today&apos;s featured album and share your thoughts.
           </p>
           <div className="mx-auto flex w-44">
@@ -213,7 +212,10 @@ export default function Index() {
             appleMusicUrl={appleMusicUrl!}
           />
           <h2 className="text-3xl font-bold tracking-tight">
-            <Link aria-label={`View reviews for ${title}`} to={`/album/${spotifyUrl}`}>
+            <Link
+              aria-label={`View reviews for ${title}`}
+              to={`/album/${spotifyUrl}`}
+            >
               {title}
             </Link>
           </h2>

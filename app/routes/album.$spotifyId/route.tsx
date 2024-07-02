@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs, json } from "@remix-run/node";
+import { LoaderFunctionArgs, MetaFunction, json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 
 import { Badge } from "~/components/common/ui/badge";
@@ -18,6 +18,21 @@ import { Card } from "~/components/common/ui/card";
 import { PlayCircle } from "lucide-react";
 import { getDailyAlbumDate } from "~/services/album.server";
 import { RelatedAlbums } from "~/components/album/related-albums";
+import { AlbumDuration } from "~/components/album/album-duration";
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  return [
+    { title: `${data?.album.name} | DailyDisc` },
+    {
+      name: "description",
+      content: `Information about the album ${data?.album.name} by ${data?.album.artists[0].name}`,
+    },
+    {
+      property: "og:image",
+      content: data?.album.images?.[0].url,
+    },
+  ];
+};
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   invariantResponse(params.spotifyId, "Expected params.spotifyId");
@@ -35,6 +50,13 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 export default function AddArtistRoute() {
   const { album, dailyAlbumDate, relatedAlbums } =
     useLoaderData<typeof loader>();
+  const numberOfTracks = album.tracks.length;
+  const albumDuration = album.tracks.reduce(
+    (acc, track) => acc + track.durationMs!,
+    0,
+  );
+
+  console.log;
 
   return (
     <main className="relative flex flex-col">
@@ -89,7 +111,11 @@ export default function AddArtistRoute() {
                 </a>
               ))}
             </div>
-            <p className="hidden md:block md:h-24"></p>
+            <p className="hidden md:block md:h-8"></p>
+            <p>
+              {numberOfTracks} tracks,{" "}
+              <AlbumDuration durationInMS={albumDuration} />
+            </p>
             {dailyAlbumDate && (
               <Link
                 className="font-semibold text-primary hover:underline"

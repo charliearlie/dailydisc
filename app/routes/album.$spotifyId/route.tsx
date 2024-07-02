@@ -25,7 +25,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { title: `${data?.album.name} | DailyDisc` },
     {
       name: "description",
-      content: `Information about the album ${data?.album.name} by ${data?.album.artists[0].name}`,
+      content: `Album by ${data?.album.artists[0].name}`,
     },
     {
       property: "og:image",

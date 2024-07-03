@@ -22,7 +22,7 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: fontStylesheet },
   {
     rel: "icon",
-    href: "https://fav.farm/🎵",
+    href: "/favicon.ico",
   },
 ];
 

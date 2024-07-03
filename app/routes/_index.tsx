@@ -25,7 +25,7 @@ import {
   TabsTrigger,
 } from "~/components/common/ui/tabs";
 import { AlbumPopover } from "~/components/album/album-popover";
-import { removeFeaturedArtists } from "~/util/utils";
+import { asset, removeFeaturedArtists } from "~/util/utils";
 import { ReviewFormSchema } from "~/components/reviews/types";
 import { ReviewForm } from "~/components/reviews/review-form";
 import { ErrorBoundaryComponent } from "~/components/error-boundary";
@@ -40,7 +40,7 @@ import {
   AccordionTrigger,
 } from "~/components/common/ui/accordion";
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
     { title: "Daily Disc" },
     {
@@ -48,12 +48,19 @@ export const meta: MetaFunction = () => {
       content:
         "An online club to listen to a random album every day where you can join in the conversation",
     },
+    {
+      property: "og:image",
+      content: data?.socialImage,
+    },
   ];
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { searchParams } = new URL(request.url);
   const dateParam = searchParams.get("date");
+
+  let socialImage = asset("/DailyDisc.png", new URL(request.url));
+
   const user = await getUserFromRequestContext(request);
   const todaysDate = new Date();
   const albumDate = dateParam ? new Date(dateParam) : todaysDate;
@@ -110,6 +117,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         extraInfo: album.spotifyUrl
           ? await getAlbumInfo(album.spotifyUrl)
           : null,
+        socialImage,
       });
     }
   }
@@ -258,7 +266,7 @@ export default function Index() {
           <Badge className="text-base">{genre}</Badge>
         </div>
       </section>
-      <section className="container max-w-screen-md space-y-8 lg:space-y-12">
+      <section className="container flex max-w-screen-md flex-col items-center space-y-8 lg:space-y-12">
         {isLoggedIn && !hasUserReviewed ? (
           <Card className="mx-auto max-w-lg ">
             <CardContent className="p-8">
@@ -270,7 +278,7 @@ export default function Index() {
           </Card>
         ) : null}
         {!isLoggedIn && (
-          <Button asChild className="w-full">
+          <Button asChild className="mx-auto">
             <Link to="/signup">Login to submit a review</Link>
           </Button>
         )}

@@ -1,8 +1,15 @@
 import { SerializeFrom } from "@remix-run/node";
 import { useRouteLoaderData, type Navigation } from "@remix-run/react";
 import { type ClassValue, clsx } from "clsx";
+import type { Assets } from "~/util/types/assets";
+
 import { twMerge } from "tailwind-merge";
 import { RouteId } from "./types/route-id";
+
+export function asset(file: Assets, base?: URL): string {
+  if (!base) return file;
+  return new URL(file, base).toString();
+}
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

@@ -1,0 +1,1 @@
+export type Assets = "/DailyDisc.png" | "/dailydisc.svg" | "/favicon.ico" | "/fonts/Rubik-Italic-VariableFont_wght.ttf" | "/fonts/Rubik-VariableFont_wght.ttf"

@@ -2,9 +2,9 @@ import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 async function main() {
-  let { globby } = await import("globby");
+  const { globby } = await import("globby");
 
-  let pattern = [
+  const pattern = [
     "public/**/*", // get all files in public
     "!public/build/**/*", // except public/build
   ];

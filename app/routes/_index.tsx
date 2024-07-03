@@ -59,7 +59,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { searchParams } = new URL(request.url);
   const dateParam = searchParams.get("date");
 
-  let socialImage = asset("/DailyDisc.png", new URL(request.url));
+  const socialImage = asset("/DailyDisc.png", new URL(request.url));
 
   const user = await getUserFromRequestContext(request);
   const todaysDate = new Date();

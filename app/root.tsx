@@ -77,7 +77,7 @@ export function Layout() {
             </p>
             <div className="flex items-center gap-2">
               <img
-                src="public/DailyDisc.png"
+                src="/DailyDisc.png"
                 alt="Daily Disc"
                 className="h-16 w-16"
               />

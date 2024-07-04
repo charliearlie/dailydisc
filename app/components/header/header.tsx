@@ -15,7 +15,7 @@ export const Header = () => {
         >
           <img
             className="h-12 w-12 md:h-16 md:w-16"
-            src="/public/DailyDisc.png"
+            src="/DailyDisc.png"
             alt="Daily Disc"
           />
           <span className="hidden md:block">DailyDisc</span>

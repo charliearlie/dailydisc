@@ -196,7 +196,7 @@ export default function Index() {
   return (
     <main className="to-gradientend flex-1 bg-gradient-to-tl from-background via-background">
       <section className="container  space-y-8 py-8 text-center md:py-16 lg:space-y-12">
-        <div className="flex flex-col justify-center space-y-2">
+        <div className="flex flex-col items-center justify-center space-y-2">
           <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl/none">
             Album of the Day
           </h1>
@@ -266,7 +266,7 @@ export default function Index() {
           <Badge className="text-base">{genre}</Badge>
         </div>
       </section>
-      <section className="container flex max-w-screen-md flex-col items-center space-y-8 lg:space-y-12">
+      <section className="container max-w-screen-md space-y-8 lg:space-y-12">
         {isLoggedIn && !hasUserReviewed ? (
           <Card className="mx-auto max-w-lg ">
             <CardContent className="p-8">

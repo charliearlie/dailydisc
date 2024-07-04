@@ -1,5 +1,4 @@
 import { Link } from "@remix-run/react";
-import { Music } from "lucide-react";
 import { useUser } from "~/contexts/user-context";
 import { Popover, PopoverContent, PopoverTrigger } from "../common/ui/popover";
 import { Button } from "../common/ui/button";
@@ -8,14 +7,18 @@ export const Header = () => {
   const user = useUser();
   const isLoggedIn = Boolean(user?.username);
   return (
-    <header className="flex h-[60px] items-center bg-primary px-4">
+    <header className="flex h-[80px] items-center bg-black px-4">
       <div className="flex items-center gap-2">
         <Link
-          className="flex items-center gap-2 text-xl font-semibold text-white"
+          className="flex items-center gap-2 text-2xl font-semibold text-white"
           to="/"
         >
-          <Music className="h-8 w-8" />
-          DailyDisc
+          <img
+            className="h-12 w-12 md:h-16 md:w-16"
+            src="/public/DailyDisc.png"
+            alt="Daily Disc"
+          />
+          <span className="hidden md:block">DailyDisc</span>
         </Link>
       </div>
       <nav className="ml-auto flex items-center space-x-4">

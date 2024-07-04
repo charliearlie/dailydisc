@@ -27,7 +27,7 @@ const AddAlbumSchema = z.object({
   genre: z.string().optional(),
   artwork: FileSchema.optional(),
   appleMusicUrl: z.string().url().optional(),
-  spotifyUrl: z.string().url().optional(),
+  spotifyId: z.string().optional(),
 });
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -43,16 +43,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   }
 
-  const { appleMusicUrl, artistId, artwork, genre, releaseYear, title } =
-    submission.value;
+  const {
+    appleMusicUrl,
+    artistId,
+    artwork,
+    genre,
+    releaseYear,
+    spotifyId,
+    title,
+  } = submission.value;
 
   const [image] = await uploadImages(artwork);
   const appleMusicCollectionId =
     getAppleMusicCollectionIdFromUrl(appleMusicUrl);
 
-  console.log("Number(artistId)", Number(artistId));
   try {
-    console.log("HERE 1");
     const [album] = await db
       .insert(albums)
       .values({
@@ -62,10 +67,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         image,
         appleMusicUrl,
         appleMusicCollectionId,
+        spotifyUrl: spotifyId,
       })
       .returning();
 
-    console.log("HERE 2", album);
     await db.insert(artistsToAlbums).values({
       albumId: album.id,
       artistId: Number(artistId),
@@ -131,8 +136,8 @@ export default function AddArtistRoute() {
           {...getInputProps(fields.appleMusicUrl, { type: "text" })}
         />
         <FormField
-          label="Spotify URL"
-          {...getInputProps(fields.spotifyUrl, { type: "text" })}
+          label="Spotify ID"
+          {...getInputProps(fields.spotifyId, { type: "text" })}
         />
         <div className="mb-8 flex w-full flex-col gap-1.5">
           <Label className="font-bold" htmlFor="category">

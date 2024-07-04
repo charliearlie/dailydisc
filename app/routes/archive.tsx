@@ -1,4 +1,9 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
+import {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+  json,
+} from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { AlbumPreviewCard } from "~/components/album/album-preview-card";
 import {
@@ -12,6 +17,13 @@ import {
 } from "~/components/common/ui/select";
 import { getArchiveAlbums } from "~/services/album.server";
 import { getUserFromRequestContext } from "~/services/session";
+
+export const meta = () => {
+  return {
+    title: "Daily Disc archive",
+    description: "Browse all albums selected on Daily Disc so far",
+  };
+};
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUserFromRequestContext(request);
@@ -96,28 +108,30 @@ export default function ArchivePage() {
   };
 
   return (
-    <main className="xl:max space-y-8 py-8 text-center md:container md:py-16 lg:space-y-12">
-      <h1 className="text-3xl font-semibold">Daily Disc archive</h1>
-      <ReviewedText />
-      <div className="px-4 md:container md:px-6">
-        <Select onValueChange={sortAlbums}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Sort by most recent" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>Sorting options</SelectLabel>
-              <SelectItem value="listenDate">Most recent</SelectItem>
-              <SelectItem value="userRating">My rating</SelectItem>
-              <SelectItem value="accumulativeRating">Rating</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-      <section className="grid grid-cols-1 gap-6 px-4 py-8 md:grid-cols-2 md:px-6 lg:grid-cols-4 xl:grid-cols-4">
-        {archivedAlbums.map((album) => (
-          <AlbumPreviewCard album={album} key={album.id} />
-        ))}
+    <main className="flex-1">
+      <section className="space-y-8 py-8 text-center md:container md:py-16 lg:space-y-12">
+        <h1 className="text-3xl font-semibold">Daily Disc archive</h1>
+        <ReviewedText />
+        <div className="px-4 md:container md:px-6">
+          <Select onValueChange={sortAlbums}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by most recent" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Sorting options</SelectLabel>
+                <SelectItem value="listenDate">Most recent</SelectItem>
+                <SelectItem value="userRating">My rating</SelectItem>
+                <SelectItem value="accumulativeRating">Rating</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="grid grid-cols-1 gap-6 px-4 py-8 md:grid-cols-2 md:px-6 lg:grid-cols-4 xl:grid-cols-4">
+          {archivedAlbums.map((album) => (
+            <AlbumPreviewCard album={album} key={album.id} />
+          ))}
+        </div>
       </section>
     </main>
   );

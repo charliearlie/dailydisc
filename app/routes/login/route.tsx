@@ -2,7 +2,6 @@ import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
-import { Music } from "lucide-react";
 import {
   Alert,
   AlertDescription,
@@ -54,7 +53,11 @@ export default function LoginPage() {
   });
   return (
     <main className="mx-auto flex h-[calc(100vh-60px)] max-w-lg flex-col space-y-6 px-8 md:mt-32">
-      <Music className="h-32 w-32 self-center" strokeWidth={2} />
+      <img
+        className="h-32 w-32 self-center"
+        src="/DailyDisc.png"
+        alt="Daily Disc"
+      />
       <h1 className="my-8 self-center text-2xl font-bold md:text-4xl">
         Log in to Daily Disc
       </h1>

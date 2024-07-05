@@ -29,7 +29,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   console.log("Picking today's album");
 
-  const todaysDate = new Date();
+  const todaysDate = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Europe/London" }),
+  );
   todaysDate.setUTCHours(0, 0, 0, 0);
 
   const scheduledAlbum = await db.query.albums.findFirst({

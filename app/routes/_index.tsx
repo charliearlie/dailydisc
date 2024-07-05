@@ -228,7 +228,7 @@ export default function Index() {
             </Link>
           </h2>
           {extraInfo ? (
-            <>
+            <div className="flex justify-center gap-4">
               {extraInfo.artists.map((artist) => (
                 <Link
                   to={`/artist/${artist.id}`}
@@ -248,7 +248,7 @@ export default function Index() {
                   </span>
                 </Link>
               ))}
-            </>
+            </div>
           ) : (
             <>
               {artists.map((artist) => (

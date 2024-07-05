@@ -1,7 +1,6 @@
 import {
   ActionFunctionArgs,
   LoaderFunctionArgs,
-  MetaFunction,
   json,
 } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
@@ -19,11 +18,21 @@ import { getArchiveAlbums } from "~/services/album.server";
 import { getUserFromRequestContext } from "~/services/session";
 
 export const meta = () => {
-  return {
-    title: "Daily Disc archive",
-    description: "Browse all albums selected on Daily Disc so far",
-  };
+  return [
+    { title: "Archive | Daily Disc" },
+    {
+      name: "description",
+      content:
+        "Browse all albums selected on Daily Disc so far",
+    },
+    {
+      property: "og:image",
+      content: "/DailyDisc.png",
+    },
+  ];
 };
+
+
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUserFromRequestContext(request);

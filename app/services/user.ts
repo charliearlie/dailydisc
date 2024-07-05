@@ -45,7 +45,7 @@ export const login = async ({
   const [user] = await db
     .select()
     .from(users)
-    .where(eq(users.username, username));
+    .where(eq(users.username, username.trim()));
   if (!user || !(await bcrypt.compare(password, user.password))) return null;
 
   return user;

@@ -278,9 +278,11 @@ export default function Index() {
           </Card>
         ) : null}
         {!isLoggedIn && (
-          <Button asChild className="mx-auto">
-            <Link to="/signup">Login to submit a review</Link>
-          </Button>
+          <div className="flex justify-center">
+            <Button asChild className="mx-auto">
+              <Link to="/signup">Login to submit a review</Link>
+            </Button>
+          </div>
         )}
       </section>
       <section className="container max-w-screen-md space-y-8 py-8 md:py-16 lg:space-y-12">

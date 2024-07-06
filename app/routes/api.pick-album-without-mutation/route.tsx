@@ -26,22 +26,55 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const scheduledAlbum = await db.query.albums.findFirst({
     where: and(eq(albums.listenDate, todaysDate), eq(albums.archived, 0)),
+    with: {
+      artistsToAlbums: {
+        columns: {},
+        with: {
+          artist: true,
+        },
+      },
+    },
   });
 
   if (scheduledAlbum) {
-    console.log("Todays album is ", scheduledAlbum.title);
-
-    return json({ randomAlbum: scheduledAlbum });
+    console.log("Todays album is ", {
+      ...scheduledAlbum,
+      primaryArtist: scheduledAlbum.artistsToAlbums[0].artist.name,
+    });
+    return json({
+      randomAlbum: {
+        ...scheduledAlbum,
+        primaryArtist: scheduledAlbum.artistsToAlbums[0].artist.name,
+      },
+    });
   } else {
-    const [randomAlbum] = await db
-      .select()
-      .from(albums)
-      .where(eq(albums.archived, 0))
-      .orderBy(sql.raw("RANDOM()"))
-      .limit(1);
+    const randomAlbum = await db.query.albums.findFirst({
+      where: eq(albums.archived, 0),
+      with: {
+        artistsToAlbums: {
+          columns: {},
+          with: {
+            artist: true,
+          },
+        },
+      },
+      orderBy: sql`RANDOM()`,
+    });
 
-    console.log("Todays album is ", randomAlbum.title);
+    if (randomAlbum) {
+      console.log(
+        "Todays album is ",
+        randomAlbum.artistsToAlbums[0].artist.name,
+        randomAlbum.title,
+      );
+      return json({
+        randomAlbum: {
+          ...randomAlbum,
+          primaryArtist: randomAlbum.artistsToAlbums[0].artist.name,
+        },
+      });
+    }
 
-    return json({ randomAlbum });
+    return json({ error: "No album found" }, { status: 404 });
   }
 };

@@ -1,50 +1,42 @@
-name: Update Album and Send Discord Message
+- name: Call pick album resource route and send Discord message
+  env:
+    DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+  run: |
+    # Call the API and store the response, ensuring we only get the body
+    response=$(curl -sS -X GET https://www.dailydisc.club/api/pick-album -H "x-api-key: ${{ secrets.API_KEY }}")
 
-on:
-  push:
-    branches: [main, master]
-  pull_request:
-    branches: [main, master]
+    # Print the response for debugging (you can remove this later)
+    echo "API Response:"
+    echo "$response"
 
-jobs:
-  update-album:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Determine if we should run in Summer Time
-        id: determine_time
-        run: |
-          current_month=$(date +'%m')
-          if [[ "$current_month" -ge 3 && "$current_month" -le 10 ]]; then
-            echo "in_summer_time=true" >> $GITHUB_ENV
-          else
-            echo "in_summer_time=false" >> $GITHUB_ENV
-          fi
+    # Check if the response is valid JSON
+    if ! echo "$response" | jq empty; then
+      echo "Error: Invalid JSON response"
+      exit 1
+    fi
 
-      - name: Call pick album resource route and send Discord message
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        run: |
-          # Call the API and store the response
-          response=$(curl -X GET https://www.dailydisc.club/api/pick-album-without-mutation -H "x-api-key: ${{ secrets.API_KEY }}")
+    # Extract the necessary information from the JSON response
+    title=$(echo $response | jq -r '.randomAlbum.title')
+    image=$(echo $response | jq -r '.randomAlbum.image')
 
-          # Extract the necessary information from the JSON response
-          title=$(echo $response | jq -r '.randomAlbum.title')
-          image=$(echo $response | jq -r '.randomAlbum.image')
+    # Print extracted data for debugging (you can remove this later)
+    echo "Title: $title"
+    echo "Image: $image"
 
-          # Prepare the Discord message payload
-          payload=$(cat <<EOF
-          {
-            "embeds": [{
-              "title": "Today's Album",
-              "description": "$title",
-              "color": 3447003,
-              "image": {
-                "url": "$image"
-              }
-            }]
-          }
-          EOF
-          )
+    # Prepare the Discord message payload
+    payload=$(cat <<EOF
+    {
+      "embeds": [{
+        "title": "Today's Album",
+        "description": "$title",
+        "color": 3447003,
+        "image": {
+          "url": "$image"
+        }
+      }]
+    }
+    EOF
+    )
 
-          # Send the Discord message
-          curl -H "Content-Type: application/json" -d "$payload" $DISCORD_WEBHOOK
+    # Send the Discord message
+    curl -H "Content-Type: application/json" -d "$payload" $DISCORD_WEBHOOK

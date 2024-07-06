@@ -1,10 +1,11 @@
 name: Update Album and Send Discord Message
 
 on:
-  push:
-    branches: [main, master]
-  pull_request:
-    branches: [main, master]
+  schedule:
+    # Winter Time (UTC): 12 AM UTC
+    - cron: "0 0 * 11-12,1-3 *"
+    # Summer Time (BST): 11 PM UTC (12 AM BST)
+    - cron: "0 23 * 3-10 *"
 
 jobs:
   update-album:
@@ -28,17 +29,33 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
           # Call the API and store the response
-          response=$(curl -sS -X GET https://www.dailydisc.club/api/pick-album-without-mutation -H "x-api-key: ${{ secrets.API_KEY }}")
+          response=$(curl -sS -X GET https://www.dailydisc.club/api/pick-album -H "x-api-key: ${{ secrets.API_KEY }}")
 
           # Extract the necessary information from the JSON response
           title=$(echo "$response" | jq -r '.randomAlbum.title')
           image=$(echo "$response" | jq -r '.randomAlbum.image')
+          artist=$(echo "$response" | jq -r '.randomAlbum.artist')
+          year=$(echo "$response" | jq -r '.randomAlbum.year')
+          genre=$(echo "$response" | jq -r '.randomAlbum.genre')
+
+          # Log the album information
+          echo "Today's Album:"
+          echo "Title: $title"
+          echo "Artist: $artist"
+          echo "Year: $year"
+          echo "Genre: $genre"
+          echo "Image URL: $image"
 
           # Prepare the Discord message payload
-          payload=$(jq -n --arg title "$title" --arg image "$image" '{
+          payload=$(jq -n --arg title "$title" --arg image "$image" --arg artist "$artist" --arg year "$year" --arg genre "$genre" '{
             embeds: [{
-              title: "Daily Disc'"'"'s album of the day",
+              title: "Today'"'"'s Album",
               description: $title,
+              fields: [
+                {name: "Artist", value: $artist, inline: true},
+                {name: "Year", value: $year, inline: true},
+                {name: "Genre", value: $genre, inline: true}
+              ],
               color: 3447003,
               image: {
                 url: $image
@@ -48,3 +65,5 @@ jobs:
 
           # Send the Discord message
           curl -H "Content-Type: application/json" -d "$payload" "$DISCORD_WEBHOOK"
+
+          echo "Discord message sent successfully!"

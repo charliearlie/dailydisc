@@ -25,7 +25,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   todaysDate.setUTCHours(0, 0, 0, 0);
 
   const scheduledAlbum = await db.query.albums.findFirst({
-    where: eq(albums.active, 1),
+    where: eq(albums.title, "WHEN WE ALL FALL ASLEEP, WHERE DO WE GO?"),
   });
 
   if (scheduledAlbum) {

@@ -38,10 +38,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   if (scheduledAlbum) {
     console.log("Todays album is ", scheduledAlbum.title);
-
-    return json({ randomAlbum: scheduledAlbum });
+    return json({
+      ...scheduledAlbum,
+      primaryArtist: scheduledAlbum.artistsToAlbums[0].artist.name,
+    });
   } else {
-    const randomAlbumWithArtists = await db.query.albums.findFirst({
+    const randomAlbum = await db.query.albums.findFirst({
       where: eq(albums.archived, 0),
       with: {
         artistsToAlbums: {
@@ -54,13 +56,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       orderBy: sql`RANDOM()`,
     });
 
-    if (randomAlbumWithArtists) {
+    if (randomAlbum) {
       console.log(
         "Todays album is ",
-        randomAlbumWithArtists.artistsToAlbums[0].artist.name,
-        randomAlbumWithArtists.title,
+        randomAlbum.artistsToAlbums[0].artist.name,
+        randomAlbum.title,
       );
-      return json({ randomAlbumWithArtists });
+      return json({
+        ...randomAlbum,
+        primaryArtist: randomAlbum.artistsToAlbums[0].artist.name,
+      });
     }
 
     return json({ error: "No album found" }, { status: 404 });

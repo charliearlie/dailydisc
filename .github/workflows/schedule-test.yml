@@ -33,7 +33,7 @@ jobs:
           # Extract the necessary information from the JSON response
           title=$(echo "$response" | jq -r '.randomAlbum.title')
           image=$(echo "$response" | jq -r '.randomAlbum.image')
-          artist=$(echo "$response" | jq -r '.randomAlbum.artist')
+          artist=$(echo "$response" | jq -r '.randomAlbum.primaryArtist')
           year=$(echo "$response" | jq -r '.randomAlbum.year')
           genre=$(echo "$response" | jq -r '.randomAlbum.genre')
 

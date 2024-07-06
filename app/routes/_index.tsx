@@ -52,6 +52,11 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
       property: "og:image",
       content: data?.socialImage,
     },
+    {
+      charset: "utf-8",
+      title: "Scrbbl: Scrobble album",
+      viewport: "width=device-width,initial-scale=1",
+    },
   ];
 };
 

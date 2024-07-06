@@ -37,7 +37,7 @@ jobs:
           # Prepare the Discord message payload
           payload=$(jq -n --arg title "$title" --arg image "$image" '{
             embeds: [{
-              title: "Today'"'"'s Album",
+              title: "Daily Disc'"'"'s album of the day",
               description: $title,
               color: 3447003,
               image: {

@@ -24,26 +24,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   );
   todaysDate.setUTCHours(0, 0, 0, 0);
 
-  const scheduledAlbum = await db.query.albums.findFirst({
-    where: and(eq(albums.listenDate, todaysDate), eq(albums.archived, 0)),
-    with: {
-      artistsToAlbums: {
-        columns: {},
-        with: {
-          artist: true,
-        },
-      },
-    },
-  });
+  const scheduledAlbum = null;
 
   if (scheduledAlbum) {
-    console.log("Todays album is ", scheduledAlbum);
-    return json({
-      randomAlbum: {
-        ...scheduledAlbum,
-        primaryArtist: scheduledAlbum.artistsToAlbums[0].artist.name,
-      },
-    });
+    console.log("Hello");
   } else {
     const randomAlbum = await db.query.albums.findFirst({
       where: eq(albums.archived, 0),

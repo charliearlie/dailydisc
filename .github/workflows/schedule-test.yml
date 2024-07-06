@@ -27,18 +27,25 @@ jobs:
       - name: Call pick album resource route and send Discord message
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        run:
+        run: |
           # Call the API and store the response
           response=$(curl -sS -X GET https://www.dailydisc.club/api/pick-album -H "x-api-key: ${{ secrets.API_KEY }}")
 
-          title=$(echo $response | jq -r '.randomAlbum.title')
-          image=$(echo $response | jq -r '.randomAlbum.image')
+          # Extract the necessary information from the JSON response
+          title=$(echo "$response" | jq -r '.randomAlbum.title')
+          image=$(echo "$response" | jq -r '.randomAlbum.image')
 
           # Prepare the Discord message payload
-          payload=$(jq -n \
-                      --arg title "$title" \
-                      --arg image "$image" \
-                      '{embeds: [{title: "Today'"'"'s Album", description: $title, color: 3447003, image: {url: $image}}]}')
+          payload=$(jq -n --arg title "$title" --arg image "$image" '{
+            embeds: [{
+              title: "Today'"'"'s Album",
+              description: $title,
+              color: 3447003,
+              image: {
+                url: $image
+              }
+            }]
+          }')
 
           # Send the Discord message
-          curl -H "Content-Type: application/json" -d "$payload" $DISCORD_WEBHOOK
+          curl -H "Content-Type: application/json" -d "$payload" "$DISCORD_WEBHOOK"

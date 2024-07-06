@@ -25,7 +25,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   todaysDate.setUTCHours(0, 0, 0, 0);
 
   const scheduledAlbum = await db.query.albums.findFirst({
-    where: eq(albums.title, "WHEN WE ALL FALL ASLEEP, WHERE DO WE GO?"),
+    where: and(eq(albums.listenDate, todaysDate), eq(albums.archived, 0)),
+    with: {
+      artistsToAlbums: {
+        columns: {},
+        with: {
+          artist: true,
+        },
+      },
+    },
   });
 
   if (scheduledAlbum) {
@@ -33,15 +41,28 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     return json({ randomAlbum: scheduledAlbum });
   } else {
-    const [randomAlbum] = await db
-      .select()
-      .from(albums)
-      .where(eq(albums.title, "WHEN WE ALL FALL ASLEEP, WHERE DO WE GO?"))
-      .orderBy(sql.raw("RANDOM()"))
-      .limit(1);
+    const randomAlbumWithArtists = await db.query.albums.findFirst({
+      where: eq(albums.archived, 0),
+      with: {
+        artistsToAlbums: {
+          columns: {},
+          with: {
+            artist: true,
+          },
+        },
+      },
+      orderBy: sql`RANDOM()`,
+    });
 
-    console.log("Todays album is ", randomAlbum.title);
+    if (randomAlbumWithArtists) {
+      console.log(
+        "Todays album is ",
+        randomAlbumWithArtists.artistsToAlbums[0].artist.name,
+        randomAlbumWithArtists.title,
+      );
+      return json({ randomAlbumWithArtists });
+    }
 
-    return json({ randomAlbum });
+    return json({ error: "No album found" }, { status: 404 });
   }
 };

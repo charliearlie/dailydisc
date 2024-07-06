@@ -37,10 +37,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   });
 
   if (scheduledAlbum) {
-    console.log("Todays album is ", scheduledAlbum.title);
+    console.log("Todays album is ", scheduledAlbum);
     return json({
-      ...scheduledAlbum,
-      primaryArtist: scheduledAlbum.artistsToAlbums[0].artist.name,
+      randomAlbum: {
+        ...scheduledAlbum,
+        primaryArtist: scheduledAlbum.artistsToAlbums[0].artist.name,
+      },
     });
   } else {
     const randomAlbum = await db.query.albums.findFirst({
@@ -63,8 +65,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         randomAlbum.title,
       );
       return json({
-        ...randomAlbum,
-        primaryArtist: randomAlbum.artistsToAlbums[0].artist.name,
+        randomAlbum: {
+          ...randomAlbum,
+          primaryArtist: randomAlbum.artistsToAlbums[0].artist.name,
+        },
       });
     }
 

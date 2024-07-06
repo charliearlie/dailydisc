@@ -36,7 +36,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const [randomAlbum] = await db
       .select()
       .from(albums)
-      .where(eq(albums.active, 1))
+      .where(eq(albums.title, "WHEN WE ALL FALL ASLEEP, WHERE DO WE GO?"))
       .orderBy(sql.raw("RANDOM()"))
       .limit(1);
 

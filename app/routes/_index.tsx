@@ -54,7 +54,6 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     },
     {
       charset: "utf-8",
-      title: "Scrbbl: Scrobble album",
       viewport: "width=device-width,initial-scale=1",
     },
   ];

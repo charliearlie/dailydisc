@@ -280,6 +280,30 @@ export const getAlbumsFromPlaylist = async (): Promise<Album[]> => {
   return [];
 };
 
+export const searchAlbums = async (query: string): Promise<Album[]> => {
+  const token = await getSpotifyToken();
+
+  const searchParams = new URLSearchParams({
+    q: query,
+    type: "album",
+    limit: "100",
+  });
+
+  const response = await fetch(
+    `https://api.spotify.com/v1/search?${searchParams.toString()}`,
+    {
+      method: "GET",
+      headers: { Authorization: "Bearer " + token.access_token },
+    },
+  );
+
+  const data = await response.json();
+
+  console.log("data", data.albums.items);
+
+  return data;
+};
+
 export const fetchAlbumDescriptionFromAudioDB = async ({
   album,
   artist,

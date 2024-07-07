@@ -85,7 +85,7 @@ export function Layout() {
             </div>
           </div>
         </footer>
-        {/* <BottomNavigation /> */}
+        <BottomNavigation />
         <Toaster />
       </UserProvider>
     </Document>

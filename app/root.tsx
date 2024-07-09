@@ -39,6 +39,10 @@ function Document({ children }: { children: React.ReactNode }) {
         <Meta />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <meta charSet="utf-8" />
+        <meta
+          name="google-site-verification"
+          content="VcSXpFWzqeqvHaGPv-xoVDFsA5cmsic0iesBVL1ql5k"
+        />
         <Links />
       </head>
       <body>

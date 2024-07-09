@@ -77,6 +77,9 @@ dependencies:
   date-fns:
     specifier: ^3.6.0
     version: 3.6.0
+  downshift:
+    specifier: ^9.0.6
+    version: 9.0.6(react@18.2.0)
   drizzle-orm:
     specifier: ^0.31.2
     version: 0.31.2(@libsql/client@0.5.6)(@types/pg@8.11.4)(@types/react@18.2.20)(@vercel/postgres@0.7.2)(pg@8.11.3)(react@18.2.0)
@@ -107,6 +110,9 @@ dependencies:
   tailwindcss-animate:
     specifier: ^1.0.7
     version: 1.0.7(tailwindcss@3.4.1)
+  use-debounce:
+    specifier: ^10.0.1
+    version: 10.0.1(react@18.2.0)
   uuid:
     specifier: ^9.0.1
     version: 9.0.1
@@ -534,6 +540,12 @@ packages:
 
   /@babel/runtime@7.24.1:
     resolution: {integrity: sha512-+BIznRzyqBf+2wCTxcKE3wDjfGeCoVE61KSHGpkzqrLi8qxqFwBeUFyId2cxkTmm55fzDGnm0+yCxaxygrLUnQ==}
+    engines: {node: '>=6.9.0'}
+    dependencies:
+      regenerator-runtime: 0.14.1
+
+  /@babel/runtime@7.24.7:
+    resolution: {integrity: sha512-UwgBRMjJP+xv857DCngvqXI3Iq6J4v0wXmwc6sapg+zyhbwmQX67LUEFrkK5tbyJ30jGuG3ZvWpBiB9LCy1kWw==}
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.14.1
@@ -3779,6 +3791,10 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
+  /compute-scroll-into-view@3.1.0:
+    resolution: {integrity: sha512-rj8l8pD4bJ1nx+dAkMhV1xB5RuZEyVysfxJqB1pRchh1KVvwOv9b7CGB8ZfjTImVv2oF+sYMUkMZq6Na5Ftmbg==}
+    dev: false
+
   /concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
@@ -4083,6 +4099,19 @@ packages:
   /dotenv@16.4.5:
     resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
     engines: {node: '>=12'}
+
+  /downshift@9.0.6(react@18.2.0):
+    resolution: {integrity: sha512-lkqWh0eb34XuH+3z3/BH/LGVRV7ur0rielSlxtlQKsjAFF/wc/c0wsM9phUGXyzK2g1QWHoNHQyc+vVAheI17Q==}
+    peerDependencies:
+      react: '>=16.12.0'
+    dependencies:
+      '@babel/runtime': 7.24.7
+      compute-scroll-into-view: 3.1.0
+      prop-types: 15.8.1
+      react: 18.2.0
+      react-is: 18.2.0
+      tslib: 2.6.2
+    dev: false
 
   /drizzle-kit@0.22.7:
     resolution: {integrity: sha512-9THPCb2l1GPt7wxhws9LvTR0YG565ZlVgTuqGMwjs590Kch1pXu4GyjEArVijSF5m0OBj3qgdeKmuJXhKXgWFw==}
@@ -6120,7 +6149,7 @@ packages:
   /media-query-parser@2.0.2:
     resolution: {integrity: sha512-1N4qp+jE0pL5Xv4uEcwVUhIkwdUO3S/9gML90nqKA7v7FcOS5vUtatfzok9S9U1EJU8dHWlcv95WLnKmmxZI9w==}
     dependencies:
-      '@babel/runtime': 7.24.1
+      '@babel/runtime': 7.24.7
 
   /media-typer@0.3.0:
     resolution: {integrity: sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==}
@@ -7313,7 +7342,6 @@ packages:
       loose-envify: 1.4.0
       object-assign: 4.1.1
       react-is: 16.13.1
-    dev: true
 
   /property-information@6.4.1:
     resolution: {integrity: sha512-OHYtXfu5aI2sS2LWFSN5rgJjrQ4pCy8i1jubJLe2QvMF8JJ++HXTUIVWFLfXJoaOfvYYjk2SN8J2wFUWIGXT4w==}
@@ -7404,7 +7432,6 @@ packages:
 
   /react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
-    dev: true
 
   /react-is@17.0.2:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
@@ -7412,7 +7439,6 @@ packages:
 
   /react-is@18.2.0:
     resolution: {integrity: sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==}
-    dev: true
 
   /react-refresh@0.14.0:
     resolution: {integrity: sha512-wViHqhAd8OHeLS/IRMJjTSDHF3U9eWi62F/MledQGPdJGDhodXJ9PBLNGr6WWL7qlH12Mt3TyTpbS+hGXMjCzQ==}
@@ -8550,6 +8576,15 @@ packages:
       '@types/react': 18.2.20
       react: 18.2.0
       tslib: 2.6.2
+    dev: false
+
+  /use-debounce@10.0.1(react@18.2.0):
+    resolution: {integrity: sha512-0uUXjOfm44e6z4LZ/woZvkM8FwV1wiuoB6xnrrOmeAEjRDDzTLQNRFtYHvqUsJdrz1X37j0rVGIVp144GLHGKg==}
+    engines: {node: '>= 16.0.0'}
+    peerDependencies:
+      react: '>=16.8.0'
+    dependencies:
+      react: 18.2.0
     dev: false
 
   /use-sidecar@1.1.2(@types/react@18.2.20)(react@18.2.0):

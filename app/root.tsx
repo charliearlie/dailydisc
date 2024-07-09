@@ -16,6 +16,7 @@ import { UserProvider } from "./contexts/user-context";
 import { getUserFromRequestContext } from "./services/session";
 import { ErrorBoundaryComponent } from "./components/error-boundary";
 import { Toaster } from "./components/common/ui/toaster";
+import { BottomNavigation } from "./components/bottom-navigation/bottom-navigation";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
@@ -75,18 +76,14 @@ export function Layout() {
                 </a>
               </span>
             </p>
-            <div className="flex items-center gap-2">
-              <img
-                src="/DailyDisc.png"
-                alt="Daily Disc"
-                className="h-16 w-16"
-              />
+            <div className="flex items-center gap-2 py-4">
               <p className="text-accent-foreground">
-                &copy; {new Date().getFullYear()}
+                {new Date().getFullYear()}
               </p>
             </div>
           </div>
         </footer>
+        <BottomNavigation />
         <Toaster />
       </UserProvider>
     </Document>

@@ -14,7 +14,6 @@ import {
 } from "~/components/common/ui/drawer";
 import { Form, useFetcher } from "@remix-run/react";
 import { useToast } from "../common/ui/use-toast";
-import { Trash } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -41,11 +40,7 @@ export function ReviewDeleteDialog({
   if (isDesktop) {
     return (
       <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogTrigger asChild>
-          <Button size="sm" variant="destructive">
-            <Trash className="h-3 w-3" />
-          </Button>
-        </AlertDialogTrigger>
+        <AlertDialogTrigger>Delete</AlertDialogTrigger>
         <AlertDialogContent className="sm:max-w-[425px]">
           <AlertDialogHeader>
             <AlertDialogTitle>
@@ -91,11 +86,7 @@ export function ReviewDeleteDialog({
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>
-        <Button size="sm" variant="destructive">
-          <Trash className="h-4 w-4" />
-        </Button>
-      </DrawerTrigger>
+      <DrawerTrigger>Delete</DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-left">
           <DrawerTitle>

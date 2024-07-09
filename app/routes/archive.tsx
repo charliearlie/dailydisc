@@ -1,8 +1,4 @@
-import {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  json,
-} from "@remix-run/node";
+import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { AlbumPreviewCard } from "~/components/album/album-preview-card";
 import {
@@ -23,7 +19,7 @@ export const meta = () => {
     {
       name: "description",
       content:
-        "Browse all albums selected on Daily Disc so far",
+        "Explore our Daily Disc archive: a curated collection of albums featured as our daily picks. Discover new music, rediscover classics, and expand your musical horizons.",
     },
     {
       property: "og:image",
@@ -31,8 +27,6 @@ export const meta = () => {
     },
   ];
 };
-
-
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUserFromRequestContext(request);
@@ -102,25 +96,31 @@ export default function ArchivePage() {
   const ReviewedText = () => {
     if (userReviewedAlbumsCount < archivedAlbums.length) {
       return (
-        <h2 className="text-xl">
+        <h3 className="text-lg">
           So far you have reviewed {userReviewedAlbumsCount} /{" "}
           {archivedAlbums.length} albums
-        </h2>
+        </h3>
       );
     }
 
     return (
-      <h2 className="text-xl">
+      <h3 className="text-lg">
         ⭐️ You have reviewed all {archivedAlbums.length} albums selected so far
-      </h2>
+      </h3>
     );
   };
 
   return (
     <main className="flex-1">
-      <section className="space-y-8 py-8 text-center md:container md:py-16 lg:space-y-12">
+      <section className="space-y-8 py-8 text-center md:container md:py-16">
         <h1 className="text-3xl font-semibold">Daily Disc archive</h1>
+        <h2 className="mt-2 text-xl">
+          Discover the albums that have already been picked for the Daily Disc
+          album of the day.
+        </h2>
         <ReviewedText />
+      </section>
+      <section className="space-y-8 py-8 text-center md:container md:py-16 lg:space-y-12">
         <div className="px-4 md:container md:px-6">
           <Select onValueChange={sortAlbums}>
             <SelectTrigger className="w-[180px]">

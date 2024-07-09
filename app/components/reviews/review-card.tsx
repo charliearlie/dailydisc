@@ -3,15 +3,6 @@ import { Review } from "./types";
 import { useUser } from "~/contexts/user-context";
 import { ReviewDeleteDialog } from "./review-delete-dialog";
 import { ReviewEditDialog } from "./review-edit-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../common/ui/dropdown-menu";
-import { EllipsisVertical } from "lucide-react";
 
 type Props = {
   review: Review;
@@ -26,24 +17,8 @@ export const ReviewCard = ({ review }: Props) => {
         <h4 className="text-lg font-bold">{review.user.username}</h4>
         {isLoggedInUsersReview ? (
           <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <EllipsisVertical />
-                <DropdownMenuContent>
-                  <DropdownMenuLabel>Manage review</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="p-2">
-                    <ReviewEditDialog review={review} />
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="p-2">
-                    <ReviewDeleteDialog
-                      reviewId={review.id}
-                      userId={review.userId}
-                    />
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenuTrigger>
-            </DropdownMenu>
+            <ReviewEditDialog review={review} />
+            <ReviewDeleteDialog reviewId={review.id} userId={review.userId} />
           </div>
         ) : null}
       </div>

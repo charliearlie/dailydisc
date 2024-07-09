@@ -19,6 +19,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/common/ui/drawer";
+import { Edit } from "lucide-react";
 import { Review } from "./types";
 import { EditReviewForm } from "./edit-review-form";
 
@@ -29,7 +30,11 @@ export function ReviewEditDialog({ review }: { review: Review }) {
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger>Edit</DialogTrigger>
+        <DialogTrigger asChild>
+          <Button size="sm" variant="outline">
+            <Edit />
+          </Button>
+        </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit your review</DialogTitle>
@@ -45,7 +50,11 @@ export function ReviewEditDialog({ review }: { review: Review }) {
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger>Edit</DrawerTrigger>
+      <DrawerTrigger asChild>
+        <Button size="sm" variant="outline">
+          <Edit className="h-4 w-4" />
+        </Button>
+      </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-left">
           <DrawerTitle>Edit your review</DrawerTitle>

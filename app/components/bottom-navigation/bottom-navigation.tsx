@@ -34,17 +34,7 @@ export const BottomNavigation = () => {
         <Telescope />
         <span className="text-sm">Discover</span>
       </Link>
-      {/* <SearchDrawer /> */}
-      <Link
-        className={cn(
-          "flex h-full w-full flex-col items-center justify-center gap-1 font-light text-primary-foreground hover:bg-accent",
-          location.pathname === "/discover" ? "bg-accent text-primary" : "",
-        )}
-        to="/discover"
-      >
-        <Telescope />
-        <span className="text-sm">Discover</span>
-      </Link>
+      <SearchDrawer />
       <Link
         className={cn(
           "flex h-full w-full flex-col items-center justify-center gap-1 font-light text-primary-foreground hover:bg-accent",

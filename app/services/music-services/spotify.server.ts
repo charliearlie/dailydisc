@@ -286,7 +286,7 @@ export const searchAlbums = async (query: string): Promise<Album[]> => {
   const searchParams = new URLSearchParams({
     q: query,
     type: "album",
-    limit: "100",
+    limit: "10",
   });
 
   const response = await fetch(
@@ -299,9 +299,25 @@ export const searchAlbums = async (query: string): Promise<Album[]> => {
 
   const data = await response.json();
 
-  console.log("data", data.albums.items);
+  if (data.albums) {
+    return data.albums.items.map((album: SpotifyAlbum) => ({
+      artists: album.artists.map((artist) => ({
+        id: artist.id,
+        name: artist.name,
+        url: artist.external_urls.spotify,
+      })),
+      id: album.id,
+      image: album.images[0].url,
+      name: album.name,
+      primaryArtist: album.artists[0].name,
+      releaseDate: album.release_date,
+      totalTracks: album.total_tracks,
+      type: album.album_type,
+      url: album.external_urls.spotify,
+    }));
+  }
 
-  return data;
+  return [];
 };
 
 export const fetchAlbumDescriptionFromAudioDB = async ({

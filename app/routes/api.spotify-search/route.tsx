@@ -4,8 +4,8 @@ import { searchAlbums } from "~/services/music-services/spotify.server";
 import { invariantResponse } from "~/util/utils";
 
 export const loader = async ({ request }: DataFunctionArgs) => {
-  let { searchParams } = new URL(request.url);
-  let query = searchParams.get("query");
+  const { searchParams } = new URL(request.url);
+  const query = searchParams.get("query");
   invariantResponse(query, "Query is required");
 
   const searchResults = await searchAlbums(query);

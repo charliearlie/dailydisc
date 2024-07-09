@@ -1,5 +1,4 @@
 import {
-  Link,
   Links,
   Meta,
   Outlet,
@@ -7,7 +6,6 @@ import {
   ScrollRestoration,
   json,
   useLoaderData,
-  useLocation,
 } from "@remix-run/react";
 import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 

@@ -7,7 +7,7 @@ export const HeaderNav = () => {
   const user = useUser();
   const isLoggedIn = Boolean(user?.username);
   return (
-    <nav className="ml-auto hidden items-center space-x-4 md:flex">
+    <nav className="hidden items-center space-x-4 md:flex">
       <Link
         className="text-sm font-medium text-white transition-colors"
         to="/archive"

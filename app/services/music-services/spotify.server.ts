@@ -86,48 +86,87 @@ export const getNewAlbums = async (token: string): Promise<Album[]> => {
   return [];
 };
 
-export const getAlbumInfo = async (albumId: string) => {
-  const token = await getSpotifyToken();
+const fetchAlbumInfo = async (
+  albumId: string,
+  token: string,
+  retries = 5,
+  retryDelay = 1000,
+): Promise<SpotifyAlbumFullDetails> => {
   const response = await fetch(`https://api.spotify.com/v1/albums/${albumId}`, {
     method: "GET",
-    headers: { Authorization: "Bearer " + token.access_token },
+    headers: { Authorization: "Bearer " + token },
   });
 
-  const data: SpotifyAlbumFullDetails = await response.json();
+  if (response.status === 429) {
+    if (retries > 0) {
+      const retryAfter = response.headers.get("Retry-After");
+      const retryAfterMs =
+        (retryAfter ? parseInt(retryAfter, 10) : retryDelay / 1000) * 1000;
+      console.warn(
+        `Rate limit exceeded. Retrying after ${retryAfterMs}ms. Retries left: ${retries}`,
+      );
 
-  console.log(`Album title for ${albumId} from Spotify API`, data.name);
+      if (retryAfterMs > 30000) {
+        throw new Error("Spotify usage appears limited");
+      }
 
-  // const description = await fetchFurtherAlbumInfoFromMusicBrainz({
-  //   album: data.name,
-  //   artist: data.artists[0].name,
-  // });
+      await new Promise((resolve) => setTimeout(resolve, retryAfterMs));
+      return fetchAlbumInfo(albumId, token, retries - 1, retryDelay * 2);
+    } else {
+      throw new Error("Max retries reached");
+    }
+  }
 
-  return {
-    artists: await getAlbumArtistsInfo(data.artists.map((artist) => artist.id)),
-    copyrights: data.copyrights,
-    external_urls: data.external_urls,
-    images: data.images,
-    label: data.label,
-    name: data.name,
-    id: data.id,
-    releaseDate: data.release_date,
-    spotifyId: data.id,
-    totalTracks: data.total_tracks,
-    tracks: data.tracks.items.map((track) => ({
-      artists: track.artists.map((artist) => ({
-        id: artist.id,
-        name: artist.name,
-        url: artist.external_urls.spotify,
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+
+  return response.json();
+};
+
+export const getAlbumInfo = async (albumId: string) => {
+  const token = await getSpotifyToken();
+
+  try {
+    const data: SpotifyAlbumFullDetails = await fetchAlbumInfo(
+      albumId,
+      token.access_token,
+    );
+
+    console.log(`Album title for ${albumId} from Spotify API`, data.name);
+
+    return {
+      artists: await getAlbumArtistsInfo(
+        data.artists.map((artist) => artist.id),
+      ),
+      copyrights: data.copyrights,
+      external_urls: data.external_urls,
+      images: data.images,
+      label: data.label,
+      name: data.name,
+      id: data.id,
+      releaseDate: data.release_date,
+      spotifyId: data.id,
+      totalTracks: data.total_tracks,
+      tracks: data.tracks.items.map((track) => ({
+        artists: track.artists.map((artist) => ({
+          id: artist.id,
+          name: artist.name,
+          url: artist.external_urls.spotify,
+        })),
+        durationMs: track.duration_ms,
+        id: track.id,
+        name: track.name,
+        previewUrl: track.preview_url,
+        trackNumber: track.track_number,
+        url: track.external_urls.spotify,
       })),
-      durationMs: track.duration_ms,
-      id: track.id,
-      name: track.name,
-      previewUrl: track.preview_url,
-      trackNumber: track.track_number,
-      url: track.external_urls.spotify,
-    })),
-    type: data.type,
-  };
+      type: data.type,
+    };
+  } catch (error) {
+    console.error("Error fetching album info from Spotify API", error);
+    return null;
+  }
 };
 
 export const getAlbumArtistsInfo = async (

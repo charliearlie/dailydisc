@@ -3,6 +3,10 @@ import { Review } from "./types";
 import { useUser } from "~/contexts/user-context";
 import { ReviewDeleteDialog } from "./review-delete-dialog";
 import { ReviewEditDialog } from "./review-edit-dialog";
+import { EllipsisVertical } from "lucide-react";
+import { Popover } from "../common/ui/popover";
+import { PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
+import { Separator } from "../common/ui/separator";
 
 type Props = {
   review: Review;
@@ -17,8 +21,20 @@ export const ReviewCard = ({ review }: Props) => {
         <h4 className="text-lg font-bold">{review.user.username}</h4>
         {isLoggedInUsersReview ? (
           <div className="flex items-center gap-2">
-            <ReviewEditDialog review={review} />
-            <ReviewDeleteDialog reviewId={review.id} userId={review.userId} />
+            <Popover>
+              <PopoverTrigger>
+                <EllipsisVertical />
+              </PopoverTrigger>
+              <PopoverContent className="flex flex-col bg-card shadow-md">
+                <h4 className="p-2 font-semibold">Manage review</h4>
+                <Separator />
+                <ReviewEditDialog review={review} />
+                <ReviewDeleteDialog
+                  reviewId={review.id}
+                  userId={review.userId}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         ) : null}
       </div>

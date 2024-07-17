@@ -10,6 +10,7 @@ import { Input } from "~/components/common/ui/input";
 import { Button } from "../common/ui/button";
 import { Card } from "../common/ui/card";
 import { Separator } from "@radix-ui/react-select";
+import { cn } from "~/util/utils";
 
 export function SearchInput() {
   const fetcher = useFetcher<typeof loader>();
@@ -71,43 +72,40 @@ export function SearchInput() {
           })}
         />
       </Form>
-      {showResults && fetcher.data?.length && (
-        <Card
-          className="absolute z-50 max-h-72 w-full overflow-y-scroll"
-          {...getMenuProps()}
-        >
-          <ul id="search-list" className="space-y-2">
-            {fetcher?.data?.map(({ id, image, name, primaryArtist }, index) => (
-              <li key={`${name}-${index}`}>
-                <Link
-                  className="flex items-center space-x-2 p-1 hover:opacity-80"
-                  to={encodeURI(`/album/${id}`)}
-                >
-                  <img
-                    className="h-24 w-24 rounded-lg"
-                    src={image}
-                    alt={name}
-                  />
-                  <div className="flex flex-col">
-                    <span className="font-semibold">{name}</span>
-                    <span>{primaryArtist}</span>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          {shouldShowAllResultsButton && (
-            <>
-              <Separator />
-              <Button className="w-full text-foreground" asChild variant="link">
-                <Link to={`/search?query=${debouncedQuery}`}>
-                  See all results
-                </Link>
-              </Button>
-            </>
-          )}
-        </Card>
-      )}
+      <Card
+        className={cn(
+          "absolute z-50 hidden max-h-72 w-full overflow-y-scroll",
+          showResults ? "block" : "",
+        )}
+        {...getMenuProps()}
+      >
+        <ul id="search-list" className="space-y-2">
+          {fetcher?.data?.map(({ id, image, name, primaryArtist }, index) => (
+            <li key={`${name}-${index}`}>
+              <Link
+                className="flex items-center space-x-2 p-1 hover:opacity-80"
+                to={encodeURI(`/album/${id}`)}
+              >
+                <img className="h-24 w-24 rounded-lg" src={image} alt={name} />
+                <div className="flex flex-col">
+                  <span className="font-semibold">{name}</span>
+                  <span>{primaryArtist}</span>
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        {shouldShowAllResultsButton && (
+          <>
+            <Separator />
+            <Button className="w-full text-foreground" asChild variant="link">
+              <Link to={`/search?query=${debouncedQuery}`}>
+                See all results
+              </Link>
+            </Button>
+          </>
+        )}
+      </Card>
     </div>
   );
 }

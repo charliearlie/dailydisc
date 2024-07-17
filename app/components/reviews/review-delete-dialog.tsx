@@ -14,7 +14,6 @@ import {
 } from "~/components/common/ui/drawer";
 import { Form, useFetcher } from "@remix-run/react";
 import { useToast } from "../common/ui/use-toast";
-import { Trash } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -41,10 +40,8 @@ export function ReviewDeleteDialog({
   if (isDesktop) {
     return (
       <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogTrigger asChild>
-          <Button size="sm" variant="destructive">
-            <Trash className="h-3 w-3" />
-          </Button>
+        <AlertDialogTrigger className="p-2 text-start hover:bg-orange-50">
+          Delete
         </AlertDialogTrigger>
         <AlertDialogContent className="sm:max-w-[425px]">
           <AlertDialogHeader>
@@ -74,12 +71,18 @@ export function ReviewDeleteDialog({
               <input hidden name="userId" readOnly value={userId} />
               <div className="flex items-center justify-end gap-2">
                 <AlertDialogCancel asChild>
-                  <>
-                    <Button type="submit" variant="destructive">
-                      Delete
-                    </Button>
-                    <Button variant="outline">Cancel</Button>
-                  </>
+                  <Button
+                    className="bg-destructive"
+                    type="submit"
+                    variant="destructive"
+                  >
+                    Delete
+                  </Button>
+                </AlertDialogCancel>
+                <AlertDialogCancel asChild>
+                  <Button type="button" variant="outline">
+                    Cancel
+                  </Button>
                 </AlertDialogCancel>
               </div>
             </Form>
@@ -91,10 +94,8 @@ export function ReviewDeleteDialog({
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>
-        <Button size="sm" variant="destructive">
-          <Trash className="h-4 w-4" />
-        </Button>
+      <DrawerTrigger className="p-2 text-start hover:bg-orange-50">
+        Delete
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-left">

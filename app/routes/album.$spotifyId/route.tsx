@@ -21,22 +21,29 @@ import { RelatedAlbums } from "~/components/album/related-albums";
 import { AlbumDuration } from "~/components/album/album-duration";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  return [
-    { title: `${data?.album.name} | DailyDisc` },
-    {
-      name: "description",
-      content: `Album by ${data?.album.artists[0].name}`,
-    },
-    {
-      property: "og:image",
-      content: data?.album.images?.[0].url,
-    },
-  ];
+  if (data?.album) {
+    return [
+      { title: `${data?.album.name} | DailyDisc` },
+      {
+        name: "description",
+        content: `Album by ${data?.album.artists[0].name}`,
+      },
+      {
+        property: "og:image",
+        content: data?.album.images?.[0].url,
+      },
+    ];
+  }
+
+  return [{ title: `DailyDisc` }];
 };
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   invariantResponse(params.spotifyId, "Expected params.spotifyId");
   const album = await getAlbumInfo(params.spotifyId);
+  if (!album) {
+    return json({ album: null, dailyAlbumDate: null, relatedAlbums: null });
+  }
   const relatedAlbums = await getAlbumsByArtist({
     artistId: album.artists[0]?.id,
     exclude: album.id,
@@ -47,16 +54,18 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   return json({ album, dailyAlbumDate, relatedAlbums });
 };
 
-export default function AddArtistRoute() {
+export default function AlbumRoute() {
   const { album, dailyAlbumDate, relatedAlbums } =
     useLoaderData<typeof loader>();
+
+  if (!album) {
+    return <h2>The Spotify API has goofed</h2>;
+  }
   const numberOfTracks = album.tracks.length;
   const albumDuration = album.tracks.reduce(
     (acc, track) => acc + track.durationMs!,
     0,
   );
-
-  console.log;
 
   return (
     <main className="relative flex flex-col">

@@ -114,6 +114,41 @@ export const getAllAlbums = async (userId?: number) => {
   return albumsWithAverageRating;
 };
 
+export const getAllArchivedAlbumDates = async () => {
+  const archivedAlbums = await db.query.albums.findMany({
+    with: {
+      reviews: {
+        columns: {
+          rating: true,
+          userId: true,
+        },
+      },
+      artistsToAlbums: {
+        with: {
+          artist: {
+            columns: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+    columns: {
+      genre: true,
+      id: true,
+      image: true,
+      listenDate: true,
+      spotifyUrl: true,
+      title: true,
+      year: true,
+    },
+    orderBy: [desc(albums.listenDate)],
+    where: eq(albums.archived, 1),
+  });
+
+  return archivedAlbums.map((album) => album.listenDate);
+};
+
 export const getAllArtists = async () => {
   const artistIdsWithAlbums = await db.query.artistsToAlbums.findMany({
     columns: {

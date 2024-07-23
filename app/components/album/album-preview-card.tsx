@@ -36,7 +36,7 @@ export const AlbumPreviewCard = ({
   };
 
   return (
-    <Link to={`/?date=${format(new Date(album.listenDate!), "yyyy-MM-dd")}`}>
+    <Link to={`/archive/${format(new Date(album.listenDate!), "yyyy-MM-dd")}`}>
       <Card
         className={
           "shadow-md transition-transform hover:overflow-visible hover:bg-accent md:hover:scale-105"

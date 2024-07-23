@@ -25,7 +25,7 @@ import {
   TabsTrigger,
 } from "~/components/common/ui/tabs";
 import { AlbumPopover } from "~/components/album/album-popover";
-import { asset, removeFeaturedArtists } from "~/util/utils";
+import { asset, invariantResponse, removeFeaturedArtists } from "~/util/utils";
 import { ReviewFormSchema } from "~/components/reviews/types";
 import { ReviewForm } from "~/components/reviews/review-form";
 import { ErrorBoundaryComponent } from "~/components/error-boundary";
@@ -42,7 +42,9 @@ import {
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
-    { title: "Daily Disc" },
+    {
+      title: `Daily Disc Archive | ${data?.artists[0]?.name} - ${data?.album.title}`,
+    },
     {
       name: "description",
       content:
@@ -50,7 +52,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     },
     {
       property: "og:image",
-      content: data?.socialImage,
+      content: data?.album?.image,
     },
     {
       charset: "utf-8",
@@ -59,12 +61,12 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   ];
 };
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const socialImage = asset("/DailyDisc.png", new URL(request.url));
+export const loader = async ({ params, request }: LoaderFunctionArgs) => {
+  invariantResponse(params.albumDate, "Expected params.albumDate");
 
   const user = await getUserFromRequestContext(request);
   const todaysDate = new Date();
-  const albumDate = todaysDate;
+  const albumDate = new Date(params.albumDate);
 
   if (albumDate <= todaysDate) {
     albumDate.setUTCHours(0, 0, 0, 0);
@@ -117,7 +119,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         extraInfo: album.spotifyUrl
           ? await getAlbumInfo(album.spotifyUrl)
           : null,
-        socialImage,
       });
     }
   }
@@ -167,7 +168,7 @@ export default function Index() {
   const user = useUser();
   const isLoggedIn = Boolean(user?.username);
 
-  if (!loaderData) return <p>Album has not been selected yet..</p>;
+  if (!loaderData) return <p>Album for this date has not been selected yet</p>;
 
   const handleDateChange = async (date: Date) => {
     const formattedDate = format(date, "yyyy-MM-dd");

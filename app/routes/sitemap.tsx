@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import { getAllArchivedAlbumDates } from "~/services/album.server";
 
 function generateSitemapXml(routes: string[]) {
-  const baseUrl = "https://yourwebsite.com"; // Replace with your actual domain
+  const baseUrl = "https://www.dailydisc.club";
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

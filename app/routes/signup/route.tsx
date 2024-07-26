@@ -1,8 +1,8 @@
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { ActionFunctionArgs, json } from "@remix-run/node";
-import { Form, Link, useActionData } from "@remix-run/react";
-import { MessageCircleWarning } from "lucide-react";
+import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
+import { useState } from "react";
 import {
   Alert,
   AlertDescription,
@@ -11,7 +11,13 @@ import {
 import { Button } from "~/components/common/ui/button";
 import { FormField } from "~/components/form/form-field";
 import { SignUpFormSchema } from "~/services/schemas";
-import { areUserDetailsAvailable } from "~/services/user";
+import { areUserDetailsAvailable, createUser } from "~/services/user";
+import { Captcha } from "~/components/captcha";
+import { createUserSession } from "~/services/session";
+
+export const loader = async () => {
+  return json({ recaptchaSiteKey: process.env.HCAPTCHA_SITE_KEY });
+};
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
@@ -23,6 +29,34 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       {
         status: submission.status === "error" ? 400 : 200,
       },
+    );
+  }
+
+  console.log("ENV", process.env.NODE_ENV);
+
+  const verifyUrl = "https://hcaptcha.com/siteverify";
+  const data = new URLSearchParams();
+  data.append("response", submission.value.captcha as string);
+  data.append("secret", process.env.HCAPTCHA_SECRET_KEY!);
+
+  const response = await fetch(verifyUrl, {
+    method: "POST",
+    body: data,
+  });
+
+  const responseData = await response.json();
+
+  console.log("responseData", responseData);
+
+  if (!responseData.success) {
+    return json(
+      {
+        result: submission.reply({
+          formErrors: ["reCAPTCHA verification failed"],
+        }),
+        status: "error",
+      } as const,
+      { status: 400 },
     );
   }
 
@@ -40,22 +74,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     } as const);
   }
 
-  // const userId = await createUser(submission.value);
+  const userId = await createUser(submission.value);
 
-  // return createUserSession(userId, "/");
-
-  return json({
-    result: submission.reply({
-      formErrors: [
-        "Registration is disabled at the moment. Please try again later.",
-      ],
-    }),
-    status: "error",
-  } as const);
+  return createUserSession(userId, "/");
 };
 
 export default function SignUpPage() {
+  const { recaptchaSiteKey } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const [captcha, setCaptcha] = useState("");
   const [form, fields] = useForm({
     id: "signup-form",
     lastResult: actionData?.result,
@@ -75,14 +102,12 @@ export default function SignUpPage() {
       <h1 className="my-8 self-center text-2xl font-bold md:text-4xl">
         Sign up to get involved
       </h1>
-      <Alert variant="destructive">
-        <AlertTitle>
-          <MessageCircleWarning />
-        </AlertTitle>
-        <AlertDescription>
-          Registration is disabled at the moment. Please try again later.
-        </AlertDescription>
-      </Alert>
+      {actionData?.status === "error" && (
+        <Alert variant="destructive">
+          <AlertTitle>Something went wrong</AlertTitle>
+          <AlertDescription>{form.errors}</AlertDescription>
+        </Alert>
+      )}
       <Form method="post" {...getFormProps(form)}>
         <FormField
           label="Email"
@@ -90,6 +115,17 @@ export default function SignUpPage() {
         />
         <FormField label="Username" name="username" type="text" />
         <FormField label="Password" name="password" type="password" />
+        <div className="flex justify-stretch">
+          <Captcha
+            sitekey={recaptchaSiteKey}
+            onVerify={(token) => {
+              if (token) {
+                setCaptcha(token);
+              }
+            }}
+          />
+        </div>
+        <input type="hidden" name="captcha" value={captcha} />
         <Button className="w-full" type="submit">
           Sign Up
         </Button>

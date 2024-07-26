@@ -25,7 +25,7 @@ import {
   TabsTrigger,
 } from "~/components/common/ui/tabs";
 import { AlbumPopover } from "~/components/album/album-popover";
-import { asset, invariantResponse, removeFeaturedArtists } from "~/util/utils";
+import { invariantResponse, removeFeaturedArtists } from "~/util/utils";
 import { ReviewFormSchema } from "~/components/reviews/types";
 import { ReviewForm } from "~/components/reviews/review-form";
 import { ErrorBoundaryComponent } from "~/components/error-boundary";

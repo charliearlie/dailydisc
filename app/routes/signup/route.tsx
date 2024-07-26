@@ -2,6 +2,7 @@ import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
+import { MessageCircleWarning } from "lucide-react";
 import { useState } from "react";
 import {
   Alert,
@@ -16,7 +17,7 @@ import { Captcha } from "~/components/captcha";
 import { createUserSession } from "~/services/session";
 
 export const loader = async () => {
-  return json({ recaptchaSiteKey: process.env.HCAPTCHA_SITE_KEY });
+  return json({ recaptchaSiteKey: process.env.HCAPTCHA_SITE_KEY! });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -32,23 +33,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   }
 
-  console.log("ENV", process.env.NODE_ENV);
-
-  const verifyUrl = "https://hcaptcha.com/siteverify";
-  const data = new URLSearchParams();
-  data.append("response", submission.value.captcha as string);
-  data.append("secret", process.env.HCAPTCHA_SECRET_KEY!);
-
-  const response = await fetch(verifyUrl, {
+  const verifyCaptchaUrl = "https://hcaptcha.com/siteverify";
+  const response = await fetch(verifyCaptchaUrl, {
     method: "POST",
-    body: data,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      secret: process.env.RECAPTCHA_SECRET_KEY!,
+      response: submission.value.captcha as string,
+    }),
   });
 
-  const responseData = await response.json();
+  const data = await response.json();
 
-  console.log("responseData", responseData);
-
-  if (!responseData.success) {
+  if (!data.success) {
     return json(
       {
         result: submission.reply({
@@ -102,12 +101,14 @@ export default function SignUpPage() {
       <h1 className="my-8 self-center text-2xl font-bold md:text-4xl">
         Sign up to get involved
       </h1>
-      {actionData?.status === "error" && (
-        <Alert variant="destructive">
-          <AlertTitle>Something went wrong</AlertTitle>
-          <AlertDescription>{form.errors}</AlertDescription>
-        </Alert>
-      )}
+      <Alert variant="destructive">
+        <AlertTitle>
+          <MessageCircleWarning />
+        </AlertTitle>
+        <AlertDescription>
+          Registration is disabled at the moment. Please try again later.
+        </AlertDescription>
+      </Alert>
       <Form method="post" {...getFormProps(form)}>
         <FormField
           label="Email"

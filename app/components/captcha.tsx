@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import HCaptcha from "@hcaptcha/react-hcaptcha";
+import { useRef, useEffect } from "react";
+import { ReCAPTCHA } from "react-google-recaptcha";
 
 interface ReCaptchaProps {
   sitekey: string;
@@ -7,7 +7,13 @@ interface ReCaptchaProps {
 }
 
 export const Captcha = ({ onVerify, sitekey }: ReCaptchaProps) => {
-  const recaptchaRef = useRef<HCaptcha>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
-  return <HCaptcha ref={recaptchaRef} sitekey={sitekey} onVerify={onVerify} />;
+  useEffect(() => {
+    if (recaptchaRef.current) {
+      recaptchaRef.current.reset();
+    }
+  }, []);
+
+  return <ReCAPTCHA ref={recaptchaRef} sitekey={sitekey} onChange={onVerify} />;
 };

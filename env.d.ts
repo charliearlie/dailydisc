@@ -8,8 +8,8 @@ const schema = z.object({
   SPOTIFY_CLIENT_ID: z.string(),
   SPOTIFY_CLIENT_SECRET: z.string(),
   SPOTIFY_ACCESS_TOKEN: z.string(),
-  HCAPTCHA_SECRET: z.string(),
-  HCAPTCHA_SITE_KEY: z.string(),
+  RECAPTCHA_SECRET: z.string(),
+  RECAPTCHA_SITE_KEY: z.string(),
 });
 
 declare global {

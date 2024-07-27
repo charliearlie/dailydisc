@@ -9,7 +9,6 @@ export const SignUpFormSchema = z.object({
   email: z.string().email(),
   username: z.string().min(3),
   password: z.string().min(8),
-  captcha: z.string(),
 });
 
 const MAX_FILE_SIZE = 1024 * 1024 * 2;

@@ -2,8 +2,6 @@ import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
-import { MessageCircleWarning } from "lucide-react";
-import { useState } from "react";
 import {
   Alert,
   AlertDescription,
@@ -13,15 +11,18 @@ import { Button } from "~/components/common/ui/button";
 import { FormField } from "~/components/form/form-field";
 import { SignUpFormSchema } from "~/services/schemas";
 import { areUserDetailsAvailable, createUser } from "~/services/user";
-import { Captcha } from "~/components/captcha";
 import { createUserSession } from "~/services/session";
+import { HoneypotInputs, HoneypotProvider } from "remix-utils/honeypot/react";
+
+import { checkForHoneypot, honeypot } from "~/services/honeypot.server";
 
 export const loader = async () => {
-  return json({ recaptchaSiteKey: process.env.HCAPTCHA_SITE_KEY! });
+  return json({ honeypotProps: honeypot.getInputProps() });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
+  checkForHoneypot(formData);
   const submission = parseWithZod(formData, { schema: SignUpFormSchema });
 
   if (submission.status !== "success") {
@@ -30,32 +31,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       {
         status: submission.status === "error" ? 400 : 200,
       },
-    );
-  }
-
-  const verifyCaptchaUrl = "https://hcaptcha.com/siteverify";
-  const response = await fetch(verifyCaptchaUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({
-      secret: process.env.RECAPTCHA_SECRET_KEY!,
-      response: submission.value.captcha as string,
-    }),
-  });
-
-  const data = await response.json();
-
-  if (!data.success) {
-    return json(
-      {
-        result: submission.reply({
-          formErrors: ["reCAPTCHA verification failed"],
-        }),
-        status: "error",
-      } as const,
-      { status: 400 },
     );
   }
 
@@ -79,9 +54,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function SignUpPage() {
-  const { recaptchaSiteKey } = useLoaderData<typeof loader>();
+  const { honeypotProps } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const [captcha, setCaptcha] = useState("");
   const [form, fields] = useForm({
     id: "signup-form",
     lastResult: actionData?.result,
@@ -101,42 +75,32 @@ export default function SignUpPage() {
       <h1 className="my-8 self-center text-2xl font-bold md:text-4xl">
         Sign up to get involved
       </h1>
-      <Alert variant="destructive">
-        <AlertTitle>
-          <MessageCircleWarning />
-        </AlertTitle>
-        <AlertDescription>
-          Registration is disabled at the moment. Please try again later.
-        </AlertDescription>
-      </Alert>
-      <Form method="post" {...getFormProps(form)}>
-        <FormField
-          label="Email"
-          {...getInputProps(fields.email, { type: "text" })}
-        />
-        <FormField label="Username" name="username" type="text" />
-        <FormField label="Password" name="password" type="password" />
-        <div className="flex justify-stretch">
-          <Captcha
-            sitekey={recaptchaSiteKey}
-            onVerify={(token) => {
-              if (token) {
-                setCaptcha(token);
-              }
-            }}
+      {actionData?.status === "error" && (
+        <Alert variant="destructive">
+          <AlertTitle>Something went wrong</AlertTitle>
+          <AlertDescription>{form.errors}</AlertDescription>
+        </Alert>
+      )}
+      <HoneypotProvider {...honeypotProps}>
+        <Form method="post" {...getFormProps(form)}>
+          <FormField
+            label="Email"
+            {...getInputProps(fields.email, { type: "text" })}
           />
-        </div>
-        <input type="hidden" name="captcha" value={captcha} />
-        <Button className="w-full" type="submit">
-          Sign Up
-        </Button>
-        <div className="mt-4 text-center text-sm">
-          Already have an account?{" "}
-          <Link className="underline" to="/login">
-            Login
-          </Link>
-        </div>
-      </Form>
+          <FormField label="Username" name="username" type="text" />
+          <FormField label="Password" name="password" type="password" />
+          <HoneypotInputs />
+          <Button className="w-full" type="submit">
+            Sign Up
+          </Button>
+          <div className="mt-4 text-center text-sm">
+            Already have an account?{" "}
+            <Link className="underline" to="/login">
+              Login
+            </Link>
+          </div>
+        </Form>
+      </HoneypotProvider>
     </main>
   );
 }

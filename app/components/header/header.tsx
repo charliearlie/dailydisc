@@ -12,7 +12,7 @@ export const Header = () => {
         >
           <img
             className="h-12 w-12 md:h-16 md:w-16"
-            src="/DailyDisc.png"
+            src="https://res.cloudinary.com/bidhub/image/upload/w_150,h_150/DailyDisc"
             alt="Daily Disc"
           />
           <span>DailyDisc</span>

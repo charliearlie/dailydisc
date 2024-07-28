@@ -1,4 +1,4 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
+import { LoaderFunctionArgs, json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { LoaderIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -38,51 +38,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     archivedAlbums,
     page,
     totalArchivedAlbums,
-  });
-};
-
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const user = await getUserFromRequestContext(request);
-  const formData = await request.formData();
-  const sort = formData.get("sort");
-  const page = parseInt((formData.get("page") as string) || "1", 10);
-  const limit = 16;
-  const offset = (page - 1) * limit;
-
-  const archivedAlbums = await getArchiveAlbums(user?.id, limit, offset);
-
-  if (sort === "listenDate") {
-    return json(archivedAlbums);
-  }
-
-  if (sort === "userRating") {
-    return json(
-      archivedAlbums.sort((a, b) => {
-        const ratingA = a.usersRating ?? -1;
-        const ratingB = b.usersRating ?? -1;
-
-        return ratingB - ratingA;
-      }),
-    );
-  }
-
-  return json({
-    archivedAlbums: archivedAlbums.sort((a, b) => {
-      if (a.averageRating === "" && b.averageRating === "") {
-        return 0;
-      }
-
-      if (a.averageRating === "") {
-        return 1;
-      }
-
-      if (b.averageRating === "") {
-        return -1;
-      }
-
-      return Number(b.averageRating) - Number(a.averageRating);
-    }),
-    page,
   });
 };
 
@@ -134,17 +89,6 @@ export default function ArchivePage() {
       setIsLoading(false);
     }
   }, [fetcher.data, totalArchivedAlbums]);
-
-  const sortAlbums = async (value: string) => {
-    const formData = new FormData();
-    formData.append("sort", value);
-    formData.append("page", "1");
-    fetcher.submit(formData, {
-      method: "POST",
-    });
-    setPage(1);
-    setAlbums([]);
-  };
 
   const userReviewedAlbumsCount = albums.filter(
     (album) => album.usersRating !== null,

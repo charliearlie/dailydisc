@@ -1,11 +1,11 @@
-import { desc, eq, notInArray } from "drizzle-orm";
+import { count, desc, eq, notInArray } from "drizzle-orm";
 import { db } from "~/drizzle/db.server";
 import { albums, artists } from "~/drizzle/schema.server";
 
 export const getArchiveAlbums = async (
   userId?: number,
-  limit?: number,
-  offset?: number,
+  limit: number = 16,
+  offset: number = 0,
 ) => {
   const archivedAlbums = await db.query.albums.findMany({
     where: eq(albums.archived, 1),
@@ -35,8 +35,8 @@ export const getArchiveAlbums = async (
       year: true,
     },
     orderBy: [desc(albums.listenDate)],
-    limit: limit ?? 100,
-    offset: offset ?? 0,
+    limit: limit,
+    offset: offset,
   });
 
   const albumsWithAverageRating = archivedAlbums.map((album) => {
@@ -58,6 +58,15 @@ export const getArchiveAlbums = async (
   });
 
   return albumsWithAverageRating;
+};
+
+export const getArchivedAlbumCount = async () => {
+  const [response] = await db
+    .select({ count: count() })
+    .from(albums)
+    .where(eq(albums.archived, 1));
+
+  return response.count;
 };
 
 export const getDailyAlbumDate = async (spotifyId: string) => {

@@ -1,12 +1,16 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
-import { LoaderIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import { AlbumPreviewCard } from "~/components/album/album-preview-card";
 import {
-  getArchiveAlbums,
-  getArchivedAlbumCount,
-} from "~/services/album.server";
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/common/ui/select";
+import { getArchiveAlbums } from "~/services/album.server";
 import { getUserFromRequestContext } from "~/services/session";
 
 export const meta = () => {
@@ -25,31 +29,18 @@ export const meta = () => {
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const url = new URL(request.url);
-  const page = parseInt(url.searchParams.get("page") || "1", 10);
-  const limit = 16;
-  const offset = (page - 1) * limit;
-
   const user = await getUserFromRequestContext(request);
-  const archivedAlbums = await getArchiveAlbums(user?.id, limit, offset);
-  const totalArchivedAlbums = await getArchivedAlbumCount();
+  const archivedAlbums = await getArchiveAlbums(user?.id, 50);
 
-  return json({
-    archivedAlbums,
-    page,
-    totalArchivedAlbums,
-  });
+  return json(archivedAlbums);
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await getUserFromRequestContext(request);
   const formData = await request.formData();
   const sort = formData.get("sort");
-  const page = parseInt((formData.get("page") as string) || "1", 10);
-  const limit = 16;
-  const offset = (page - 1) * limit;
 
-  const archivedAlbums = await getArchiveAlbums(user?.id, limit, offset);
+  const archivedAlbums = await getArchiveAlbums(user?.id);
 
   if (sort === "listenDate") {
     return json(archivedAlbums);
@@ -66,8 +57,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   }
 
-  return json({
-    archivedAlbums: archivedAlbums.sort((a, b) => {
+  return json(
+    archivedAlbums.sort((a, b) => {
       if (a.averageRating === "" && b.averageRating === "") {
         return 0;
       }
@@ -82,87 +73,39 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
       return Number(b.averageRating) - Number(a.averageRating);
     }),
-    page,
-  });
+  );
 };
 
 export default function ArchivePage() {
   const fetcher = useFetcher<typeof loader>();
-  const {
-    archivedAlbums: initialAlbums,
-    page: initialPage,
-    totalArchivedAlbums,
-  } = useLoaderData<typeof loader>();
+  const loaderData = useLoaderData<typeof loader>();
 
-  const [albums, setAlbums] = useState(initialAlbums);
-  const [page, setPage] = useState(initialPage);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(
-    initialAlbums.length < totalArchivedAlbums,
-  );
-  const loaderRef = useRef(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !isLoading) {
-          setIsLoading(true);
-          fetcher.load(`/archive?page=${page + 1}`);
-        }
-      },
-      { threshold: 1.0 },
-    );
-
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [page, isLoading, fetcher]);
-
-  useEffect(() => {
-    if (fetcher.data?.archivedAlbums) {
-      setAlbums((prevAlbums) => [
-        ...prevAlbums,
-        ...(fetcher.data?.archivedAlbums ?? []),
-      ]);
-      setPage((prevPage) => prevPage + 1);
-      setHasMore(
-        albums.length + fetcher.data.archivedAlbums.length <
-          totalArchivedAlbums,
-      );
-      setIsLoading(false);
-    }
-  }, [fetcher.data, totalArchivedAlbums]);
+  const archivedAlbums = fetcher.data || loaderData;
+  const userReviewedAlbumsCount = archivedAlbums.filter(
+    (album) => album.usersRating !== null,
+  ).length;
 
   const sortAlbums = async (value: string) => {
     const formData = new FormData();
     formData.append("sort", value);
-    formData.append("page", "1");
     fetcher.submit(formData, {
       method: "POST",
     });
-    setPage(1);
-    setAlbums([]);
   };
 
-  const userReviewedAlbumsCount = albums.filter(
-    (album) => album.usersRating !== null,
-  ).length;
-
   const ReviewedText = () => {
-    if (userReviewedAlbumsCount < albums.length) {
+    if (userReviewedAlbumsCount < archivedAlbums.length) {
       return (
         <h3 className="text-lg">
-          So far you have reviewed {userReviewedAlbumsCount} / {albums.length}{" "}
-          albums
+          So far you have reviewed {userReviewedAlbumsCount} /{" "}
+          {archivedAlbums.length} albums
         </h3>
       );
     }
 
     return (
       <h3 className="text-lg">
-        ⭐️ You have reviewed all {albums.length} albums selected so far
+        ⭐️ You have reviewed all {archivedAlbums.length} albums selected so far
       </h3>
     );
   };
@@ -178,16 +121,26 @@ export default function ArchivePage() {
         <ReviewedText />
       </section>
       <section className="space-y-8 py-8 text-center md:container md:py-16 lg:space-y-12">
+        <div className="px-4 md:container md:px-6">
+          <Select onValueChange={sortAlbums}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by most recent" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Sorting options</SelectLabel>
+                <SelectItem value="listenDate">Most recent</SelectItem>
+                <SelectItem value="userRating">My rating</SelectItem>
+                <SelectItem value="accumulativeRating">Rating</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
         <div className="grid grid-cols-1 gap-6 px-4 py-8 md:grid-cols-2 md:px-6 lg:grid-cols-4 xl:grid-cols-4">
-          {albums.map((album) => (
+          {archivedAlbums.map((album) => (
             <AlbumPreviewCard album={album} key={album.id} />
           ))}
         </div>
-        {hasMore ? (
-          <div className="flex w-full justify-center" ref={loaderRef}>
-            {isLoading && <LoaderIcon className="animate-spin" />}
-          </div>
-        ) : null}
       </section>
     </main>
   );

@@ -26,6 +26,15 @@ export const getUserById = async (id: number) => {
   return user;
 };
 
+export const getUserByUsername = async (username: string) => {
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.username, username));
+
+  return user;
+};
+
 export const areUserDetailsAvailable = async (
   email: string,
   username: string,

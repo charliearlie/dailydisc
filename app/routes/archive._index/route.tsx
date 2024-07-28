@@ -28,53 +28,53 @@ export const meta = () => {
   ];
 };
 
-// export const loader = async ({ request }: LoaderFunctionArgs) => {
-//   const user = await getUserFromRequestContext(request);
-//   const archivedAlbums = await getArchiveAlbums(user?.id);
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const user = await getUserFromRequestContext(request);
+  const archivedAlbums = await getArchiveAlbums(user?.id);
 
-//   return json(archivedAlbums);
-// };
+  return json(archivedAlbums);
+};
 
-// export const action = async ({ request }: ActionFunctionArgs) => {
-//   const user = await getUserFromRequestContext(request);
-//   const formData = await request.formData();
-//   const sort = formData.get("sort");
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const user = await getUserFromRequestContext(request);
+  const formData = await request.formData();
+  const sort = formData.get("sort");
 
-//   const archivedAlbums = await getArchiveAlbums(user?.id);
+  const archivedAlbums = await getArchiveAlbums(user?.id);
 
-//   if (sort === "listenDate") {
-//     return json(archivedAlbums);
-//   }
+  if (sort === "listenDate") {
+    return json(archivedAlbums);
+  }
 
-//   if (sort === "userRating") {
-//     return json(
-//       archivedAlbums.sort((a, b) => {
-//         const ratingA = a.usersRating ?? -1;
-//         const ratingB = b.usersRating ?? -1;
+  if (sort === "userRating") {
+    return json(
+      archivedAlbums.sort((a, b) => {
+        const ratingA = a.usersRating ?? -1;
+        const ratingB = b.usersRating ?? -1;
 
-//         return ratingB - ratingA;
-//       }),
-//     );
-//   }
+        return ratingB - ratingA;
+      }),
+    );
+  }
 
-//   return json(
-//     archivedAlbums.sort((a, b) => {
-//       if (a.averageRating === "" && b.averageRating === "") {
-//         return 0;
-//       }
+  return json(
+    archivedAlbums.sort((a, b) => {
+      if (a.averageRating === "" && b.averageRating === "") {
+        return 0;
+      }
 
-//       if (a.averageRating === "") {
-//         return 1;
-//       }
+      if (a.averageRating === "") {
+        return 1;
+      }
 
-//       if (b.averageRating === "") {
-//         return -1;
-//       }
+      if (b.averageRating === "") {
+        return -1;
+      }
 
-//       return Number(b.averageRating) - Number(a.averageRating);
-//     }),
-//   );
-// };
+      return Number(b.averageRating) - Number(a.averageRating);
+    }),
+  );
+};
 
 export default function ArchivePage() {
   // const fetcher = useFetcher<typeof loader>();

@@ -13,20 +13,20 @@ import {
 import { getArchiveAlbums } from "~/services/album.server";
 import { getUserFromRequestContext } from "~/services/session";
 
-// export const meta = () => {
-//   return [
-//     { title: "Archive | Daily Disc" },
-//     {
-//       name: "description",
-//       content:
-//         "Explore our Daily Disc archive: a curated collection of albums featured as our daily picks. Discover new music, rediscover classics, and expand your musical horizons.",
-//     },
-//     {
-//       property: "og:image",
-//       content: "/DailyDisc.png",
-//     },
-//   ];
-// };
+export const meta = () => {
+  return [
+    { title: "Archive | Daily Disc" },
+    {
+      name: "description",
+      content:
+        "Explore our Daily Disc archive: a curated collection of albums featured as our daily picks. Discover new music, rediscover classics, and expand your musical horizons.",
+    },
+    {
+      property: "og:image",
+      content: "/DailyDisc.png",
+    },
+  ];
+};
 
 // export const loader = async ({ request }: LoaderFunctionArgs) => {
 //   const user = await getUserFromRequestContext(request);

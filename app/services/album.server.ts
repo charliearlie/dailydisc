@@ -2,7 +2,11 @@ import { desc, eq, notInArray } from "drizzle-orm";
 import { db } from "~/drizzle/db.server";
 import { albums, artists } from "~/drizzle/schema.server";
 
-export const getArchiveAlbums = async (userId?: number) => {
+export const getArchiveAlbums = async (
+  userId?: number,
+  limit?: number,
+  offset?: number,
+) => {
   const archivedAlbums = await db.query.albums.findMany({
     where: eq(albums.archived, 1),
     with: {
@@ -31,7 +35,8 @@ export const getArchiveAlbums = async (userId?: number) => {
       year: true,
     },
     orderBy: [desc(albums.listenDate)],
-    limit: 10,
+    limit: limit ?? 100,
+    offset: offset ?? 0,
   });
 
   const albumsWithAverageRating = archivedAlbums.map((album) => {

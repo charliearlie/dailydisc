@@ -30,7 +30,7 @@ export const meta = () => {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUserFromRequestContext(request);
-  const archivedAlbums = await getArchiveAlbums(user?.id);
+  const archivedAlbums = await getArchiveAlbums(user?.id, 20);
 
   return json(archivedAlbums);
 };

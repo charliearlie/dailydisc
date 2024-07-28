@@ -31,6 +31,7 @@ export const getArchiveAlbums = async (userId?: number) => {
       year: true,
     },
     orderBy: [desc(albums.listenDate)],
+    limit: 10,
   });
 
   const albumsWithAverageRating = archivedAlbums.map((album) => {

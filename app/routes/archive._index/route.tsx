@@ -29,8 +29,8 @@ export const meta = () => {
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const user = await getUserFromRequestContext(request);
-  const archivedAlbums = await getArchiveAlbums(user?.id);
+  // const user = await getUserFromRequestContext(request);
+  const archivedAlbums = await getArchiveAlbums(1);
 
   return json(archivedAlbums);
 };

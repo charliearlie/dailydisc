@@ -41,7 +41,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const averageRating = totalRating / album.reviews.length / 2;
 
     const usersRating =
-      album.reviews.find((review) => review.userId === userId)?.rating || null;
+      album.reviews.find((review) => review.userId === user?.id)?.rating ||
+      null;
 
     return {
       ...album,
@@ -69,7 +70,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const averageRating = totalRating / album.reviews.length / 2;
 
     const usersRating =
-      album.reviews.find((review) => review.userId === userId)?.rating || null;
+      album.reviews.find((review) => review.userId === user?.id)?.rating ||
+      null;
 
     return {
       ...album,

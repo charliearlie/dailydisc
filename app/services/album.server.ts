@@ -4,7 +4,7 @@ import { albums, artists } from "~/drizzle/schema.server";
 
 export const getArchiveAlbums = async (
   userId?: number,
-  limit: number = 16,
+  limit: number = 200,
   offset: number = 0,
 ) => {
   const archivedAlbums = await db.query.albums.findMany({
@@ -39,25 +39,7 @@ export const getArchiveAlbums = async (
     offset: offset,
   });
 
-  const albumsWithAverageRating = archivedAlbums.map((album) => {
-    const totalRating = album.reviews.reduce(
-      (acc, review) => acc + review.rating,
-      0,
-    );
-
-    const averageRating = totalRating / album.reviews.length / 2;
-
-    const usersRating =
-      album.reviews.find((review) => review.userId === userId)?.rating || null;
-
-    return {
-      ...album,
-      averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
-      usersRating: usersRating ? usersRating / 2 : null,
-    };
-  });
-
-  return albumsWithAverageRating;
+  return archivedAlbums;
 };
 
 export const getArchivedAlbumCount = async () => {

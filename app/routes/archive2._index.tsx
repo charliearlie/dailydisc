@@ -30,9 +30,27 @@ export const meta = () => {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUserFromRequestContext(request);
-  const archivedAlbums = await getArchiveAlbums(user?.id, 50);
+  const archivedAlbums = await getArchiveAlbums(user?.id);
 
-  return json(archivedAlbums);
+  const albumsWithAverageRating = archivedAlbums.map((album) => {
+    const totalRating = album.reviews.reduce(
+      (acc, review) => acc + review.rating,
+      0,
+    );
+
+    const averageRating = totalRating / album.reviews.length / 2;
+
+    const usersRating =
+      album.reviews.find((review) => review.userId === userId)?.rating || null;
+
+    return {
+      ...album,
+      averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
+      usersRating: usersRating ? usersRating / 2 : null,
+    };
+  });
+
+  return json(albumsWithAverageRating);
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -42,13 +60,31 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const archivedAlbums = await getArchiveAlbums(user?.id);
 
+  const albumsWithAverageRating = archivedAlbums.map((album) => {
+    const totalRating = album.reviews.reduce(
+      (acc, review) => acc + review.rating,
+      0,
+    );
+
+    const averageRating = totalRating / album.reviews.length / 2;
+
+    const usersRating =
+      album.reviews.find((review) => review.userId === userId)?.rating || null;
+
+    return {
+      ...album,
+      averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
+      usersRating: usersRating ? usersRating / 2 : null,
+    };
+  });
+
   if (sort === "listenDate") {
-    return json(archivedAlbums);
+    return json(albumsWithAverageRating);
   }
 
   if (sort === "userRating") {
     return json(
-      archivedAlbums.sort((a, b) => {
+      albumsWithAverageRating.sort((a, b) => {
         const ratingA = a.usersRating ?? -1;
         const ratingB = b.usersRating ?? -1;
 
@@ -58,7 +94,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   return json(
-    archivedAlbums.sort((a, b) => {
+    albumsWithAverageRating.sort((a, b) => {
       if (a.averageRating === "" && b.averageRating === "") {
         return 0;
       }

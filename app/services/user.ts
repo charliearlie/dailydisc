@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { count, eq, or } from "drizzle-orm";
+import { and, count, eq, not, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/drizzle/db.server";
 import { reviews, users } from "~/drizzle/schema.server";
@@ -65,7 +65,7 @@ export const getUserReviewCount = async (userId?: number) => {
   const [response] = await db
     .select({ count: count() })
     .from(reviews)
-    .where(eq(reviews.userId, userId));
+    .where(and(eq(reviews.userId, userId), not(eq(reviews.albumId, 194))));
 
   return response.count;
 }

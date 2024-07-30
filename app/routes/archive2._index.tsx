@@ -32,24 +32,26 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUserFromRequestContext(request);
   const archivedAlbums = await getArchiveAlbums(user?.id);
 
-  const albumsWithAverageRating = archivedAlbums.map((album) => {
-    const totalRating = album.reviews.reduce(
-      (acc, review) => acc + review.rating,
-      0,
-    );
+  const albumsWithAverageRating = archivedAlbums;
 
-    const averageRating = totalRating / album.reviews.length / 2;
+  //   archivedAlbums.map((album) => {
+  //     const totalRating = album.reviews.reduce(
+  //       (acc, review) => acc + review.rating,
+  //       0,
+  //     );
 
-    const usersRating =
-      album.reviews.find((review) => review.userId === user?.id)?.rating ||
-      null;
+  //     const averageRating = totalRating / album.reviews.length / 2;
 
-    return {
-      ...album,
-      averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
-      usersRating: usersRating ? usersRating / 2 : null,
-    };
-  });
+  //     const usersRating =
+  //       album.reviews.find((review) => review.userId === user?.id)?.rating ||
+  //       null;
+
+  //     return {
+  //       ...album,
+  //       averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
+  //       usersRating: usersRating ? usersRating / 2 : null,
+  //     };
+  //   });
 
   return json(albumsWithAverageRating);
 };
@@ -61,57 +63,60 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const archivedAlbums = await getArchiveAlbums(user?.id);
 
-  const albumsWithAverageRating = archivedAlbums.map((album) => {
-    const totalRating = album.reviews.reduce(
-      (acc, review) => acc + review.rating,
-      0,
-    );
+  const albumsWithAverageRating = archivedAlbums;
+  //   archivedAlbums.map((album) => {
+  //     const totalRating = album.reviews.reduce(
+  //       (acc, review) => acc + review.rating,
+  //       0,
+  //     );
 
-    const averageRating = totalRating / album.reviews.length / 2;
+  //     const averageRating = totalRating / album.reviews.length / 2;
 
-    const usersRating =
-      album.reviews.find((review) => review.userId === user?.id)?.rating ||
-      null;
+  //     const usersRating =
+  //       album.reviews.find((review) => review.userId === user?.id)?.rating ||
+  //       null;
 
-    return {
-      ...album,
-      averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
-      usersRating: usersRating ? usersRating / 2 : null,
-    };
-  });
+  //     return {
+  //       ...album,
+  //       averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
+  //       usersRating: usersRating ? usersRating / 2 : null,
+  //     };
+  //   });
 
-  if (sort === "listenDate") {
-    return json(albumsWithAverageRating);
-  }
+  //   if (sort === "listenDate") {
+  //     return json(albumsWithAverageRating);
+  //   }
 
-  if (sort === "userRating") {
-    return json(
-      albumsWithAverageRating.sort((a, b) => {
-        const ratingA = a.usersRating ?? -1;
-        const ratingB = b.usersRating ?? -1;
+  //   if (sort === "userRating") {
+  //     return json(
+  //       albumsWithAverageRating.sort((a, b) => {
+  //         const ratingA = a.usersRating ?? -1;
+  //         const ratingB = b.usersRating ?? -1;
 
-        return ratingB - ratingA;
-      }),
-    );
-  }
+  //         return ratingB - ratingA;
+  //       }),
+  //     );
+  //   }
 
-  return json(
-    albumsWithAverageRating.sort((a, b) => {
-      if (a.averageRating === "" && b.averageRating === "") {
-        return 0;
-      }
+  //   return json(
+  //     albumsWithAverageRating.sort((a, b) => {
+  //       if (a.averageRating === "" && b.averageRating === "") {
+  //         return 0;
+  //       }
 
-      if (a.averageRating === "") {
-        return 1;
-      }
+  //       if (a.averageRating === "") {
+  //         return 1;
+  //       }
 
-      if (b.averageRating === "") {
-        return -1;
-      }
+  //       if (b.averageRating === "") {
+  //         return -1;
+  //       }
 
-      return Number(b.averageRating) - Number(a.averageRating);
-    }),
-  );
+  //       return Number(b.averageRating) - Number(a.averageRating);
+  //     }),
+  //   );
+
+  return json(albumsWithAverageRating);
 };
 
 export default function ArchivePage() {
@@ -119,9 +124,9 @@ export default function ArchivePage() {
   const loaderData = useLoaderData<typeof loader>();
 
   const archivedAlbums = fetcher.data || loaderData;
-  const userReviewedAlbumsCount = archivedAlbums.filter(
-    (album) => album.usersRating !== null,
-  ).length;
+  //   const userReviewedAlbumsCount = archivedAlbums.filter(
+  //     (album) => album.usersRating !== null,
+  //   ).length;
 
   const sortAlbums = async (value: string) => {
     const formData = new FormData();
@@ -131,22 +136,22 @@ export default function ArchivePage() {
     });
   };
 
-  const ReviewedText = () => {
-    if (userReviewedAlbumsCount < archivedAlbums.length) {
-      return (
-        <h3 className="text-lg">
-          So far you have reviewed {userReviewedAlbumsCount} /{" "}
-          {archivedAlbums.length} albums
-        </h3>
-      );
-    }
+  //   const ReviewedText = () => {
+  //     if (userReviewedAlbumsCount < archivedAlbums.length) {
+  //       return (
+  //         <h3 className="text-lg">
+  //           So far you have reviewed {userReviewedAlbumsCount} /{" "}
+  //           {archivedAlbums.length} albums
+  //         </h3>
+  //       );
+  //     }
 
-    return (
-      <h3 className="text-lg">
-        ⭐️ You have reviewed all {archivedAlbums.length} albums selected so far
-      </h3>
-    );
-  };
+  //     return (
+  //       <h3 className="text-lg">
+  //         ⭐️ You have reviewed all {archivedAlbums.length} albums selected so far
+  //       </h3>
+  //     );
+  //   };
 
   return (
     <main className="flex-1">

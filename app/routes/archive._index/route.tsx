@@ -113,18 +113,14 @@ export default function ArchivePage() {
     }
   }, [fetcher.data, totalArchivedAlbums]);
 
-  const userReviewedAlbumsCount = albums.filter(
-    (album) => album.usersRating !== null,
-  ).length;
-
   const ReviewedText = () => {
     if (!userReviewCount) { return null; }
     console.log(userReviewCount, totalArchivedAlbums);
     if (userReviewCount < totalArchivedAlbums) {
       return (
         <h3 className="text-lg">
-          So far you have reviewed {userReviewedAlbumsCount} / {totalArchivedAlbums}
-          albums
+          So far you have reviewed {userReviewCount} / {totalArchivedAlbums}
+           albums
         </h3>
       );
     }

@@ -120,7 +120,7 @@ export default function ArchivePage() {
       return (
         <h3 className="text-lg">
           So far you have reviewed {userReviewCount} / {totalArchivedAlbums}
-           albums
+          {" "}albums
         </h3>
       );
     }

@@ -13,6 +13,10 @@ import {
 import { getArchiveAlbums2 } from "~/services/album.server";
 import { getUserFromRequestContext } from "~/services/session";
 
+export const config = {
+  maxDuration: 25,
+};
+
 export const meta = () => {
   return [
     { title: "Archive | Daily Disc" },

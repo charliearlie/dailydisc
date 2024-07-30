@@ -34,8 +34,27 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const archivedAlbums = await getArchiveAlbums(user?.id, limit, offset);
   const totalArchivedAlbums = await getArchivedAlbumCount();
 
+  const albumsWithAverageRating = archivedAlbums.map((album) => {
+    const totalRating = album.reviews.reduce(
+      (acc, review) => acc + review.rating,
+      0,
+    );
+
+    const averageRating = totalRating / album.reviews.length / 2;
+
+    const usersRating =
+      album.reviews.find((review) => review.userId === user?.id)?.rating ||
+      null;
+
+    return {
+      ...album,
+      averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
+      usersRating: usersRating ? usersRating / 2 : null,
+    };
+  });
+
   return json({
-    archivedAlbums,
+    archivedAlbums: albumsWithAverageRating,
     page,
     totalArchivedAlbums,
   });

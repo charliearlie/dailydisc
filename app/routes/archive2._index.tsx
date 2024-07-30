@@ -1,6 +1,6 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
-import { AlbumPreviewCard } from "~/components/album/album-preview-card";
+import { AlbumPreviewCard } from "~/components/album/album-preview-card-2";
 import {
   Select,
   SelectContent,
@@ -36,26 +36,24 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUserFromRequestContext(request);
   const archivedAlbums = await getArchiveAlbums2();
 
-  const albumsWithAverageRating = archivedAlbums;
+  const albumsWithAverageRating = archivedAlbums.map((album) => {
+    const totalRating = album.reviews.reduce(
+      (acc, review) => acc + review.rating,
+      0,
+    );
 
-  //   archivedAlbums.map((album) => {
-  //     const totalRating = album.reviews.reduce(
-  //       (acc, review) => acc + review.rating,
-  //       0,
-  //     );
+    const averageRating = totalRating / album.reviews.length / 2;
 
-  //     const averageRating = totalRating / album.reviews.length / 2;
+    const usersRating =
+      album.reviews.find((review) => review.userId === user?.id)?.rating ||
+      null;
 
-  //     const usersRating =
-  //       album.reviews.find((review) => review.userId === user?.id)?.rating ||
-  //       null;
-
-  //     return {
-  //       ...album,
-  //       averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
-  //       usersRating: usersRating ? usersRating / 2 : null,
-  //     };
-  //   });
+    return {
+      ...album,
+      averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
+      usersRating: usersRating ? usersRating / 2 : null,
+    };
+  });
 
   return json(albumsWithAverageRating);
 };
@@ -65,60 +63,59 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const sort = formData.get("sort");
 
-  const archivedAlbums = await getArchiveAlbums2(user?.id);
+  const archivedAlbums = await getArchiveAlbums2();
 
-  const albumsWithAverageRating = archivedAlbums;
-  //   archivedAlbums.map((album) => {
-  //     const totalRating = album.reviews.reduce(
-  //       (acc, review) => acc + review.rating,
-  //       0,
-  //     );
+  const albumsWithAverageRating = archivedAlbums.map((album) => {
+    const totalRating = album.reviews.reduce(
+      (acc, review) => acc + review.rating,
+      0,
+    );
 
-  //     const averageRating = totalRating / album.reviews.length / 2;
+    const averageRating = totalRating / album.reviews.length / 2;
 
-  //     const usersRating =
-  //       album.reviews.find((review) => review.userId === user?.id)?.rating ||
-  //       null;
+    const usersRating =
+      album.reviews.find((review) => review.userId === user?.id)?.rating ||
+      null;
 
-  //     return {
-  //       ...album,
-  //       averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
-  //       usersRating: usersRating ? usersRating / 2 : null,
-  //     };
-  //   });
+    return {
+      ...album,
+      averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
+      usersRating: usersRating ? usersRating / 2 : null,
+    };
+  });
 
-  //   if (sort === "listenDate") {
-  //     return json(albumsWithAverageRating);
-  //   }
+  if (sort === "listenDate") {
+    return json(albumsWithAverageRating);
+  }
 
-  //   if (sort === "userRating") {
-  //     return json(
-  //       albumsWithAverageRating.sort((a, b) => {
-  //         const ratingA = a.usersRating ?? -1;
-  //         const ratingB = b.usersRating ?? -1;
+  if (sort === "userRating") {
+    return json(
+      albumsWithAverageRating.sort((a, b) => {
+        const ratingA = a.usersRating ?? -1;
+        const ratingB = b.usersRating ?? -1;
 
-  //         return ratingB - ratingA;
-  //       }),
-  //     );
-  //   }
+        return ratingB - ratingA;
+      }),
+    );
+  }
 
-  //   return json(
-  //     albumsWithAverageRating.sort((a, b) => {
-  //       if (a.averageRating === "" && b.averageRating === "") {
-  //         return 0;
-  //       }
+  return json(
+    albumsWithAverageRating.sort((a, b) => {
+      if (a.averageRating === "" && b.averageRating === "") {
+        return 0;
+      }
 
-  //       if (a.averageRating === "") {
-  //         return 1;
-  //       }
+      if (a.averageRating === "") {
+        return 1;
+      }
 
-  //       if (b.averageRating === "") {
-  //         return -1;
-  //       }
+      if (b.averageRating === "") {
+        return -1;
+      }
 
-  //       return Number(b.averageRating) - Number(a.averageRating);
-  //     }),
-  //   );
+      return Number(b.averageRating) - Number(a.averageRating);
+    }),
+  );
 
   return json(albumsWithAverageRating);
 };
@@ -185,7 +182,10 @@ export default function ArchivePage() {
         </div>
         <div className="grid grid-cols-1 gap-6 px-4 py-8 md:grid-cols-2 md:px-6 lg:grid-cols-4 xl:grid-cols-4">
           {archivedAlbums.map((album) => (
-            <AlbumPreviewCard album={album} key={album.id} />
+            <div className="p-4">
+              <h2>{album.title}</h2>
+            </div>
+            // <AlbumPreviewCard album={album} key={album.id} />
           ))}
         </div>
       </section>

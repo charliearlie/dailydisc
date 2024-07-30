@@ -119,10 +119,11 @@ export default function ArchivePage() {
 
   const ReviewedText = () => {
     if (!userReviewCount) { return null; }
+    console.log(userReviewCount, totalArchivedAlbums);
     if (userReviewCount < totalArchivedAlbums) {
       return (
         <h3 className="text-lg">
-          So far you have reviewed {userReviewedAlbumsCount} / {albums.length}{" "}
+          So far you have reviewed {userReviewedAlbumsCount} / {totalArchivedAlbums}
           albums
         </h3>
       );
@@ -130,7 +131,7 @@ export default function ArchivePage() {
 
     return (
       <h3 className="text-lg">
-        ⭐️ You have reviewed all {albums.length} albums selected so far
+        ⭐️ You have reviewed all {totalArchivedAlbums} albums selected so far
       </h3>
     );
   };

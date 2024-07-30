@@ -8,6 +8,7 @@ import {
   getArchivedAlbumCount,
 } from "~/services/album.server";
 import { getUserFromRequestContext } from "~/services/session";
+import { getUserReviewCount } from "~/services/user";
 
 export const meta = () => {
   return [
@@ -31,8 +32,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const offset = (page - 1) * limit;
 
   const user = await getUserFromRequestContext(request);
-  const archivedAlbums = await getArchiveAlbums(user?.id, limit, offset);
+  const archivedAlbums = await getArchiveAlbums(limit, offset);
   const totalArchivedAlbums = await getArchivedAlbumCount();
+  const userReviewCount = await getUserReviewCount(user?.id);
 
   const albumsWithAverageRating = archivedAlbums.map((album) => {
     const totalRating = album.reviews.reduce(
@@ -57,6 +59,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     archivedAlbums: albumsWithAverageRating,
     page,
     totalArchivedAlbums,
+    userReviewCount,
   });
 };
 
@@ -66,6 +69,7 @@ export default function ArchivePage() {
     archivedAlbums: initialAlbums,
     page: initialPage,
     totalArchivedAlbums,
+    userReviewCount,
   } = useLoaderData<typeof loader>();
 
   const [albums, setAlbums] = useState(initialAlbums);
@@ -114,7 +118,8 @@ export default function ArchivePage() {
   ).length;
 
   const ReviewedText = () => {
-    if (userReviewedAlbumsCount < albums.length) {
+    if (!userReviewCount) { return null; }
+    if (userReviewCount < totalArchivedAlbums) {
       return (
         <h3 className="text-lg">
           So far you have reviewed {userReviewedAlbumsCount} / {albums.length}{" "}

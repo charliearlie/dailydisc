@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
-import { count, eq, or } from "drizzle-orm";
+import { and, count, eq, not, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/drizzle/db.server";
-import { users } from "~/drizzle/schema.server";
+import { reviews, users } from "~/drizzle/schema.server";
 import { LoginFormSchema, SignUpFormSchema } from "./schemas";
 
 export const createUser = async (
@@ -59,3 +59,13 @@ export const login = async ({
 
   return user;
 };
+
+export const getUserReviewCount = async (userId?: number) => {
+  if (!userId) return 0;
+  const [response] = await db
+    .select({ count: count() })
+    .from(reviews)
+    .where(and(eq(reviews.userId, userId), not(eq(reviews.albumId, 194))));
+
+  return response.count;
+}

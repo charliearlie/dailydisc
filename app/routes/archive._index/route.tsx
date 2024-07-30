@@ -8,6 +8,7 @@ import {
   getArchivedAlbumCount,
 } from "~/services/album.server";
 import { getUserFromRequestContext } from "~/services/session";
+import { getUserReviewCount } from "~/services/user";
 
 export const meta = () => {
   return [
@@ -31,13 +32,34 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const offset = (page - 1) * limit;
 
   const user = await getUserFromRequestContext(request);
-  const archivedAlbums = await getArchiveAlbums(user?.id, limit, offset);
+  const archivedAlbums = await getArchiveAlbums(limit, offset);
   const totalArchivedAlbums = await getArchivedAlbumCount();
+  const userReviewCount = await getUserReviewCount(user?.id);
+
+  const albumsWithAverageRating = archivedAlbums.map((album) => {
+    const totalRating = album.reviews.reduce(
+      (acc, review) => acc + review.rating,
+      0,
+    );
+
+    const averageRating = totalRating / album.reviews.length / 2;
+
+    const usersRating =
+      album.reviews.find((review) => review.userId === user?.id)?.rating ||
+      null;
+
+    return {
+      ...album,
+      averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
+      usersRating: usersRating ? usersRating / 2 : null,
+    };
+  });
 
   return json({
-    archivedAlbums,
+    archivedAlbums: albumsWithAverageRating,
     page,
     totalArchivedAlbums,
+    userReviewCount,
   });
 };
 
@@ -47,6 +69,7 @@ export default function ArchivePage() {
     archivedAlbums: initialAlbums,
     page: initialPage,
     totalArchivedAlbums,
+    userReviewCount,
   } = useLoaderData<typeof loader>();
 
   const [albums, setAlbums] = useState(initialAlbums);
@@ -90,23 +113,21 @@ export default function ArchivePage() {
     }
   }, [fetcher.data, totalArchivedAlbums]);
 
-  const userReviewedAlbumsCount = albums.filter(
-    (album) => album.usersRating !== null,
-  ).length;
-
   const ReviewedText = () => {
-    if (userReviewedAlbumsCount < albums.length) {
+    if (!userReviewCount) { return null; }
+    console.log(userReviewCount, totalArchivedAlbums);
+    if (userReviewCount < totalArchivedAlbums) {
       return (
         <h3 className="text-lg">
-          So far you have reviewed {userReviewedAlbumsCount} / {albums.length}{" "}
-          albums
+          So far you have reviewed {userReviewCount} / {totalArchivedAlbums}
+          {" "}albums
         </h3>
       );
     }
 
     return (
       <h3 className="text-lg">
-        ⭐️ You have reviewed all {albums.length} albums selected so far
+        ⭐️ You have reviewed all {totalArchivedAlbums} albums selected so far
       </h3>
     );
   };

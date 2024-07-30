@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/common/ui/select";
-import { getArchiveAlbums } from "~/services/album.server";
+import { getArchiveAlbums2 } from "~/services/album.server";
 import { getUserFromRequestContext } from "~/services/session";
 
 export const meta = () => {
@@ -30,7 +30,7 @@ export const meta = () => {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUserFromRequestContext(request);
-  const archivedAlbums = await getArchiveAlbums(user?.id);
+  const archivedAlbums = await getArchiveAlbums2(user?.id);
 
   const albumsWithAverageRating = archivedAlbums;
 
@@ -61,7 +61,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const sort = formData.get("sort");
 
-  const archivedAlbums = await getArchiveAlbums(user?.id);
+  const archivedAlbums = await getArchiveAlbums2(user?.id);
 
   const albumsWithAverageRating = archivedAlbums;
   //   archivedAlbums.map((album) => {

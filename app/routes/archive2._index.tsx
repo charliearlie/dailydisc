@@ -161,7 +161,7 @@ export default function ArchivePage() {
           Discover the albums that have already been picked for the Daily Disc
           album of the day.
         </h2>
-        <ReviewedText />
+        {/* <ReviewedText /> */}
       </section>
       <section className="space-y-8 py-8 text-center md:container md:py-16 lg:space-y-12">
         <div className="px-4 md:container md:px-6">

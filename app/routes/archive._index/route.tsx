@@ -1,8 +1,27 @@
-import { LoaderFunctionArgs, json } from "@remix-run/node";
-import { useFetcher, useLoaderData } from "@remix-run/react";
+import {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  json,
+  redirect,
+} from "@remix-run/node";
+import {
+  useFetcher,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from "@remix-run/react";
 import { LoaderIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AlbumPreviewCard } from "~/components/album/album-preview-card";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/common/ui/select";
 import {
   getArchiveAlbums,
   getArchivedAlbumCount,
@@ -27,40 +46,47 @@ export const meta = () => {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
+  const sort = url.searchParams.get("sort") as string;
   const page = parseInt(url.searchParams.get("page") || "1", 10);
   const limit = 16;
   const offset = (page - 1) * limit;
 
   const user = await getUserFromRequestContext(request);
-  const archivedAlbums = await getArchiveAlbums(limit, offset);
+  const archivedAlbums = await getArchiveAlbums({
+    limit,
+    offset,
+    orderBy: sort,
+  });
+
+  console.log({
+    limit,
+    offset,
+    sort,
+    page,
+  });
   const totalArchivedAlbums = await getArchivedAlbumCount();
   const userReviewCount = await getUserReviewCount(user?.id);
 
-  const albumsWithAverageRating = archivedAlbums.map((album) => {
-    const totalRating = album.reviews.reduce(
-      (acc, review) => acc + review.rating,
-      0,
-    );
-
-    const averageRating = totalRating / album.reviews.length / 2;
-
-    const usersRating =
-      album.reviews.find((review) => review.userId === user?.id)?.rating ||
-      null;
-
-    return {
-      ...album,
-      averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
-      usersRating: usersRating ? usersRating / 2 : null,
-    };
-  });
-
   return json({
-    archivedAlbums: albumsWithAverageRating,
+    archivedAlbums,
     page,
     totalArchivedAlbums,
     userReviewCount,
   });
+};
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const url = new URL(request.url);
+  const sort = url.searchParams.get("sort") as string;
+  const page = parseInt(url.searchParams.get("page") || "1", 10);
+  const limit = 16;
+
+  console.log("action", {
+    limit,
+    page,
+    orderBy: sort,
+  });
+  return redirect(`/archive?sort=${sort}`);
 };
 
 export default function ArchivePage() {
@@ -71,6 +97,8 @@ export default function ArchivePage() {
     totalArchivedAlbums,
     userReviewCount,
   } = useLoaderData<typeof loader>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const [albums, setAlbums] = useState(initialAlbums);
   const [page, setPage] = useState(initialPage);
@@ -113,14 +141,22 @@ export default function ArchivePage() {
     }
   }, [fetcher.data, totalArchivedAlbums]);
 
+  const sortAlbums = async (value: string) => {
+    setAlbums([]);
+    setPage(0);
+    navigate(`/archive?sort=${value}`, { replace: true });
+  };
+
   const ReviewedText = () => {
-    if (!userReviewCount) { return null; }
+    if (!userReviewCount) {
+      return null;
+    }
     console.log(userReviewCount, totalArchivedAlbums);
     if (userReviewCount < totalArchivedAlbums) {
       return (
         <h3 className="text-lg">
-          So far you have reviewed {userReviewCount} / {totalArchivedAlbums}
-          {" "}albums
+          So far you have reviewed {userReviewCount} / {totalArchivedAlbums}{" "}
+          albums
         </h3>
       );
     }
@@ -143,6 +179,24 @@ export default function ArchivePage() {
         <ReviewedText />
       </section>
       <section className="space-y-8 py-8 text-center md:container md:py-16 lg:space-y-12">
+        <div className="px-4 md:container md:px-6">
+          <Select
+            defaultValue={(searchParams.get("sort") as string) ?? "listenDate"}
+            onValueChange={sortAlbums}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by most recent" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Sorting options</SelectLabel>
+                <SelectItem value="listenDate">Most recent</SelectItem>
+                <SelectItem value="userRating">My rating</SelectItem>
+                <SelectItem value="averageRating">Rating</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
         <div className="grid grid-cols-1 gap-6 px-4 py-8 md:grid-cols-2 md:px-6 lg:grid-cols-4 xl:grid-cols-4">
           {albums.map((album) => (
             <AlbumPreviewCard album={album} key={album.id} />

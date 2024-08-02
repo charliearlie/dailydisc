@@ -48,6 +48,7 @@ export const albums = sqliteTable("albums", {
   archived: integer("archived")
     .notNull()
     .default(sql`(0)`),
+  averageRating: integer("average_rating"),
 });
 
 export const albumsRelations = relations(albums, ({ many }) => ({

@@ -17,6 +17,7 @@ export const AlbumPreviewCard = ({
 }: {
   album: Omit<Awaited<ReturnType<typeof getArchiveAlbums>>[0], "listenDate"> & {
     listenDate: string | null;
+    usersRating: number | null;
   };
 }) => {
   const user = useUser();

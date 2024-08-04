@@ -1,27 +1,17 @@
-import {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  json,
-  redirect,
-} from "@remix-run/node";
-import {
-  useFetcher,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from "@remix-run/react";
+import { LoaderFunctionArgs, json } from "@remix-run/node";
+import { useFetcher, useLoaderData, useSearchParams } from "@remix-run/react";
 import { LoaderIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AlbumPreviewCard } from "~/components/album/album-preview-card";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectGroup,
-//   SelectItem,
-//   SelectLabel,
-//   SelectTrigger,
-//   SelectValue,
-// } from "~/components/common/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/common/ui/select";
 import {
   getArchiveAlbums,
   getArchivedAlbumCount,
@@ -46,7 +36,7 @@ export const meta = () => {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
-  const sort = url.searchParams.get("sort") as string;
+  const sort = url.searchParams.get("sort") || "listenDate";
   const page = parseInt(url.searchParams.get("page") || "1", 10);
   const limit = 16;
   const offset = (page - 1) * limit;
@@ -58,21 +48,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     orderBy: sort,
   });
 
-  const albumsWithAverageRating = archivedAlbums.map((album) => {
-    const totalRating = album.reviews.reduce(
-      (acc, review) => acc + review.rating,
-      0,
-    );
-
-    const averageRating = totalRating / album.reviews.length / 2;
-
+  const albumsWithUserRating = archivedAlbums.map((album) => {
     const usersRating =
       album.reviews.find((review) => review.userId === user?.id)?.rating ||
       null;
 
     return {
       ...album,
-      averageRating: isNaN(averageRating) ? "" : averageRating.toFixed(1),
       usersRating: usersRating ? usersRating / 2 : null,
     };
   });
@@ -81,20 +63,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userReviewCount = await getUserReviewCount(user?.id);
 
   return json({
-    archivedAlbums: albumsWithAverageRating,
+    archivedAlbums: albumsWithUserRating,
     page,
     totalArchivedAlbums,
     userReviewCount,
   });
-};
-
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const url = new URL(request.url);
-  const sort = url.searchParams.get("sort") as string;
-  // const page = parseInt(url.searchParams.get("page") || "1", 10);
-  // const limit = 16;
-
-  return redirect(`/archive?sort=${sort}`);
 };
 
 export default function ArchivePage() {
@@ -105,8 +78,7 @@ export default function ArchivePage() {
     totalArchivedAlbums,
     userReviewCount,
   } = useLoaderData<typeof loader>();
-  // const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [albums, setAlbums] = useState(initialAlbums);
   const [page, setPage] = useState(initialPage);
@@ -119,9 +91,10 @@ export default function ArchivePage() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !isLoading) {
+        if (entries[0].isIntersecting && !isLoading && hasMore) {
           setIsLoading(true);
-          fetcher.load(`/archive?page=${page + 1}`);
+          const sort = searchParams.get("sort") || "listenDate";
+          fetcher.load(`/archive?sort=${sort}&page=${page + 1}`);
         }
       },
       { threshold: 1.0 },
@@ -132,34 +105,42 @@ export default function ArchivePage() {
     }
 
     return () => observer.disconnect();
-  }, [page, isLoading, fetcher]);
+  }, [page, isLoading, hasMore, searchParams, fetcher]);
 
   useEffect(() => {
-    if (fetcher.data?.archivedAlbums) {
-      setAlbums((prevAlbums) => [
-        ...prevAlbums,
-        ...(fetcher.data?.archivedAlbums ?? []),
-      ]);
-      setPage((prevPage) => prevPage + 1);
+    if (fetcher.state === "idle" && fetcher.data) {
+      setAlbums((prevAlbums) => {
+        if (fetcher.data?.page === 1) {
+          return fetcher.data?.archivedAlbums;
+        }
+        return [...prevAlbums, ...(fetcher.data?.archivedAlbums ?? [])];
+      });
+      setPage(fetcher.data.page);
       setHasMore(
-        albums.length + fetcher.data.archivedAlbums.length <
+        fetcher.data.archivedAlbums.length + albums.length <
           totalArchivedAlbums,
       );
       setIsLoading(false);
     }
-  }, [fetcher.data, totalArchivedAlbums]);
+  }, [fetcher.state, fetcher.data, totalArchivedAlbums, albums.length]);
 
-  // const sortAlbums = async (value: string) => {
-  //   setAlbums([]);
-  //   setPage(0);
-  //   navigate(`/archive?sort=${value}`, { replace: true });
-  // };
+  const sortAlbums = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("sort", value);
+    params.set("page", "1");
+    setSearchParams(params);
+    setAlbums([]);
+    setPage(1);
+    setHasMore(true);
+    setIsLoading(true);
+
+    fetcher.load(`/archive?sort=${value}&page=1`);
+  };
 
   const ReviewedText = () => {
     if (!userReviewCount) {
       return null;
     }
-    console.log(userReviewCount, totalArchivedAlbums);
     if (userReviewCount < totalArchivedAlbums) {
       return (
         <h3 className="text-lg">
@@ -187,7 +168,7 @@ export default function ArchivePage() {
         <ReviewedText />
       </section>
       <section className="space-y-8 py-8 text-center md:container md:py-16 lg:space-y-12">
-        {/* <div className="px-4 md:container md:px-6">
+        <div className="px-4 md:container md:px-6">
           <Select
             defaultValue={(searchParams.get("sort") as string) ?? "listenDate"}
             onValueChange={sortAlbums}
@@ -199,12 +180,12 @@ export default function ArchivePage() {
               <SelectGroup>
                 <SelectLabel>Sorting options</SelectLabel>
                 <SelectItem value="listenDate">Most recent</SelectItem>
-                <SelectItem value="userRating">My rating</SelectItem>
+                {/* <SelectItem value="userRating">My rating</SelectItem> */}
                 <SelectItem value="averageRating">Rating</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
-        </div> */}
+        </div>
         <div className="grid grid-cols-1 gap-6 px-4 py-8 md:grid-cols-2 md:px-6 lg:grid-cols-4 xl:grid-cols-4">
           {albums.map((album) => (
             <AlbumPreviewCard album={album} key={album.id} />

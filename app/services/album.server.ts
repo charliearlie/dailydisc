@@ -9,7 +9,7 @@ type GetArchiveAlbumsOptions = {
 };
 
 export const getArchiveAlbums = async ({
-  limit = 100,
+  limit = 16,
   offset = 0,
   orderBy,
 }: GetArchiveAlbumsOptions = {}) => {

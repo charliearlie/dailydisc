@@ -67,6 +67,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     page,
     totalArchivedAlbums,
     userReviewCount,
+    hasMore: albumsWithUserRating.length === limit,
   });
 };
 
@@ -77,15 +78,14 @@ export default function ArchivePage() {
     page: initialPage,
     totalArchivedAlbums,
     userReviewCount,
+    hasMore: initialHasMore,
   } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [albums, setAlbums] = useState(initialAlbums);
   const [page, setPage] = useState(initialPage);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(
-    initialAlbums.length < totalArchivedAlbums,
-  );
+  const [hasMore, setHasMore] = useState(initialHasMore);
   const loaderRef = useRef(null);
 
   useEffect(() => {
@@ -110,19 +110,21 @@ export default function ArchivePage() {
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data) {
       setAlbums((prevAlbums) => {
+        const newAlbums = fetcher.data?.archivedAlbums.filter(
+          (newAlbum) =>
+            !prevAlbums.some((prevAlbum) => prevAlbum.id === newAlbum.id),
+        );
+
         if (fetcher.data?.page === 1) {
           return fetcher.data?.archivedAlbums;
         }
-        return [...prevAlbums, ...(fetcher.data?.archivedAlbums ?? [])];
+        return [...prevAlbums, ...(newAlbums ?? [])];
       });
       setPage(fetcher.data.page);
-      setHasMore(
-        fetcher.data.archivedAlbums.length + albums.length <
-          totalArchivedAlbums,
-      );
+      setHasMore(fetcher.data.hasMore);
       setIsLoading(false);
     }
-  }, [fetcher.state, fetcher.data, totalArchivedAlbums, albums.length]);
+  }, [fetcher.state, fetcher.data]);
 
   const sortAlbums = (value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -180,7 +182,6 @@ export default function ArchivePage() {
               <SelectGroup>
                 <SelectLabel>Sorting options</SelectLabel>
                 <SelectItem value="listenDate">Most recent</SelectItem>
-                {/* <SelectItem value="userRating">My rating</SelectItem> */}
                 <SelectItem value="averageRating">Rating</SelectItem>
               </SelectGroup>
             </SelectContent>

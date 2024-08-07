@@ -1,4 +1,4 @@
-import { and, count, desc, eq, notInArray, SQL, sql } from "drizzle-orm";
+import { count, desc, eq, notInArray, SQL, sql } from "drizzle-orm";
 import { db } from "~/drizzle/db.server";
 import {
   albums,

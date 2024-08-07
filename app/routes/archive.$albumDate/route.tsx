@@ -13,7 +13,7 @@ import { Button } from "~/components/common/ui/button";
 import { db } from "~/drizzle/db.server";
 import { albums, reviews } from "~/drizzle/schema.server";
 import { useUser } from "~/contexts/user-context";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { getUserFromRequestContext } from "~/services/session";
 import { DatePicker } from "~/components/common/date-picker";
 import { ReviewList } from "~/components/reviews/review-list";
@@ -142,6 +142,35 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   }
 
+  // This is ludicrous destructuring
+  const [result] = await db
+    .select({
+      reviewCount: sql<number>`count(*)`.as("reviewCount"),
+      averageRating: sql<number | null>`
+      CASE 
+        WHEN count(*) > 0 THEN round(avg(${reviews.rating}), 2)
+        ELSE NULL
+      END
+    `.as("averageRating"),
+    })
+    .from(reviews)
+    .where(eq(reviews.albumId, Number(submission.value.albumId)));
+
+  const { reviewCount, averageRating } = result;
+
+  console.log({ reviewCount, averageRating });
+  let newAverageRating;
+
+  if (!averageRating) {
+    newAverageRating = Math.floor(submission.value.rating * 2);
+  } else {
+    newAverageRating =
+      Math.floor(averageRating * reviewCount + submission.value.rating * 2) /
+      (reviewCount + 1);
+  }
+
+  console.log({ newAverageRating });
+
   const { albumId, favouriteTracks, rating, review, userId } = submission.value;
 
   await db.insert(reviews).values({
@@ -153,6 +182,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       .map((track) => removeFeaturedArtists(track))
       .join(" | "),
   });
+
+  db.update(albums)
+    .set({ averageRating: newAverageRating / 2 })
+    .where(eq(albums.id, Number(albumId)));
 
   return json({
     result: submission.reply({ resetForm: true }),
@@ -195,7 +228,7 @@ export default function Index() {
   } = album;
 
   return (
-    <main className="to-gradientend flex-1 bg-gradient-to-tl from-background via-background">
+    <main className="flex-1 bg-gradient-to-tl from-background via-background to-gradientend">
       <section className="container  space-y-8 py-8 text-center md:py-16 lg:space-y-12">
         <div className="flex flex-col items-center justify-center space-y-2">
           <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl/none">

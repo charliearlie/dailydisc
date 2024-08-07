@@ -4,6 +4,7 @@ import {
   integer,
   sqliteTable,
   primaryKey,
+  index,
 } from "drizzle-orm/sqlite-core";
 
 /**
@@ -109,24 +110,33 @@ export const artistsToAlbumsRelations = relations(
 /**
  * Review definition and relationships
  */
-export const reviews = sqliteTable("reviews", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  albumId: integer("album_id", { mode: "number" })
-    .notNull()
-    .references(() => albums.id),
-  userId: integer("user_id", { mode: "number" })
-    .notNull()
-    .references(() => users.id),
-  rating: integer("rating").notNull(),
-  review: text("review"),
-  favouriteTrack: text("favourite_track"),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`),
-});
+export const reviews = sqliteTable(
+  "reviews",
+  {
+    id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    albumId: integer("album_id", { mode: "number" })
+      .notNull()
+      .references(() => albums.id),
+    userId: integer("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.id),
+    rating: integer("rating").notNull(),
+    review: text("review"),
+    favouriteTrack: text("favourite_track"),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`),
+  },
+  (table) => ({
+    albumUserIndex: index("idx_reviews_album_user").on(
+      table.albumId,
+      table.userId,
+    ),
+  }),
+);
 
 export const reviewsRelations = relations(reviews, ({ one }) => ({
   album: one(albums, {

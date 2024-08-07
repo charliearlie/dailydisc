@@ -1,60 +1,102 @@
-import { count, desc, eq, notInArray } from "drizzle-orm";
+import { and, count, desc, eq, notInArray, SQL, sql } from "drizzle-orm";
 import { db } from "~/drizzle/db.server";
-import { albums, artists } from "~/drizzle/schema.server";
+import {
+  albums,
+  artists,
+  artistsToAlbums,
+  reviews,
+} from "~/drizzle/schema.server";
 
 type GetArchiveAlbumsOptions = {
   limit?: number;
   offset?: number;
   orderBy?: string;
+  userId?: number;
+};
+
+type Artist = {
+  name: string;
+};
+
+export type ArchiveAlbum = {
+  id: number;
+  title: string;
+  genre: string | null;
+  image: string | null;
+  year: string;
+  listenDate: string | null;
+  averageRating: number | null;
+  artists: Artist[];
+  userRating: number | null;
+  reviewCount: number;
 };
 
 export const getArchiveAlbums = async ({
   limit = 16,
   offset = 0,
   orderBy,
-}: GetArchiveAlbumsOptions = {}) => {
-  let orderByColumn;
+  userId,
+}: GetArchiveAlbumsOptions = {}): Promise<ArchiveAlbum[]> => {
+  console.log("userId", userId);
+  let orderByClause: SQL<unknown>;
 
   switch (orderBy) {
     case "averageRating":
-      orderByColumn = albums.averageRating;
+      orderByClause = sql`${albums.averageRating} DESC`;
+      break;
+    case "userRating":
+      if (userId) {
+        orderByClause = sql`userRating DESC NULLS LAST`;
+      } else {
+        orderByClause = sql`${albums.listenDate} DESC`;
+      }
       break;
     default:
-      orderByColumn = albums.listenDate;
+      orderByClause = sql`${albums.listenDate} DESC`;
   }
 
-  const archivedAlbums = await db.query.albums.findMany({
-    where: eq(albums.archived, 1),
-    with: {
-      reviews: {
-        columns: {
-          rating: true,
-          userId: true,
-        },
-      },
-      artistsToAlbums: {
-        with: {
-          artist: {
-            columns: {
-              name: true,
-            },
-          },
-        },
-      },
-    },
-    columns: {
-      averageRating: true,
-      genre: true,
-      id: true,
-      image: true,
-      listenDate: true,
-      title: true,
-      year: true,
-    },
-    orderBy: [desc(orderByColumn)],
-    limit: limit,
-    offset: offset,
-  });
+  const query = db
+    .select({
+      id: albums.id,
+      title: albums.title,
+      genre: albums.genre,
+      image: albums.image,
+      year: albums.year,
+      listenDate: albums.listenDate,
+      averageRating: albums.averageRating,
+      artists:
+        sql<string>`json_group_array(DISTINCT json_object('name', ${artists.name}))`.as(
+          "artists",
+        ),
+      userRating: userId
+        ? sql<number | null>`(
+            SELECT rating 
+            FROM ${reviews}
+            WHERE ${reviews.albumId} = ${albums.id} 
+              AND ${reviews.userId} = ${userId}
+          )`.as("userRating")
+        : sql<null>`NULL`.as("userRating"),
+      reviewCount: sql<number>`COUNT(DISTINCT ${reviews.id})`.as("reviewCount"),
+    })
+    .from(albums)
+    .leftJoin(artistsToAlbums, eq(albums.id, artistsToAlbums.albumId))
+    .leftJoin(artists, eq(artistsToAlbums.artistId, artists.id))
+    .leftJoin(reviews, eq(albums.id, reviews.albumId))
+    .where(eq(albums.archived, 1))
+    .groupBy(albums.id)
+    .orderBy(orderByClause)
+    .limit(limit)
+    .offset(offset);
+
+  const rawArchivedAlbums = await query;
+
+  const archivedAlbums: ArchiveAlbum[] = rawArchivedAlbums.map((album) => ({
+    ...album,
+    listenDate: album.listenDate as string | null,
+    artists: JSON.parse(album.artists as string) as Artist[],
+    userRating: album.userRating as number | null,
+    reviewCount: Number(album.reviewCount), // Ensure reviewCount is a number
+  }));
 
   return archivedAlbums;
 };

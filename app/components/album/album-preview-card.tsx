@@ -9,18 +9,13 @@ import {
   TooltipTrigger,
 } from "~/components/common/ui/tooltip";
 import { Badge } from "../common/ui/badge";
-import { getArchiveAlbums } from "~/services/album.server";
+import { ArchiveAlbum } from "~/services/album.server";
 import { useUser } from "~/contexts/user-context";
 
-export const AlbumPreviewCard = ({
-  album,
-}: {
-  album: Omit<Awaited<ReturnType<typeof getArchiveAlbums>>[0], "listenDate"> & {
-    listenDate: string | null;
-    usersRating: number | null;
-  };
-}) => {
+export const AlbumPreviewCard = ({ album }: { album: ArchiveAlbum }) => {
   const user = useUser();
+
+  console.log("album.artists", album.artists);
   const Artists = ({ artists }: { artists: string[] }) => {
     return (
       <p>
@@ -35,6 +30,8 @@ export const AlbumPreviewCard = ({
       </p>
     );
   };
+
+  console.log({ album });
 
   return (
     <Link to={`/archive/${format(new Date(album.listenDate!), "yyyy-MM-dd")}`}>
@@ -59,8 +56,8 @@ export const AlbumPreviewCard = ({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          {album.usersRating ? (
-            <Badge variant="secondary">My rating: {album.usersRating}</Badge>
+          {album.userRating ? (
+            <Badge variant="secondary">My rating: {album.userRating / 2}</Badge>
           ) : user.userId ? (
             <Badge variant="destructive">Unreviewed</Badge>
           ) : null}
@@ -72,9 +69,7 @@ export const AlbumPreviewCard = ({
           </h3>
           <div className="mb-2 flex items-center justify-between pt-2">
             <div className="font-semibold text-gray-500 dark:text-gray-300">
-              <Artists
-                artists={album.artistsToAlbums.map((link) => link.artist.name)}
-              />
+              <Artists artists={album.artists.map((artist) => artist.name)} />
             </div>
           </div>
           <div className="flex items-center justify-between">
@@ -94,11 +89,11 @@ export const AlbumPreviewCard = ({
             <div className="flex items-center gap-2">
               <p className="flex items-center gap-1 text-sm">
                 <MessageCircle height={16} width={16} />
-                {album.reviews.length}
+                {album.reviewCount}
               </p>
               <p className="flex items-center gap-1 text-sm">
                 <Star height={16} width={16} />
-                {album.usersRating ? album.averageRating : ""}
+                {album.userRating ? album.averageRating : ""}
               </p>
             </div>
           </div>

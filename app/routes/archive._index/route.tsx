@@ -46,28 +46,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     limit,
     offset,
     orderBy: sort,
-  });
-
-  const albumsWithUserRating = archivedAlbums.map((album) => {
-    const usersRating =
-      album.reviews.find((review) => review.userId === user?.id)?.rating ||
-      null;
-
-    return {
-      ...album,
-      usersRating: usersRating ? usersRating / 2 : null,
-    };
+    userId: user?.id,
   });
 
   const totalArchivedAlbums = await getArchivedAlbumCount();
   const userReviewCount = await getUserReviewCount(user?.id);
 
   return json({
-    archivedAlbums: albumsWithUserRating,
+    archivedAlbums,
     page,
     totalArchivedAlbums,
     userReviewCount,
-    hasMore: albumsWithUserRating.length === limit,
+    hasMore: archivedAlbums.length === limit,
   });
 };
 

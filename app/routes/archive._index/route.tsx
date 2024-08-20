@@ -17,7 +17,7 @@ import {
   getArchivedAlbumCount,
 } from "~/services/album.server";
 import { getUserFromRequestContext } from "~/services/session";
-import { getUserReviewCount } from "~/services/user";
+import { getUserReviewCount } from "~/services/user.server";
 
 export const meta = () => {
   return [

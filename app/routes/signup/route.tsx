@@ -10,7 +10,7 @@ import {
 import { Button } from "~/components/common/ui/button";
 import { FormField } from "~/components/form/form-field";
 import { SignUpFormSchema } from "~/services/schemas";
-import { areUserDetailsAvailable, createUser } from "~/services/user";
+import { areUserDetailsAvailable, createUser } from "~/services/user.server";
 import { createUserSession } from "~/services/session";
 import { HoneypotInputs, HoneypotProvider } from "remix-utils/honeypot/react";
 

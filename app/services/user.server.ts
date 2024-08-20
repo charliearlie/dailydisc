@@ -60,6 +60,10 @@ export const login = async ({
   return user;
 };
 
+export const getReviewsByUserId = async (userId: number) => {
+  return db.select().from(reviews).where(eq(reviews.userId, userId));
+};
+
 export const getUserReviewCount = async (userId?: number) => {
   if (!userId) return 0;
   const [response] = await db
@@ -68,4 +72,4 @@ export const getUserReviewCount = async (userId?: number) => {
     .where(and(eq(reviews.userId, userId), not(eq(reviews.albumId, 194))));
 
   return response.count;
-}
+};

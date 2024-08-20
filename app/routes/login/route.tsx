@@ -11,7 +11,7 @@ import { Button } from "~/components/common/ui/button";
 import { FormField } from "~/components/form/form-field";
 import { LoginFormSchema } from "~/services/schemas";
 import { createUserSession } from "~/services/session";
-import { login } from "~/services/user";
+import { login } from "~/services/user.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();

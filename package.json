@@ -15,6 +15,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.26.1",
     "@conform-to/react": "^1.0.6",
     "@conform-to/zod": "^1.0.6",
     "@libsql/client": "^0.5.6",
@@ -47,6 +48,7 @@
     "embla-carousel-react": "^8.1.5",
     "isbot": "^4.1.0",
     "lucide-react": "^0.363.0",
+    "openai": "^4.56.0",
     "pg": "^8.11.3",
     "react": "^18.2.0",
     "react-day-picker": "^8.10.1",

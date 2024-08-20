@@ -2,6 +2,7 @@ import { LoaderFunctionArgs, json } from "@remix-run/node";
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "~/drizzle/db.server";
 import { albums } from "~/drizzle/schema.server";
+import { generateAlbumDescription } from "~/services/claude.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const apiKey = request.headers.get("x-api-key");
@@ -46,24 +47,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     },
   });
 
-  if (scheduledAlbum) {
-    await db
-      .update(albums)
-      .set({ active: 1, listenDate: todaysDate })
-      .where(eq(albums.id, scheduledAlbum.id));
+  let selectedAlbum;
 
-    console.log("Todays album is ", {
-      ...scheduledAlbum,
-      primaryArtist: scheduledAlbum.artistsToAlbums[0].artist.name,
-    });
-    return json({
-      randomAlbum: {
-        ...scheduledAlbum,
-        primaryArtist: scheduledAlbum.artistsToAlbums[0].artist.name,
-      },
-    });
+  if (scheduledAlbum) {
+    selectedAlbum = scheduledAlbum;
   } else {
-    const randomAlbum = await db.query.albums.findFirst({
+    selectedAlbum = await db.query.albums.findFirst({
       where: eq(albums.archived, 0),
       with: {
         artistsToAlbums: {
@@ -75,23 +64,33 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       },
       orderBy: sql`RANDOM()`,
     });
-
-    if (!randomAlbum) {
-      return json({ error: "No albums found" }, { status: 404 });
-    }
-
-    console.log("Todays album is ", randomAlbum.title);
-
-    await db
-      .update(albums)
-      .set({ active: 1, listenDate: todaysDate })
-      .where(eq(albums.id, randomAlbum.id));
-
-    return json({
-      randomAlbum: {
-        ...randomAlbum,
-        primaryArtist: randomAlbum.artistsToAlbums[0].artist.name,
-      },
-    });
   }
+
+  if (!selectedAlbum) {
+    return json({ error: "No albums found" }, { status: 404 });
+  }
+
+  console.log("Todays album is ", selectedAlbum.title);
+
+  const description = await generateAlbumDescription(
+    selectedAlbum.title,
+    selectedAlbum.artistsToAlbums[0].artist.name,
+  );
+
+  await db
+    .update(albums)
+    .set({
+      active: 1,
+      listenDate: todaysDate,
+      description: description,
+    })
+    .where(eq(albums.id, selectedAlbum.id));
+
+  const updatedAlbum = {
+    ...selectedAlbum,
+    primaryArtist: selectedAlbum.artistsToAlbums[0].artist.name,
+    description: description,
+  };
+
+  return json({ randomAlbum: updatedAlbum });
 };

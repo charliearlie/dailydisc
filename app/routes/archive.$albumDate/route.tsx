@@ -39,6 +39,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "~/components/common/ui/accordion";
+import { generateAlbumDescription } from "~/services/claude.server";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
@@ -93,6 +94,22 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
         },
       });
 
+      let description;
+
+      if (!albumOfTheDay.description) {
+        description = await generateAlbumDescription(
+          albumOfTheDay.title,
+          albumOfTheDay.artistsToAlbums[0].artist.name,
+        );
+
+        await db
+          .update(albums)
+          .set({
+            description,
+          })
+          .where(eq(albums.id, albumOfTheDay.id));
+      }
+
       const userReview = albumReviews.find(
         (album) => album.userId === user?.id,
       );
@@ -105,6 +122,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 
       const album = {
         ...albumOfTheDay,
+        description: description || albumOfTheDay.description,
         tracks,
       };
 
@@ -229,7 +247,7 @@ export default function Index() {
 
   return (
     <main className="flex-1 bg-gradient-to-tl from-background via-background to-gradientend">
-      <section className="container  space-y-8 py-8 text-center md:py-16 lg:space-y-12">
+      <section className="container  space-y-8 pt-8 text-center md:pt-16 lg:space-y-12">
         <div className="flex flex-col items-center justify-center space-y-2">
           <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl/none">
             Album of the Day
@@ -300,6 +318,18 @@ export default function Index() {
           <Badge className="text-base">{genre}</Badge>
         </div>
       </section>
+      <section className="container max-w-screen-md space-y-8 py-8 lg:space-y-12">
+        <Accordion collapsible type="single">
+          <AccordionItem value="reviews-and-tracklist">
+            <AccordionTrigger>Show album description</AccordionTrigger>
+            <AccordionContent>
+              <div className="flex flex-col space-y-4">
+                <p>{album.description}</p>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </section>
       <section className="container max-w-screen-md space-y-8 lg:space-y-12">
         {isLoggedIn && !hasUserReviewed ? (
           <Card className="mx-auto max-w-lg ">
@@ -320,52 +350,43 @@ export default function Index() {
         )}
       </section>
       <section className="container max-w-screen-md space-y-8 py-8 md:py-16 lg:space-y-12">
-        <Accordion type="single">
-          <AccordionItem value="reviews-and-tracklist">
-            <AccordionTrigger>Reviews & tracklist</AccordionTrigger>
-            <AccordionContent>
-              <Tabs
-                defaultValue={hasUserReviewed ? "reviews" : "tracklist"}
-                className="w-full"
-              >
-                <TabsList className="w-full">
-                  <TabsTrigger className="w-full" value="reviews">
-                    Reviews
-                  </TabsTrigger>
-                  <TabsTrigger className="w-full" value="tracklist">
-                    Track list
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="reviews">
-                  <ReviewList
-                    hasUserReviewed={hasUserReviewed}
-                    reviews={albumReviews}
-                  />
-                </TabsContent>
-                <TabsContent value="tracklist">
-                  <div className="flex flex-col space-y-4">
-                    {tracks.map((track) => (
-                      <div
-                        key={track.id}
-                        className="flex items-center justify-between space-y-4"
-                      >
-                        <div className="flex flex-col">
-                          <p className="text-lg font-medium">{track.title}</p>
-                          <p className="m-0 text-xs font-light">
-                            {track.artist}
-                          </p>
-                        </div>
-                        <p className="text-sm font-light">
-                          {format(new Date(track.trackTimeMillis!), "mm:ss")}
-                        </p>
-                      </div>
-                    ))}
+        <Tabs
+          defaultValue={hasUserReviewed ? "reviews" : "tracklist"}
+          className="w-full"
+        >
+          <TabsList className="w-full">
+            <TabsTrigger className="w-full" value="reviews">
+              Reviews
+            </TabsTrigger>
+            <TabsTrigger className="w-full" value="tracklist">
+              Track list
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="reviews">
+            <ReviewList
+              hasUserReviewed={hasUserReviewed}
+              reviews={albumReviews}
+            />
+          </TabsContent>
+          <TabsContent value="tracklist">
+            <div className="flex flex-col space-y-4">
+              {tracks.map((track) => (
+                <div
+                  key={track.id}
+                  className="flex items-center justify-between space-y-4"
+                >
+                  <div className="flex flex-col">
+                    <p className="text-lg font-medium">{track.title}</p>
+                    <p className="m-0 text-xs font-light">{track.artist}</p>
                   </div>
-                </TabsContent>
-              </Tabs>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+                  <p className="text-sm font-light">
+                    {format(new Date(track.trackTimeMillis!), "mm:ss")}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       </section>
     </main>
   );

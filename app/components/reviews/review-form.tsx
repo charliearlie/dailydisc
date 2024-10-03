@@ -1,6 +1,9 @@
+import { useId, useMemo } from "react";
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import { X } from "lucide-react";
+
 import { FormField } from "../form/form-field";
 import { Label } from "../common/ui/label";
 import { ReviewFormSchema } from "./types";
@@ -15,8 +18,6 @@ import {
 import { Button } from "../common/ui/button";
 import { FormFieldTextArea } from "../form/form-field-text-area";
 import { useUser } from "~/contexts/user-context";
-import { useId } from "react";
-import { X } from "lucide-react";
 
 export const ReviewForm = () => {
   const loaderData = useLoaderData<typeof loader>();
@@ -35,8 +36,22 @@ export const ReviewForm = () => {
 
   if (!loaderData) return <p>Album has not been selected yet..</p>;
 
-  const { album } = loaderData;
+  const { album, extraInfo } = loaderData;
   const { tracks } = album;
+
+  const albumTracks = useMemo(() => {
+    if (tracks.length === 0) {
+      return extraInfo?.tracks.map((track) => ({
+        artist: track.artists[0].name,
+        id: track.id,
+        title: track.name,
+        trackTimeMillis: track.durationMs,
+        trackNumber: track.trackNumber,
+      }));
+    }
+
+    return tracks;
+  }, [tracks, extraInfo?.tracks]);
 
   const favouriteTracks = fields.favouriteTracks.getFieldList();
 
@@ -61,7 +76,7 @@ export const ReviewForm = () => {
                     <SelectValue placeholder="Select track" />
                   </SelectTrigger>
                   <SelectContent className="h-48">
-                    {tracks.map((track) => {
+                    {albumTracks?.map((track) => {
                       if (track.title) {
                         return (
                           <SelectItem

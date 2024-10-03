@@ -4,6 +4,7 @@ import {
   json,
   type MetaFunction,
 } from "@remix-run/node";
+import { useMemo } from "react";
 import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { parseWithZod } from "@conform-to/zod";
 import { format } from "date-fns";
@@ -240,9 +241,23 @@ export default function Index() {
     year,
   } = album;
 
+  const albumTracks = useMemo(() => {
+    if (tracks.length === 0) {
+      return extraInfo?.tracks.map((track) => ({
+        artist: track.artists[0].name,
+        id: track.id,
+        title: track.name,
+        trackTimeMillis: track.durationMs,
+        trackNumber: track.trackNumber,
+      }));
+    }
+
+    return tracks;
+  }, [tracks, extraInfo?.tracks]);
+
   return (
     <main className="flex-1 bg-gradient-to-tl from-background via-background to-gradientend">
-      <section className="container  space-y-8 pt-8 text-center md:pt-16 lg:space-y-12">
+      <section className="container space-y-8 pt-8 text-center md:pt-16 lg:space-y-12">
         <div className="flex flex-col items-center justify-center space-y-2">
           <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl/none">
             Album of the Day
@@ -365,20 +380,22 @@ export default function Index() {
           </TabsContent>
           <TabsContent value="tracklist">
             <div className="flex flex-col space-y-4">
-              {tracks.map((track) => (
-                <div
-                  key={track.id}
-                  className="flex items-center justify-between space-y-4"
-                >
-                  <div className="flex flex-col">
-                    <p className="text-lg font-medium">{track.title}</p>
-                    <p className="m-0 text-xs font-light">{track.artist}</p>
+              {albumTracks?.map((track, index) => {
+                return (
+                  <div
+                    key={track.id}
+                    className="flex items-center justify-between space-y-4"
+                  >
+                    <div className="flex flex-col">
+                      <p className="text-lg font-medium">{track.title}</p>
+                      <p className="m-0 text-xs font-light">{track.artist}</p>
+                    </div>
+                    <p className="text-sm font-light">
+                      {format(new Date(track.trackTimeMillis!), "mm:ss")}
+                    </p>
                   </div>
-                  <p className="text-sm font-light">
-                    {format(new Date(track.trackTimeMillis!), "mm:ss")}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </TabsContent>
         </Tabs>

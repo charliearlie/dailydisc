@@ -6,7 +6,7 @@ import {
 } from "@remix-run/node";
 import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { parseWithZod } from "@conform-to/zod";
-import { format, formatDate } from "date-fns";
+import { format } from "date-fns";
 import { eq, sql } from "drizzle-orm";
 import { AvatarFallback } from "@radix-ui/react-avatar";
 
@@ -48,7 +48,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     },
     {
       name: "description",
-      content: `An online club to listen to a random album every day. The album for ${formatDate(data?.archiveDate || new Date().toISOString(), "YYYY-mm-DD")} is ${data?.artists[0]?.name} - ${data?.album.title}`,
+      content:
+        "An online club to listen to a random album every day where you can join in the conversation",
     },
     {
       property: "og:image",

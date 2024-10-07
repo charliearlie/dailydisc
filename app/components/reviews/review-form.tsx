@@ -55,6 +55,8 @@ export const ReviewForm = () => {
 
   const favouriteTracks = fields.favouriteTracks.getFieldList();
 
+  console.log("albumTracks", albumTracks);
+
   return (
     <Form method="post" className="space-y-4" {...getFormProps(form)}>
       <div className="space-y-2">

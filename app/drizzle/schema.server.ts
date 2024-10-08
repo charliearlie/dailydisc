@@ -138,6 +138,14 @@ export const reviews = sqliteTable(
   }),
 );
 
+export const sitemaps = sqliteTable("sitemaps", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  content: text("content").notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+});
+
 export const reviewsRelations = relations(reviews, ({ one }) => ({
   album: one(albums, {
     fields: [reviews.albumId],

@@ -1,11 +1,10 @@
 import { db } from "~/drizzle/db.server";
 
 export const loader = async () => {
-  const latestSitemap = await db.query.sitemaps.findFirst({
-    orderBy: (sitemaps, { desc }) => [desc(sitemaps.updatedAt)],
-  });
+  // const latestSitemap = await db.query.sitemaps.findFirst({
+  //   orderBy: (sitemaps, { desc }) => [desc(sitemaps.updatedAt)],
+  // });
 
-  console.log(latestSitemap?.content);
   return new Response(
     `<?xml version="1.0" encoding="UTF-8"?>
   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

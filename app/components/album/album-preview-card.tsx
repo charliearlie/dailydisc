@@ -21,9 +21,10 @@ import { useState } from "react";
 
 export const AlbumPreviewCard = ({ album }: { album: ArchiveAlbum }) => {
   const user = useUser();
+
   const [hoveredAlbum, setHoveredAlbum] = useState<number | null>(null);
 
-  console.log("album.artists", album.artists);
+  console.log("user", user);
   const Artists = ({ artists }: { artists: string[] }) => {
     return (
       <p>
@@ -106,10 +107,10 @@ export const AlbumPreviewCard = ({ album }: { album: ArchiveAlbum }) => {
           </CardContent>
           <CardFooter className="flex items-center justify-between p-4 pt-0">
             <span className="text-sm text-muted-foreground">{album.year}</span>
-            {album.userRating ? (
+            {album.userRating || user.isUserAdmin ? (
               <div className="flex items-center">
                 <span className="mr-1 text-muted-foreground">
-                  {album.userRating ? album.averageRating : ""}
+                  {album.averageRating}
                 </span>
                 <Star className="-mt-1 h-6 w-6 fill-yellow-400 text-yellow-400" />
               </div>

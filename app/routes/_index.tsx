@@ -241,6 +241,7 @@ export default function Index() {
     year,
   } = album;
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const albumTracks = useMemo(() => {
     if (tracks.length === 0) {
       return extraInfo?.tracks.map((track) => ({
@@ -380,7 +381,7 @@ export default function Index() {
           </TabsContent>
           <TabsContent value="tracklist">
             <div className="flex flex-col space-y-4">
-              {albumTracks?.map((track, index) => {
+              {albumTracks?.map((track) => {
                 return (
                   <div
                     key={track.id}

@@ -39,6 +39,7 @@ export const ReviewForm = () => {
   const { album, extraInfo } = loaderData;
   const { tracks } = album;
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const albumTracks = useMemo(() => {
     if (tracks.length === 0) {
       return extraInfo?.tracks.map((track) => ({

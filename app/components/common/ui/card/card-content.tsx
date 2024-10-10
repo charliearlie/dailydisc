@@ -1,18 +1,11 @@
-import type { PropsWithChildren } from "react";
+import React from "react";
 
 import { cn } from "~/util/utils";
 
-type CardContentProps = {
-  noPadding?: boolean;
-  className?: string;
-};
-
-type Props = PropsWithChildren<CardContentProps>;
-
-export function CardContent({ children, noPadding = false, className }: Props) {
-  return (
-    <div className={cn(`py-2 ${noPadding ? "" : "px-2"}`, className)}>
-      {children}
-    </div>
-  );
-}
+export const CardContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+));
+CardContent.displayName = "CardContent";

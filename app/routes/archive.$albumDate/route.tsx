@@ -200,9 +200,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       .join(" | "),
   });
 
-  db.update(albums)
+  const updatedAverageRating: { updatedRating: number | null }[] = await db
+    .update(albums)
     .set({ averageRating: newAverageRating / 2 })
-    .where(eq(albums.id, Number(albumId)));
+    .where(eq(albums.id, Number(albumId)))
+    .returning({ updatedRating: albums.averageRating });
+
+  console.log({ updatedAverageRating });
 
   return json({
     result: submission.reply({ resetForm: true }),

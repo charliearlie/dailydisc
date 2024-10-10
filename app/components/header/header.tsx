@@ -1,7 +1,6 @@
 import { Link } from "@remix-run/react";
 
 import { HeaderNav } from "./header-nav";
-import { SearchInput } from "../search/search-input";
 
 export const Header = () => {
   return (
@@ -19,9 +18,6 @@ export const Header = () => {
           <span>DailyDisc</span>
         </Link>
       </div>
-      {/* <div className="hidden w-72 justify-center justify-self-center md:flex lg:w-[550px]">
-        <SearchInput />
-      </div> */}
       <HeaderNav />
     </header>
   );

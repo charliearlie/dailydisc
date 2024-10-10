@@ -37,7 +37,6 @@ export const getArchiveAlbums = async ({
   orderBy,
   userId,
 }: GetArchiveAlbumsOptions = {}): Promise<ArchiveAlbum[]> => {
-  console.log("userId", userId);
   let orderByClause: SQL<unknown>;
 
   switch (orderBy) {

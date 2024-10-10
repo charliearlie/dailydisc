@@ -1,4 +1,4 @@
-import { db } from "~/drizzle/db.server";
+// import { db } from "~/drizzle/db.server";
 
 export const loader = async () => {
   // const latestSitemap = await db.query.sitemaps.findFirst({

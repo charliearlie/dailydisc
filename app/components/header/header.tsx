@@ -19,9 +19,9 @@ export const Header = () => {
           <span>DailyDisc</span>
         </Link>
       </div>
-      <div className="hidden w-72 justify-center justify-self-center md:flex lg:w-[550px]">
+      {/* <div className="hidden w-72 justify-center justify-self-center md:flex lg:w-[550px]">
         <SearchInput />
-      </div>
+      </div> */}
       <HeaderNav />
     </header>
   );

@@ -24,7 +24,6 @@ export const AlbumPreviewCard = ({ album }: { album: ArchiveAlbum }) => {
 
   const [hoveredAlbum, setHoveredAlbum] = useState<number | null>(null);
 
-  console.log("user", user);
   const Artists = ({ artists }: { artists: string[] }) => {
     return (
       <p>
@@ -39,8 +38,6 @@ export const AlbumPreviewCard = ({ album }: { album: ArchiveAlbum }) => {
       </p>
     );
   };
-
-  console.log({ album });
 
   return (
     <Link to={`/archive/${format(new Date(album.listenDate!), "yyyy-MM-dd")}`}>
@@ -110,7 +107,10 @@ export const AlbumPreviewCard = ({ album }: { album: ArchiveAlbum }) => {
             {album.userRating || user.isUserAdmin ? (
               <div className="flex items-center">
                 <span className="mr-1 text-muted-foreground">
-                  {album.averageRating}
+                  {album.averageRating}{" "}
+                  <span className="text-sm tracking-tighter">
+                    ({album.reviewCount})
+                  </span>
                 </span>
                 <Star className="-mt-1 h-6 w-6 fill-yellow-400 text-yellow-400" />
               </div>

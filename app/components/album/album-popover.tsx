@@ -17,7 +17,7 @@ export const AlbumPopover = ({
     <Popover>
       <PopoverTrigger>
         <img
-          className="group relative mx-auto block h-[250px] w-[250px] cursor-pointer overflow-hidden rounded-lg border-4 border-primary bg-accent duration-300 hover:-translate-y-1 hover:scale-110"
+          className="group relative mx-auto block h-[320px] w-[320px] cursor-pointer overflow-hidden rounded-lg border-4 border-primary bg-accent duration-300 hover:-translate-y-1 hover:scale-110"
           alt={`${title} album artwork`}
           height="250"
           src={image!}

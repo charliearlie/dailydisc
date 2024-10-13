@@ -269,6 +269,63 @@ export default function Index() {
             />
           </div>
         </div>
+        <Card className="mx-auto max-w-screen-lg">
+          <CardContent className="grid grid-cols-1 justify-start gap-4 p-8 md:grid-cols-[300px_1fr]">
+            <AlbumPopover
+              image={image!}
+              title={title}
+              appleMusicId={appleMusicCollectionId!}
+              appleMusicUrl={appleMusicUrl!}
+            />
+            <div className="space-y-2 text-left">
+              <h2 className="text-3xl font-bold tracking-tight">
+                <Link
+                  aria-label={`View reviews for ${title}`}
+                  to={`/album/${spotifyUrl}`}
+                >
+                  {title}
+                </Link>
+              </h2>
+              {extraInfo ? (
+                <div className="flex justify-center gap-4">
+                  {extraInfo.artists.map((artist) => (
+                    <Link
+                      to={`/artist/${artist.id}`}
+                      className="flex flex-col items-center gap-2 hover:opacity-80"
+                      key={artist.id}
+                      aria-describedby="artist-name"
+                    >
+                      <Avatar className="h-20 w-20 border border-primary bg-primary">
+                        <AvatarImage src={artist.images?.[0].url} />
+                        <AvatarFallback>{artist.name[0]}</AvatarFallback>
+                      </Avatar>
+                      <span
+                        id="artist-name"
+                        className="text-lg font-semibold leading-none tracking-tighter"
+                      >
+                        {artist.name}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  {artists.map((artist) => (
+                    <p
+                      key={artist.id}
+                      className="text-lg font-semibold leading-none tracking-tighter"
+                    >
+                      {artist.name}
+                    </p>
+                  ))}
+                </>
+              )}
+              <p>{album.description}</p>
+              <p className="text-sm font-semibold tracking-wider">{year}</p>
+              <Badge className="text-base">{genre}</Badge>
+            </div>
+          </CardContent>
+        </Card>
         <div className="mx-auto max-w-sm space-y-4">
           <AlbumPopover
             image={image!}

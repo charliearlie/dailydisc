@@ -127,6 +127,7 @@ export const ReviewForm = () => {
         />
         <input hidden name="albumId" readOnly value={loaderData?.album.id} />
         <input hidden name="userId" readOnly value={user?.userId} />
+        <input hidden name="intent" readOnly value="review" />
       </div>
       <Button
         className="w-full"

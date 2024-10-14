@@ -197,7 +197,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       .join(" | "),
   });
 
-  const updatedAverageRating: { updatedRating: number | null }[] = await db
+  await db
     .update(albums)
     .set({ averageRating: newAverageRating / 2 })
     .where(eq(albums.id, Number(albumId)))

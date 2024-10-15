@@ -91,7 +91,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export const loader = async () => {
-  const allArtistsPromise = db.select().from(artists);
+  const allArtistsPromise = db.query.artists.findMany({
+    columns: {
+      id: true,
+      name: true,
+    },
+  });
 
   return defer({
     artists: Promise.resolve().then(() => allArtistsPromise),

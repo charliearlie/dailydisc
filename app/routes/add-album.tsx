@@ -1,7 +1,8 @@
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
-import { ActionFunctionArgs, json } from "@remix-run/node";
-import { Form, Link, useLoaderData } from "@remix-run/react";
+import { ActionFunctionArgs, defer, json } from "@remix-run/node";
+import { Await, Form, Link, useLoaderData } from "@remix-run/react";
+import { Suspense } from "react";
 import { z } from "zod";
 import { Button } from "~/components/common/ui/button";
 import { Label } from "~/components/common/ui/label";
@@ -90,13 +91,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export const loader = async () => {
-  const allArtists = await db.select().from(artists);
+  const allArtistsPromise = db.select().from(artists);
 
-  return json(allArtists.sort((a, b) => a.name.localeCompare(b.name)));
+  return defer({
+    artists: Promise.resolve().then(() => allArtistsPromise),
+  });
 };
 
 export default function AddArtistRoute() {
-  const artists = useLoaderData<typeof loader>();
+  const { artists } = useLoaderData<typeof loader>();
   const actionData = useLoaderData<typeof action>();
 
   const [form, fields] = useForm({
@@ -143,22 +146,29 @@ export default function AddArtistRoute() {
           <Label className="font-bold" htmlFor="category">
             Artist
           </Label>
-          <Select name="artistId">
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select artist" />
-            </SelectTrigger>
-            <SelectContent className="h-96">
-              {artists.map((option) => (
-                <SelectItem
-                  className="cursor-pointer"
-                  key={option.id}
-                  value={String(option.id)}
-                >
-                  {option.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Suspense fallback={<p>Loading...</p>}>
+            <Await resolve={artists}>
+              {(artists) => (
+                <Select name="artistId">
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select artist" />
+                  </SelectTrigger>
+                  <SelectContent className="h-96">
+                    {artists.map((option) => (
+                      <SelectItem
+                        className="cursor-pointer"
+                        key={option.id}
+                        value={String(option.id)}
+                      >
+                        {option.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </Await>
+          </Suspense>
+
           <span>
             Cant find the artist in this list?{" "}
             <Link className="text-primary underline" to="/add-artist">

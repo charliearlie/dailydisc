@@ -1,8 +1,7 @@
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { ActionFunctionArgs, json } from "@remix-run/node";
-import { Form, Link, useActionData, useFetcher } from "@remix-run/react";
-import { useState, useCallback, useEffect } from "react";
+import { Form, Link, useLoaderData } from "@remix-run/react";
 import { z } from "zod";
 import { Button } from "~/components/common/ui/button";
 import { Label } from "~/components/common/ui/label";
@@ -16,7 +15,7 @@ import {
 import { FormField } from "~/components/form/form-field";
 import { ImageUpload } from "~/components/image-upload";
 import { db } from "~/drizzle/db.server";
-import { albums, artistsToAlbums } from "~/drizzle/schema.server";
+import { albums, artists, artistsToAlbums } from "~/drizzle/schema.server";
 import { uploadImages } from "~/services/cloudinary";
 import { getAppleMusicCollectionIdFromUrl } from "~/services/itunes.api.server";
 import { FileSchema } from "~/services/schemas";
@@ -90,27 +89,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 };
 
-interface Artist {
-  id: number;
-  name: string;
-}
+export const loader = async () => {
+  const allArtists = await db.select().from(artists);
+
+  return json(allArtists.sort((a, b) => a.name.localeCompare(b.name)));
+};
 
 export default function AddArtistRoute() {
-  const [artists, setArtists] = useState<Artist[]>([]);
-  const actionData = useActionData<typeof action>();
-  const fetcher = useFetcher<{ artists: Artist[] }>();
-
-  const fetchArtists = useCallback(() => {
-    if (artists.length === 0) {
-      fetcher.load("/api/artists?limit=50");
-    }
-  }, [artists.length, fetcher]);
-
-  useEffect(() => {
-    if (fetcher.data && fetcher.data.artists) {
-      setArtists(fetcher.data.artists);
-    }
-  }, [fetcher.data]);
+  const artists = useLoaderData<typeof loader>();
+  const actionData = useLoaderData<typeof action>();
 
   const [form, fields] = useForm({
     id: "artist-form",
@@ -156,14 +143,7 @@ export default function AddArtistRoute() {
           <Label className="font-bold" htmlFor="category">
             Artist
           </Label>
-          <Select
-            name="artistId"
-            onOpenChange={(open) => {
-              if (open) {
-                fetchArtists();
-              }
-            }}
-          >
+          <Select name="artistId">
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select artist" />
             </SelectTrigger>
@@ -180,7 +160,7 @@ export default function AddArtistRoute() {
             </SelectContent>
           </Select>
           <span>
-            Can't find the artist in this list?{" "}
+            Cant find the artist in this list?{" "}
             <Link className="text-primary underline" to="/add-artist">
               Add artist
             </Link>

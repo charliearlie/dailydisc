@@ -73,26 +73,26 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       where: eq(artists.name, artistName.trim()),
     });
 
-    if (!artistInDb) {
-      const [artist] = await db
-        .insert(artists)
-        .values({ name: artistName.trim() })
-        .returning();
-
+    if (artistInDb) {
       await db.insert(artistsToAlbums).values({
         albumId: album.id,
-        artistId: artist.id,
+        artistId: artistInDb.id,
+      });
+
+      return json({
+        result: submission.reply({ resetForm: true }),
+        status: "success" as const,
       });
     }
 
-    const [newArtist] = await db
+    const [artist] = await db
       .insert(artists)
-      .values({ name: artistName })
-      .returning({ id: artists.id });
+      .values({ name: artistName.trim() })
+      .returning();
 
     await db.insert(artistsToAlbums).values({
       albumId: album.id,
-      artistId: newArtist.id,
+      artistId: artist.id,
     });
 
     return json({

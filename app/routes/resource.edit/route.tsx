@@ -55,7 +55,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     console.log("new rating: ", rating);
 
     const newAverageRating =
-      (averageRating * reviewCount - existingRating / 2 + rating) / 2;
+      (averageRating * reviewCount - existingRating / 2 + rating * 2) / 2;
 
     console.log("new average rating: ", newAverageRating);
 

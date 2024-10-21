@@ -49,8 +49,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       })
       .where(eq(reviews.id, Number(reviewId)));
 
+    console.log("current average rating: ", averageRating);
+    console.log("current review count: ", reviewCount);
+    console.log("existing rating: ", existingRating);
+    console.log("new rating: ", rating);
+
     const newAverageRating =
       (averageRating * reviewCount - existingRating / 2 + rating) / 2;
+
+    console.log("new average rating: ", newAverageRating);
 
     await db
       .update(albums)

@@ -8,6 +8,7 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
+import { Analytics } from "@vercel/analytics/react";
 
 import stylesheet from "~/styles/tailwind.css?url";
 import fontStylesheet from "~/styles/fonts.css?url";
@@ -52,6 +53,7 @@ function Document({ children }: { children: React.ReactNode }) {
         {children}
         <ScrollRestoration />
         <Scripts />
+        <Analytics />
       </body>
     </html>
   );

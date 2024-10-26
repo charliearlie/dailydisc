@@ -1,4 +1,4 @@
-import { PlusIcon } from "lucide-react";
+import { Upload } from "lucide-react";
 import type { ChangeEvent } from "react";
 import React, { useState } from "react";
 import type { z } from "zod";
@@ -28,14 +28,19 @@ export const ImageUpload = React.forwardRef<
             ref={ref}
           />
         ) : (
-          <div
-            className={cn(
-              "flex cursor-pointer items-center justify-center bg-accent hover:opacity-80",
-              className,
-            )}
-          >
-            <PlusIcon size={24} />
-          </div>
+          <>
+            <div
+              className={cn(
+                "flex cursor-pointer items-center justify-center bg-accent hover:opacity-80",
+                className,
+              )}
+            >
+              <Upload className="h-12 w-12 text-muted-foreground" />
+            </div>
+            <p className="mt-2 text-center text-sm text-accent-foreground/70">
+              Upload an image
+            </p>
+          </>
         )}
         <input
           type="file"

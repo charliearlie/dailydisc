@@ -3,7 +3,8 @@ import { ActionFunctionArgs, json } from "@remix-run/node";
 import { eq } from "drizzle-orm";
 import { EditReviewFormSchema } from "~/components/reviews/types";
 import { db } from "~/drizzle/db.server";
-import { reviews } from "~/drizzle/schema.server";
+import { albums, reviews } from "~/drizzle/schema.server";
+import { getAverageRatingAndReviewCount } from "~/services/album.server";
 import { getUserId } from "~/services/session";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -23,10 +24,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   }
 
-  const { reviewId, favouriteTracks, rating, review, userId } =
+  const { albumId, reviewId, favouriteTracks, rating, review, userId } =
     submission.value;
 
-  if (userId === `${loggedInUserId}`) {
+  const existingReview = await db.query.reviews.findFirst({
+    where: eq(reviews.id, Number(reviewId)),
+    columns: {
+      rating: true,
+    },
+  });
+
+  const existingRating = existingReview?.rating;
+
+  if (userId === `${loggedInUserId}` && existingRating) {
+    const { averageRating, reviewCount } = await getAverageRatingAndReviewCount(
+      Number(albumId),
+    );
     await db
       .update(reviews)
       .set({
@@ -35,6 +48,23 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         review: review || "",
       })
       .where(eq(reviews.id, Number(reviewId)));
+
+    console.log("current average rating: ", averageRating);
+    console.log("current review count: ", reviewCount);
+    console.log("existing rating: ", existingRating);
+    console.log("new rating: ", rating);
+
+    const newAverageRating =
+      (averageRating * reviewCount - existingRating / 2 + rating * 2) / 2;
+
+    console.log("new average rating: ", newAverageRating);
+
+    await db
+      .update(albums)
+      .set({
+        averageRating: Number(newAverageRating.toFixed(1)),
+      })
+      .where(eq(albums.id, Number(albumId)));
   }
 
   return json({

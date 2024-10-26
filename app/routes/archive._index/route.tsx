@@ -159,7 +159,7 @@ export default function ArchivePage() {
         </h2>
         <ReviewedText />
       </section>
-      <section className="space-y-8 py-8 text-center md:container md:py-16 lg:space-y-12">
+      <section className="mx-auto my-auto space-y-8 py-8 text-center md:max-w-screen-2xl md:py-16 lg:space-y-12">
         <div className="px-4 md:container md:px-6">
           <Select
             defaultValue={(searchParams.get("sort") as string) ?? "listenDate"}
@@ -177,7 +177,7 @@ export default function ArchivePage() {
             </SelectContent>
           </Select>
         </div>
-        <div className="grid grid-cols-1 gap-6 px-4 py-8 md:grid-cols-2 md:px-6 lg:grid-cols-4 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 px-4 py-8 md:grid-cols-2 md:px-6 lg:grid-cols-3 xl:grid-cols-4">
           {albums.map((album) => (
             <AlbumPreviewCard album={album} key={album.id} />
           ))}

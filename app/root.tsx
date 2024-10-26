@@ -30,7 +30,10 @@ export const links: LinksFunction = () => [
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await getUserFromRequestContext(request);
-  return json({ user });
+  const isUserAdmin = user?.id === 2;
+  console.log({ user, isUserAdmin });
+
+  return json({ user, isUserAdmin });
 };
 
 function Document({ children }: { children: React.ReactNode }) {
@@ -50,6 +53,7 @@ function Document({ children }: { children: React.ReactNode }) {
         {children}
         <ScrollRestoration />
         <Scripts />
+        <Analytics />
       </body>
     </html>
   );
@@ -60,6 +64,7 @@ export function Layout() {
   return (
     <Document>
       <UserProvider
+        isUserAdmin={loaderData?.isUserAdmin}
         username={loaderData?.user?.username}
         userId={loaderData?.user?.id}
       >

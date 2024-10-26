@@ -52,6 +52,7 @@ export const EditReviewForm = ({
           placeholder="What did you think of the album?"
           defaultValue={userReview.review || ""}
         />
+        <input hidden name="albumId" readOnly value={userReview.albumId} />
         <input hidden name="reviewId" readOnly value={userReview.id} />
         <input hidden name="userId" readOnly value={userReview.userId} />
       </div>

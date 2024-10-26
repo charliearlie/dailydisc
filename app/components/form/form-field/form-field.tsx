@@ -12,23 +12,27 @@ export type FormFieldProps = {
   helperText?: string;
   Icon?: LucideIcon;
   label: string;
+  labelIcon?: LucideIcon;
 };
 
 type Props = FormFieldProps & React.HTMLProps<HTMLInputElement>;
 
 export const FormField = forwardRef<HTMLInputElement, Props>(
   (
-    { errors, helperText, Icon, label, name, type, ...props },
-    ref
+    { errors, helperText, Icon, label, labelIcon, name, type, ...props },
+    ref,
   ): ReactElement => {
     const id = useId();
     const inputId = `${id}-${name}`;
     const inputErrorsId = `${id}-${name}-errors`;
 
+    const LabelIcon = labelIcon || null;
+
     const hasErrors = !!errors?.length;
     return (
       <div className="flex w-full flex-col gap-1.5">
         <Label className="font-bold" htmlFor={inputId}>
+          {LabelIcon ? <LabelIcon className="mr-2 inline h-4 w-4" /> : null}
           {label}
         </Label>
         <span className="flex items-center">
@@ -38,7 +42,7 @@ export const FormField = forwardRef<HTMLInputElement, Props>(
               hasErrors && "ring-2 ring-destructive ring-offset-1",
               Icon && "pl-5",
               type === "file" &&
-                "file:-mx-3 file:-my-[0.32rem] file:cursor-pointer file:overflow-hidden file:rounded-none file:border-0 file:border-solid file:border-inherit file:bg-background file:px-3 file:py-[0.32rem] file:text-foreground file:transition file:duration-150 file:ease-in-out file:[margin-inline-end:0.75rem] file:[border-inline-end-width:3px] hover:file:opacity-70"
+                "file:-mx-3 file:-my-[0.32rem] file:cursor-pointer file:overflow-hidden file:rounded-none file:border-0 file:border-solid file:border-inherit file:bg-background file:px-3 file:py-[0.32rem] file:text-foreground file:transition file:duration-150 file:ease-in-out file:[border-inline-end-width:3px] file:[margin-inline-end:0.75rem] hover:file:opacity-70",
             )}
             id={inputId}
             type={type}
@@ -57,7 +61,7 @@ export const FormField = forwardRef<HTMLInputElement, Props>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 FormField.displayName = "FormField";

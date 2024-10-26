@@ -29,9 +29,11 @@ const BaseReviewFormSchema = z.object({
 export const ReviewFormSchema = BaseReviewFormSchema.extend({
   albumId: z.string(),
   favouriteTracks: z.array(z.string()),
+  intent: z.string(),
 });
 
 export const EditReviewFormSchema = BaseReviewFormSchema.extend({
+  albumId: z.string(),
   favouriteTracks: z.string(),
   reviewId: z.string(),
 });

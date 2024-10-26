@@ -1,9 +1,14 @@
-import type { PropsWithChildren } from "react";
+import React from "react";
+import { cn } from "~/util/utils";
 
-export function CardHeader({ children }: PropsWithChildren) {
-  return (
-    <h2 className="flex rounded-t-lg bg-gray-900 p-2 text-center text-2xl font-bold">
-      {children}
-    </h2>
-  );
-}
+export const CardHeader = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    {...props}
+  />
+));
+CardHeader.displayName = "CardHeader";

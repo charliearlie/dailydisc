@@ -1,28 +1,26 @@
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { ActionFunctionArgs, json } from "@remix-run/node";
-import { Form, Link, useLoaderData } from "@remix-run/react";
+import { Form, useLoaderData } from "@remix-run/react";
+import { eq } from "drizzle-orm";
+import { Calendar, Globe, Music, Music2, Tag, User } from "lucide-react";
 import { z } from "zod";
+
 import { Button } from "~/components/common/ui/button";
-import { Label } from "~/components/common/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/common/ui/select";
+import { Card, CardContent, CardHeader } from "~/components/common/ui/card";
 import { FormField } from "~/components/form/form-field";
 import { ImageUpload } from "~/components/image-upload";
+
 import { db } from "~/drizzle/db.server";
 import { albums, artists, artistsToAlbums } from "~/drizzle/schema.server";
+
 import { uploadImages } from "~/services/cloudinary";
 import { getAppleMusicCollectionIdFromUrl } from "~/services/itunes.api.server";
 import { FileSchema } from "~/services/schemas";
 
 const AddAlbumSchema = z.object({
   title: z.string().min(1),
-  artistId: z.string(),
+  artistName: z.string(),
   releaseYear: z.number(),
   genre: z.string().optional(),
   artwork: FileSchema.optional(),
@@ -45,7 +43,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const {
     appleMusicUrl,
-    artistId,
+    artistName,
     artwork,
     genre,
     releaseYear,
@@ -71,9 +69,30 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       })
       .returning();
 
+    const artistInDb = await db.query.artists.findFirst({
+      where: eq(artists.name, artistName.trim()),
+    });
+
+    if (artistInDb) {
+      await db.insert(artistsToAlbums).values({
+        albumId: album.id,
+        artistId: artistInDb.id,
+      });
+
+      return json({
+        result: submission.reply({ resetForm: true }),
+        status: "success" as const,
+      });
+    }
+
+    const [artist] = await db
+      .insert(artists)
+      .values({ name: artistName.trim() })
+      .returning();
+
     await db.insert(artistsToAlbums).values({
       albumId: album.id,
-      artistId: Number(artistId),
+      artistId: artist.id,
     });
 
     return json({
@@ -89,14 +108,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 };
 
-export const loader = async () => {
-  const allArtists = await db.select().from(artists);
-
-  return json(allArtists.sort((a, b) => a.name.localeCompare(b.name)));
-};
-
 export default function AddArtistRoute() {
-  const artists = useLoaderData<typeof loader>();
   const actionData = useLoaderData<typeof action>();
 
   const [form, fields] = useForm({
@@ -110,64 +122,65 @@ export default function AddArtistRoute() {
   });
 
   return (
-    <main className="container space-y-8 py-8 md:py-16 lg:space-y-12">
-      <h1 className="text-3xl font-semibold">Add album</h1>
-      <Form method="post" encType="multipart/form-data" {...getFormProps(form)}>
-        <ImageUpload
-          className="h-[172px] w-[172px] basis-1/4 rounded-lg"
-          fieldProps={{
-            ...getInputProps(fields.artwork, { type: "file" }),
-          }}
-        />
-        <FormField
-          label="Name"
-          {...getInputProps(fields.title, { type: "text" })}
-        />
-        <FormField
-          label="Release year"
-          {...getInputProps(fields.releaseYear, { type: "text" })}
-        />
-        <FormField
-          label="Genre"
-          {...getInputProps(fields.genre, { type: "text" })}
-        />
-        <FormField
-          label="Apple Music URL"
-          {...getInputProps(fields.appleMusicUrl, { type: "text" })}
-        />
-        <FormField
-          label="Spotify ID"
-          {...getInputProps(fields.spotifyId, { type: "text" })}
-        />
-        <div className="mb-8 flex w-full flex-col gap-1.5">
-          <Label className="font-bold" htmlFor="category">
-            Artist
-          </Label>
-          <Select name="artistId">
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select artist" />
-            </SelectTrigger>
-            <SelectContent className="h-96">
-              {artists.map((option) => (
-                <SelectItem
-                  className="cursor-pointer"
-                  key={option.id}
-                  value={String(option.id)}
-                >
-                  {option.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <span>
-            Cant find the artist in this list?{" "}
-            <Link className="text-primary underline" to="/add-artist">
-              Add artist
-            </Link>
-          </span>
-        </div>
-        <Button type="submit">Add album</Button>
-      </Form>
+    <main className="container flex min-h-screen items-center justify-center space-y-6">
+      <Card className="w-full max-w-2xl border-border">
+        <CardHeader>
+          <h1 className="text-center text-3xl font-bold leading-none tracking-tight">
+            Add Album
+          </h1>
+        </CardHeader>
+        <CardContent>
+          <Form
+            method="post"
+            encType="multipart/form-data"
+            {...getFormProps(form)}
+          >
+            <div className="flex justify-center p-8">
+              <ImageUpload
+                className="h-[172px] w-[172px] basis-1/4 rounded-lg"
+                fieldProps={{
+                  ...getInputProps(fields.artwork, { type: "file" }),
+                }}
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <FormField
+                labelIcon={Music}
+                label="Album name"
+                {...getInputProps(fields.title, { type: "text" })}
+              />
+              <FormField
+                labelIcon={Calendar}
+                label="Release year"
+                {...getInputProps(fields.releaseYear, { type: "text" })}
+              />
+              <FormField
+                labelIcon={Tag}
+                label="Genre"
+                {...getInputProps(fields.genre, { type: "text" })}
+              />
+              <FormField
+                labelIcon={Globe}
+                label="Apple Music URL"
+                {...getInputProps(fields.appleMusicUrl, { type: "text" })}
+              />
+              <FormField
+                labelIcon={Music2}
+                label="Spotify ID"
+                {...getInputProps(fields.spotifyId, { type: "text" })}
+              />
+              <FormField
+                labelIcon={User}
+                label="Artist"
+                {...getInputProps(fields.artistName, { type: "text" })}
+              />
+            </div>
+            <Button className="w-full" type="submit">
+              Add album
+            </Button>
+          </Form>
+        </CardContent>
+      </Card>
     </main>
   );
 }

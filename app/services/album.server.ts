@@ -37,7 +37,6 @@ export const getArchiveAlbums = async ({
   orderBy,
   userId,
 }: GetArchiveAlbumsOptions = {}): Promise<ArchiveAlbum[]> => {
-  console.log("userId", userId);
   let orderByClause: SQL<unknown>;
 
   switch (orderBy) {
@@ -212,10 +211,8 @@ export const getAllArtists = async () => {
     },
   });
 
-  // Step 2: Extract the artist IDs
   const artistIds = artistIdsWithAlbums.map((record) => record.artistId);
 
-  // Step 3: Query artists table for those not in the list of artist IDs with albums
   const artistsWithoutAlbums = await db.query.artists.findMany({
     where: notInArray(artists.id, artistIds),
     columns: {
@@ -226,4 +223,25 @@ export const getAllArtists = async () => {
   });
 
   return artistsWithoutAlbums;
+};
+
+export const getAverageRatingAndReviewCount = async (albumId: number) => {
+  const [albumData, reviewCount] = await Promise.all([
+    db.query.albums.findFirst({
+      where: eq(albums.id, albumId),
+      columns: {
+        averageRating: true,
+      },
+    }),
+    db
+      .select({ count: count() })
+      .from(reviews)
+      .where(eq(reviews.albumId, albumId))
+      .then(([result]) => result?.count ?? 0),
+  ]);
+
+  return {
+    averageRating: albumData?.averageRating ?? 0,
+    reviewCount,
+  };
 };

@@ -1,7 +1,13 @@
 import { Link } from "@remix-run/react";
+
 import { useUser } from "~/contexts/user-context";
-import { Popover, PopoverContent, PopoverTrigger } from "../common/ui/popover";
-import { Button } from "../common/ui/button";
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/common/ui/popover";
+import { Button } from "~/components/common/ui/button";
 
 export const HeaderNav = () => {
   const user = useUser();
@@ -13,13 +19,6 @@ export const HeaderNav = () => {
         to="/archive"
       >
         Archive
-      </Link>
-      <Link
-        className="text-sm font-medium text-white transition-colors"
-        to="/discover"
-        prefetch="intent"
-      >
-        Discover
       </Link>
       {isLoggedIn ? (
         <Popover>

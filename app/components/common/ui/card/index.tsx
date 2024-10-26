@@ -1,4 +1,4 @@
-export { Card } from "./card";
+export { Card, CardDescription, CardTitle } from "./card";
 export { CardContent } from "./card-content";
 export { CardFooter } from "./card-footer";
 export { CardHeader } from "./card-header";

@@ -3,7 +3,7 @@ import {
   createCookieSessionStorage,
   redirect,
 } from "@remix-run/node";
-import { getUserById } from "./user";
+import { getUserById } from "./user.server";
 
 const sessionStorage = createCookieSessionStorage({
   cookie: {

@@ -96,6 +96,7 @@ export function Layout() {
         <BottomNavigation />
         <Toaster />
       </UserProvider>
+      <Analytics />
     </Document>
   );
 }

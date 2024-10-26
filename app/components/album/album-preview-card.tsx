@@ -23,8 +23,6 @@ export const AlbumPreviewCard = ({ album }: { album: ArchiveAlbum }) => {
   const user = useUser();
 
   const [hoveredAlbum, setHoveredAlbum] = useState<number | null>(null);
-
-  console.log("user", user);
   const Artists = ({ artists }: { artists: string[] }) => {
     return (
       <p>
@@ -39,8 +37,6 @@ export const AlbumPreviewCard = ({ album }: { album: ArchiveAlbum }) => {
       </p>
     );
   };
-
-  console.log({ album });
 
   return (
     <Link to={`/archive/${format(new Date(album.listenDate!), "yyyy-MM-dd")}`}>

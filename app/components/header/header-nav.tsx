@@ -34,7 +34,10 @@ export const HeaderNav = () => {
             <Link className="p-2 hover:bg-accent" to="/add-album">
               Submit album
             </Link>
-            <Link className="p-2 hover:bg-accent" to="/profile">
+            <Link
+              className="p-2 hover:bg-accent"
+              to={`/profile/${user.username}`}
+            >
               Profile
             </Link>
             <Link className="p-2 hover:bg-accent" to="/logout">

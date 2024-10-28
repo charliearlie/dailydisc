@@ -24,7 +24,7 @@ import {
   TooltipProps,
 } from "recharts";
 import { getUserFromRequestContext } from "~/services/session";
-import { getUserByUsername, getReviewsByUserId } from "~/services/user.server";
+import { getUserByUsername } from "~/services/user.server";
 import { invariantResponse } from "~/util/utils";
 import { Music, Star, User, UserPlus } from "lucide-react";
 import { Button } from "~/components/common/ui/button";
@@ -45,8 +45,8 @@ import {
   AccordionTrigger,
 } from "~/components/common/ui/accordion";
 import { db } from "~/drizzle/db.server";
-import { albums } from "~/drizzle/schema.server";
-import { inArray } from "drizzle-orm";
+import { albums, reviews } from "~/drizzle/schema.server";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { format } from "date-fns";
 import {
   Tooltip,
@@ -55,53 +55,106 @@ import {
   TooltipTrigger,
 } from "~/components/common/ui/tooltip";
 
-export const loader = async ({ params, request }: LoaderFunctionArgs) => {
-  invariantResponse(params.username, "Expected params.username");
+// Optimized review fetching function that gets reviews with aggregation
+async function getReviewsWithAggregation(userId: string) {
+  // Get reviews with their counts grouped by rating
+  const reviewsData = await db
+    .select({
+      id: reviews.id,
+      rating: reviews.rating,
+      albumId: reviews.albumId,
+    })
+    .from(reviews)
+    .where(eq(reviews.userId, Number(userId)))
+    .orderBy(desc(reviews.rating));
 
-  const loggedInUser = await getUserFromRequestContext(request);
-  const profileUser = await getUserByUsername(params.username);
-
-  const reviews = await getReviewsByUserId(profileUser.id);
-
-  const highestRatedAlbumReviews = reviews
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, 8)
-    .map((review) => review.albumId);
-
-  const topRatedAlbums = await db.query.albums.findMany({
-    where: inArray(albums.id, highestRatedAlbumReviews),
-    with: {
-      artistsToAlbums: {
-        with: {
-          artist: true,
-        },
-      },
+  // Calculate aggregation in memory (since we need the full review data anyway)
+  const aggregated = reviewsData.reduce<Record<number, number>>(
+    (acc, review) => {
+      const actualRating = review.rating / 2;
+      acc[actualRating] = (acc[actualRating] || 0) + 1;
+      return acc;
     },
-  });
-
-  const aggregated = reviews.reduce<Record<number, number>>((acc, review) => {
-    const actualRating = review.rating / 2;
-    acc[actualRating] = (acc[actualRating] || 0) + 1;
-    return acc;
-  }, {});
+    {},
+  );
 
   const allRatings = Array.from({ length: 20 }, (_, i) => (i + 1) * 0.5);
-
   const reviewsSummary = allRatings.map((rating) => ({
     rating,
     count: aggregated[rating] || 0,
   }));
 
-  return json({
-    loggedInUser: {
-      username: loggedInUser?.username,
-      email: loggedInUser?.email,
-    },
-    reviewCount: reviews.length,
+  return {
+    reviews: reviewsData,
     reviewsSummary,
-    topRatedAlbums,
-    user: { username: profileUser.username, email: profileUser.email },
+    totalCount: reviewsData.length,
+  };
+}
+
+// Optimized album fetching that gets only required fields
+async function getTopRatedAlbums(albumIds: number[]) {
+  return db.query.albums.findMany({
+    where: inArray(albums.id, albumIds),
+    with: {
+      artistsToAlbums: {
+        with: {
+          artist: {
+            columns: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+    },
+    columns: {
+      id: true,
+      title: true,
+      image: true,
+      year: true,
+      listenDate: true,
+    },
   });
+}
+
+export const loader = async ({ params, request }: LoaderFunctionArgs) => {
+  invariantResponse(params.username, "Expected params.username");
+
+  // Get both users in parallel
+  const [loggedInUser, profileUser] = await Promise.all([
+    getUserFromRequestContext(request),
+    getUserByUsername(params.username),
+  ]);
+
+  invariantResponse(profileUser, "User not found");
+
+  // Get reviews data with optimized query
+  const { reviews, reviewsSummary, totalCount } =
+    await getReviewsWithAggregation(`${profileUser.id}`);
+
+  // Get top rated albums (limited to 8)
+  const topRatedAlbumIds = reviews.slice(0, 8).map((review) => review.albumId);
+
+  const topRatedAlbums = await getTopRatedAlbums(topRatedAlbumIds);
+
+  return json(
+    {
+      loggedInUser: {
+        username: loggedInUser?.username,
+        email: loggedInUser?.email,
+      },
+      reviewCount: totalCount,
+      reviewsSummary,
+      topRatedAlbums,
+      user: { username: profileUser.username, email: profileUser.email },
+    },
+    {
+      headers: {
+        // Cache for 5 minutes, allow serving stale data for up to 1 week while revalidating
+        "Cache-Control": "public, max-age=300, stale-while-revalidate=604800",
+      },
+    },
+  );
 };
 
 export default function ProfileRoute() {
@@ -219,7 +272,6 @@ export default function ProfileRoute() {
             <AccordionTrigger>Albums rated {selectedRating}</AccordionTrigger>
             <AccordionContent>
               <ul className="list-disc pl-6">
-                Aids
                 {/* {albumsByRating[selectedRating]?.map((album, index) => (
                   <li key={index}>
                     {album.title} by {album.artist}

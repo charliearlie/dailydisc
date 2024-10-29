@@ -55,9 +55,7 @@ import {
   TooltipTrigger,
 } from "~/components/common/ui/tooltip";
 
-// Optimized review fetching function that gets reviews with aggregation
 async function getReviewsWithAggregation(userId: string) {
-  // Get reviews with their counts grouped by rating
   const reviewsData = await db
     .select({
       id: reviews.id,
@@ -68,7 +66,6 @@ async function getReviewsWithAggregation(userId: string) {
     .where(eq(reviews.userId, Number(userId)))
     .orderBy(desc(reviews.rating));
 
-  // Calculate aggregation in memory (since we need the full review data anyway)
   const aggregated = reviewsData.reduce<Record<number, number>>(
     (acc, review) => {
       const actualRating = review.rating / 2;
@@ -91,7 +88,6 @@ async function getReviewsWithAggregation(userId: string) {
   };
 }
 
-// Optimized album fetching that gets only required fields
 async function getTopRatedAlbums(albumIds: number[]) {
   return db.query.albums.findMany({
     where: inArray(albums.id, albumIds),
@@ -120,7 +116,6 @@ async function getTopRatedAlbums(albumIds: number[]) {
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   invariantResponse(params.username, "Expected params.username");
 
-  // Get both users in parallel
   const [loggedInUser, profileUser] = await Promise.all([
     getUserFromRequestContext(request),
     getUserByUsername(params.username),
@@ -128,11 +123,9 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 
   invariantResponse(profileUser, "User not found");
 
-  // Get reviews data with optimized query
   const { reviews, reviewsSummary, totalCount } =
     await getReviewsWithAggregation(`${profileUser.id}`);
 
-  // Get top rated albums (limited to 8)
   const topRatedAlbumIds = reviews.slice(0, 8).map((review) => review.albumId);
 
   const topRatedAlbums = await getTopRatedAlbums(topRatedAlbumIds);
@@ -150,7 +143,6 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     },
     {
       headers: {
-        // Cache for 5 minutes, allow serving stale data for up to 1 week while revalidating
         "Cache-Control": "public, max-age=300, stale-while-revalidate=604800",
       },
     },

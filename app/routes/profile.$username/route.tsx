@@ -46,7 +46,7 @@ import {
 } from "~/components/common/ui/accordion";
 import { db } from "~/drizzle/db.server";
 import { albums, reviews } from "~/drizzle/schema.server";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { format } from "date-fns";
 import {
   Tooltip,

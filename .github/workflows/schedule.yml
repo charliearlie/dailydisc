@@ -29,7 +29,7 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
           # Call the API and store the response
-          response=$(curl -sS -X GET https://www.dailydisc.club/api/pick-album -H "x-api-key: ${{ secrets.API_KEY }}")
+          response=$(curl -sS -X GET https://www.dailydisc.vercel.app/api/pick-album -H "x-api-key: ${{ secrets.API_KEY }}")
 
           # Extract the necessary information from the JSON response
           title=$(echo "$response" | jq -r '.randomAlbum.title')

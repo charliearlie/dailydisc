@@ -78,6 +78,8 @@ export default function ArchivePage() {
   const [hasMore, setHasMore] = useState(initialHasMore);
   const loaderRef = useRef(null);
 
+  //The real archive is on its way back
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {

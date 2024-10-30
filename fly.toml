@@ -16,6 +16,14 @@ primary_region = 'lhr'
   min_machines_running = 1
   processes = ['app']
 
+  [[http_service.domains]]
+    name = "dailydisc.club"
+    zone = "dailydisc.club"
+
+  [[http_service.domains]]
+    name = "www.dailydisc.club"
+    zone = "dailydisc.club"
+
 [[vm]]
   memory = '1gb'
   cpu_kind = 'shared'

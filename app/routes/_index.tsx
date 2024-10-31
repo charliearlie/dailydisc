@@ -268,9 +268,6 @@ export default function Index() {
           <p className="mx-auto max-w-[600px] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
             Explore today&apos;s featured album and share your thoughts.
           </p>
-          <p className="mx-auto max-w-[600px] md:text-lg/relaxed lg:text-sm/relaxed xl:text-lg/relaxed">
-            You are seeing the Fly.io deployment
-          </p>
           <div className="mx-auto flex w-44">
             <DatePicker
               name="date"

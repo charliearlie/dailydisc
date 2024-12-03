@@ -34,13 +34,6 @@ import { getAlbumInfo } from "~/services/music-services/spotify.server";
 import { Avatar, AvatarImage } from "~/components/common/ui/avatar";
 import { AvatarFallback } from "@radix-ui/react-avatar";
 import { Card, CardContent } from "~/components/common/ui/card";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "~/components/common/ui/accordion";
-import { generateAlbumDescription } from "~/services/claude.server";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
@@ -93,22 +86,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         },
       });
 
-      let description;
-
-      if (!albumOfTheDay.description) {
-        description = await generateAlbumDescription(
-          albumOfTheDay.title,
-          albumOfTheDay.artistsToAlbums[0].artist.name,
-        );
-
-        await db
-          .update(albums)
-          .set({
-            description,
-          })
-          .where(eq(albums.id, albumOfTheDay.id));
-      }
-
       const userReview = albumReviews.find(
         (album) => album.userId === user?.id,
       );
@@ -121,7 +98,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
       const album = {
         ...albumOfTheDay,
-        description: albumOfTheDay.description || description,
         tracks,
       };
 
@@ -330,18 +306,6 @@ export default function Index() {
           <p className="text-sm font-semibold tracking-wider">{year}</p>
           <Badge className="text-base">{genre}</Badge>
         </div>
-      </section>
-      <section className="container max-w-screen-md space-y-8 py-8 lg:space-y-12">
-        <Accordion collapsible type="single">
-          <AccordionItem value="reviews-and-tracklist">
-            <AccordionTrigger>Show album description</AccordionTrigger>
-            <AccordionContent>
-              <div className="flex flex-col space-y-4">
-                <p>{album.description}</p>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
       </section>
       <section className="container max-w-screen-md space-y-8 lg:space-y-12">
         {isLoggedIn && !hasUserReviewed ? (

@@ -70,26 +70,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     return json({ error: "No albums found" }, { status: 404 });
   }
 
-  console.log("Todays album is ", selectedAlbum.title);
-
-  const description = await generateAlbumDescription(
-    selectedAlbum.title,
-    selectedAlbum.artistsToAlbums[0].artist.name,
-  );
-
   await db
     .update(albums)
     .set({
       active: 1,
       listenDate: todaysDate,
-      description: description,
     })
     .where(eq(albums.id, selectedAlbum.id));
 
   const updatedAlbum = {
     ...selectedAlbum,
     primaryArtist: selectedAlbum.artistsToAlbums[0].artist.name,
-    description: description,
   };
 
   return json({ randomAlbum: updatedAlbum });

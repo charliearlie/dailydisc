@@ -2,7 +2,6 @@ import { LoaderFunctionArgs, json } from "@remix-run/node";
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "~/drizzle/db.server";
 import { albums } from "~/drizzle/schema.server";
-import { generateAlbumDescription } from "~/services/claude.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const apiKey = request.headers.get("x-api-key");

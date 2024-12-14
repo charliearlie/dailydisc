@@ -38,6 +38,28 @@ const AddAlbumSchema = z.object({
   spotifyId: z.string().optional(),
 });
 
+function AlbumAddedToast({
+  album,
+}: {
+  album: { title: string; artistName: string; artwork?: string };
+}) {
+  return (
+    <div className="flex items-center gap-4">
+      {album.artwork && (
+        <img
+          src={album.artwork}
+          alt={album.title}
+          className="h-12 w-12 rounded-md object-cover"
+        />
+      )}
+      <div className="flex flex-col">
+        <p className="font-medium">{album.title}</p>
+        <p className="text-sm text-muted-foreground">{album.artistName}</p>
+      </div>
+    </div>
+  );
+}
+
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const submission = parseWithZod(formData, { schema: AddAlbumSchema });
@@ -92,6 +114,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({
         result: submission.reply({ resetForm: true }),
         status: "success" as const,
+        album: { title, artistName, artwork: image }, // Return the created album
       });
     }
 
@@ -108,6 +131,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return json({
       result: submission.reply({ resetForm: true }),
       status: "success" as const,
+      album: { title, artistName, artwork: image }, // Return the created album
     });
   } catch (error) {
     console.error(error);
@@ -128,8 +152,8 @@ export default function AddAlbum() {
     if (navigation.state === "idle" && actionData) {
       if (actionData.status === "success") {
         toast({
-          title: "Success",
-          description: "Album added successfully",
+          title: "Album Added",
+          description: <AlbumAddedToast album={actionData.album} />,
         });
       } else if (actionData.status === "error") {
         toast({

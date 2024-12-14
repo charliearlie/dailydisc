@@ -1,15 +1,25 @@
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { ActionFunctionArgs, json } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
+import { Form, useActionData, useNavigation } from "@remix-run/react";
 import { eq } from "drizzle-orm";
-import { Calendar, Globe, Music, Music2, Tag, User } from "lucide-react";
+import {
+  Calendar,
+  Globe,
+  Music,
+  Music2,
+  Tag,
+  User,
+  Loader2,
+} from "lucide-react";
 import { z } from "zod";
+import { useEffect } from "react";
 
 import { Button } from "~/components/common/ui/button";
 import { Card, CardContent, CardHeader } from "~/components/common/ui/card";
 import { FormField } from "~/components/form/form-field";
 import { ImageUpload } from "~/components/image-upload";
+import { useToast } from "~/components/common/ui/use-toast";
 
 import { db } from "~/drizzle/db.server";
 import { albums, artists, artistsToAlbums } from "~/drizzle/schema.server";
@@ -108,8 +118,28 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 };
 
-export default function AddArtistRoute() {
-  const actionData = useLoaderData<typeof action>();
+export default function AddAlbum() {
+  const { toast } = useToast();
+  const navigation = useNavigation();
+  const actionData = useActionData<typeof action>();
+  const isSubmitting = navigation.state === "submitting";
+
+  useEffect(() => {
+    if (navigation.state === "idle" && actionData) {
+      if (actionData.status === "success") {
+        toast({
+          title: "Success",
+          description: "Album added successfully",
+        });
+      } else if (actionData.status === "error") {
+        toast({
+          title: "Error",
+          description: "Failed to add album",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [navigation.state, actionData, toast]);
 
   const [form, fields] = useForm({
     id: "artist-form",
@@ -175,8 +205,15 @@ export default function AddArtistRoute() {
                 {...getInputProps(fields.artistName, { type: "text" })}
               />
             </div>
-            <Button className="w-full" type="submit">
-              Add album
+            <Button className="w-full" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <span className="mr-2">Adding album...</span>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </>
+              ) : (
+                "Add album"
+              )}
             </Button>
           </Form>
         </CardContent>

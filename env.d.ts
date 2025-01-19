@@ -9,6 +9,7 @@ const schema = z.object({
   SPOTIFY_CLIENT_SECRET: z.string(),
   SPOTIFY_ACCESS_TOKEN: z.string(),
   HONEYPOT_SECRET: z.string(),
+  OPENAI_API_KEY: z.string(),
 });
 
 declare global {

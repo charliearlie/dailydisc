@@ -7,7 +7,7 @@ import {
   useFetcher,
   useNavigation,
 } from "@remix-run/react";
-import { eq } from "drizzle-orm";
+import { and, eq, exists } from "drizzle-orm";
 import { Calendar, Globe, Music, Tag, User, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { useEffect, useState } from "react";
@@ -79,6 +79,37 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     getAppleMusicCollectionIdFromUrl(appleMusicUrl);
 
   try {
+    const artistInDb = await db.query.artists.findFirst({
+      where: eq(artists.name, artistName.trim()),
+    });
+
+    const albumInDb = await db.query.albums.findFirst({
+      where: and(
+        eq(albums.title, title),
+        exists(
+          db
+            .select()
+            .from(artistsToAlbums)
+            .where(
+              and(
+                eq(artistsToAlbums.albumId, albums.id),
+                eq(artistsToAlbums.artistId, artistInDb?.id || 0),
+              ),
+            ),
+        ),
+      ),
+    });
+
+    console.log("albumInDb", albumInDb);
+
+    if (albumInDb) {
+      return json({
+        result: submission.reply(),
+        status: "error" as const,
+        error: "This album already exists for this artist",
+      });
+    }
+
     const [album] = await db
       .insert(albums)
       .values({
@@ -90,10 +121,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         appleMusicCollectionId,
       })
       .returning();
-
-    const artistInDb = await db.query.artists.findFirst({
-      where: eq(artists.name, artistName.trim()),
-    });
 
     if (artistInDb) {
       await db.insert(artistsToAlbums).values({
@@ -228,7 +255,7 @@ export default function AddAlbum() {
       } else if (actionData.status === "error") {
         toast({
           title: "Error",
-          description: "Failed to add album",
+          description: "This album already exists for this artist",
           variant: "destructive",
         });
       }
@@ -300,7 +327,7 @@ export default function AddAlbum() {
                 }}
               />
             </div>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3">
               <FormField
                 labelIcon={Music}
                 label="Album name"

@@ -8,15 +8,7 @@ import {
   useNavigation,
 } from "@remix-run/react";
 import { eq } from "drizzle-orm";
-import {
-  Calendar,
-  Globe,
-  Music,
-  Music2,
-  Tag,
-  User,
-  Loader2,
-} from "lucide-react";
+import { Calendar, Globe, Music, Tag, User, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 
@@ -30,10 +22,7 @@ import { db } from "~/drizzle/db.server";
 import { albums, artists, artistsToAlbums } from "~/drizzle/schema.server";
 
 import { uploadImages } from "~/services/cloudinary";
-import {
-  getAlbumDetails,
-  getAppleMusicCollectionIdFromUrl,
-} from "~/services/itunes.api.server";
+import { getAppleMusicCollectionIdFromUrl } from "~/services/itunes.api.server";
 import { FileSchema } from "~/services/schemas";
 import { Switch } from "~/components/common/ui/switch";
 import { AlbumDetailsResponse } from "./api.apple-music";
@@ -46,13 +35,6 @@ const AddAlbumSchema = z.object({
   artwork: FileSchema.optional(),
   appleMusicUrl: z.string().url().optional(),
 });
-
-type FormSchema = z.infer<typeof AddAlbumSchema>;
-
-interface FormState extends Omit<FormSchema, "releaseYear" | "artwork"> {
-  releaseYear: string;
-  artwork?: File;
-}
 
 function AlbumAddedToast({
   album,
@@ -166,7 +148,6 @@ export default function AddAlbum() {
   const actionData = useActionData<typeof action>();
   const isSubmitting = navigation.state === "submitting";
   const fetcher = useFetcher<AlbumDetailsResponse>();
-  const [artworkFile, setArtworkFile] = useState<File>();
 
   const [formData, setFormData] = useState<FormFields>({
     title: "",

@@ -18,7 +18,7 @@ import { useUser } from "~/contexts/user-context";
 import { getUserFromRequestContext } from "~/services/session";
 import { DatePicker } from "~/components/common/date-picker";
 import { ReviewList } from "~/components/reviews/review-list";
-import { getAlbumDetails, getAlbumTracks } from "~/services/itunes.api.server";
+import { getAlbumTracks } from "~/services/itunes.api.server";
 import {
   Tabs,
   TabsContent,

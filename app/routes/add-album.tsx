@@ -166,6 +166,14 @@ type FormFields = {
   artwork?: string | null;
 };
 
+const defaultFormState: FormFields = {
+  title: "",
+  artistName: "",
+  releaseYear: "",
+  genre: "",
+  appleMusicUrl: "",
+};
+
 export default function AddAlbum() {
   const { toast } = useToast();
   const [useAppleMusic, setUseAppleMusic] = useState(false);
@@ -174,13 +182,7 @@ export default function AddAlbum() {
   const isSubmitting = navigation.state === "submitting";
   const fetcher = useFetcher<AlbumDetailsResponse>();
 
-  const [formData, setFormData] = useState<FormFields>({
-    title: "",
-    artistName: "",
-    releaseYear: "",
-    genre: "",
-    appleMusicUrl: "",
-  });
+  const [formData, setFormData] = useState<FormFields>(defaultFormState);
 
   useEffect(() => {
     const albumData = fetcher.data as AlbumDetailsResponse | undefined;
@@ -204,8 +206,6 @@ export default function AddAlbum() {
 
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
-
-            // Find the file input and set its files
             const fileInput = document.querySelector(
               'input[type="file"]',
             ) as HTMLInputElement;
@@ -250,12 +250,16 @@ export default function AddAlbum() {
           title: "Album Added",
           description: <AlbumAddedToast album={actionData.album} />,
         });
+        setFormData(defaultFormState);
       } else if (actionData.status === "error") {
         toast({
           title: "Error",
           description: "Failed to add album",
           variant: "destructive",
         });
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
       }
     }
   }, [navigation.state, actionData, toast]);

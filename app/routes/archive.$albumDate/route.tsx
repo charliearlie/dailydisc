@@ -18,7 +18,7 @@ import { useUser } from "~/contexts/user-context";
 import { getUserFromRequestContext } from "~/services/session";
 import { DatePicker } from "~/components/common/date-picker";
 import { ReviewList } from "~/components/reviews/review-list";
-import { getAlbumDetails } from "~/services/itunes.api.server";
+import { getAlbumDetails, getAlbumTracks } from "~/services/itunes.api.server";
 import {
   Tabs,
   TabsContent,
@@ -93,7 +93,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 
       const hasUserReviewed = !!userReview;
 
-      const tracks = await getAlbumDetails(
+      const tracks = await getAlbumTracks(
         Number(albumOfTheDay.appleMusicCollectionId),
       );
 

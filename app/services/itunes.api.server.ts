@@ -5,7 +5,7 @@ type AppleMusicResponse = {
   results: AppleMusicAlbumDetailsResult[];
 };
 
-export const getAlbumDetails = async (albumId: number) => {
+export const getAlbumTracks = async (albumId: number) => {
   const res = await fetch(
     `https://itunes.apple.com/lookup?id=${albumId}&entity=song`,
     {
@@ -30,6 +30,32 @@ export const getAlbumDetails = async (albumId: number) => {
     }));
 
   return tracks;
+};
+
+export const getAlbumDetails = async (albumId: number) => {
+  const res = await fetch(`https://itunes.apple.com/lookup?id=${albumId}`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const appleMusicResponse = (await res.json()) as AppleMusicResponse;
+  const albumDetails = appleMusicResponse.results.find(
+    (result) => result.wrapperType === "collection",
+  );
+
+  if (!albumDetails) {
+    throw new Error("Album not found");
+  }
+
+  return {
+    artistName: albumDetails.artistName,
+    title: albumDetails.collectionName,
+    genre: albumDetails.primaryGenreName,
+    releaseYear: new Date(albumDetails.releaseDate || "").getFullYear(),
+    artwork: albumDetails.artworkUrl100?.replace("100x100", "600x600"),
+    collectionId: albumDetails.collectionId,
+  };
 };
 
 export const getAppleMusicCollectionIdFromUrl = (url?: string) => {

@@ -1,7 +1,12 @@
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { ActionFunctionArgs, json } from "@remix-run/node";
-import { Form, useActionData, useNavigation } from "@remix-run/react";
+import {
+  Form,
+  useActionData,
+  useFetcher,
+  useNavigation,
+} from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import {
   Calendar,
@@ -13,7 +18,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { z } from "zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "~/components/common/ui/button";
 import { Card, CardContent, CardHeader } from "~/components/common/ui/card";
@@ -25,18 +30,29 @@ import { db } from "~/drizzle/db.server";
 import { albums, artists, artistsToAlbums } from "~/drizzle/schema.server";
 
 import { uploadImages } from "~/services/cloudinary";
-import { getAppleMusicCollectionIdFromUrl } from "~/services/itunes.api.server";
+import {
+  getAlbumDetails,
+  getAppleMusicCollectionIdFromUrl,
+} from "~/services/itunes.api.server";
 import { FileSchema } from "~/services/schemas";
+import { Switch } from "~/components/common/ui/switch";
+import { AlbumDetailsResponse } from "./api.apple-music";
 
 const AddAlbumSchema = z.object({
   title: z.string().min(1),
   artistName: z.string(),
-  releaseYear: z.number(),
+  releaseYear: z.string().transform((val) => Number(val)),
   genre: z.string().optional(),
   artwork: FileSchema.optional(),
   appleMusicUrl: z.string().url().optional(),
-  spotifyId: z.string().optional(),
 });
+
+type FormSchema = z.infer<typeof AddAlbumSchema>;
+
+interface FormState extends Omit<FormSchema, "releaseYear" | "artwork"> {
+  releaseYear: string;
+  artwork?: File;
+}
 
 function AlbumAddedToast({
   album,
@@ -73,15 +89,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   }
 
-  const {
-    appleMusicUrl,
-    artistName,
-    artwork,
-    genre,
-    releaseYear,
-    spotifyId,
-    title,
-  } = submission.value;
+  const { appleMusicUrl, artistName, artwork, genre, releaseYear, title } =
+    submission.value;
 
   const [image] = await uploadImages(artwork);
   const appleMusicCollectionId =
@@ -97,7 +106,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         image,
         appleMusicUrl,
         appleMusicCollectionId,
-        spotifyUrl: spotifyId,
       })
       .returning();
 
@@ -142,11 +150,92 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 };
 
+type FormFields = {
+  title: string;
+  artistName: string;
+  releaseYear: string;
+  genre?: string;
+  appleMusicUrl?: string;
+  artwork?: string | null;
+};
+
 export default function AddAlbum() {
   const { toast } = useToast();
+  const [useAppleMusic, setUseAppleMusic] = useState(false);
   const navigation = useNavigation();
   const actionData = useActionData<typeof action>();
   const isSubmitting = navigation.state === "submitting";
+  const fetcher = useFetcher<AlbumDetailsResponse>();
+  const [artworkFile, setArtworkFile] = useState<File>();
+
+  const [formData, setFormData] = useState<FormFields>({
+    title: "",
+    artistName: "",
+    releaseYear: "",
+    genre: "",
+    appleMusicUrl: "",
+  });
+
+  useEffect(() => {
+    const albumData = fetcher.data as AlbumDetailsResponse | undefined;
+    if (albumData && !albumData.error) {
+      setFormData((prevData) => ({
+        ...prevData,
+        title: albumData.title,
+        artistName: albumData.artistName,
+        releaseYear: String(albumData.releaseYear),
+        genre: albumData.genre || "",
+        appleMusicUrl: formData.appleMusicUrl,
+      }));
+
+      if (albumData.artwork) {
+        fetch(albumData.artwork)
+          .then((response) => response.blob())
+          .then((blob) => {
+            const file = new File([blob], "artwork.jpg", {
+              type: "image/jpeg",
+            });
+
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+
+            // Find the file input and set its files
+            const fileInput = document.querySelector(
+              'input[type="file"]',
+            ) as HTMLInputElement;
+            if (fileInput) {
+              fileInput.files = dataTransfer.files;
+              // Trigger change event to update the preview
+              fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching artwork:", error);
+            toast({
+              title: "Error",
+              description: "Failed to fetch album artwork",
+              variant: "destructive",
+            });
+          });
+      }
+    }
+  }, [fetcher.data, formData.appleMusicUrl, toast]);
+
+  const [form, fields] = useForm({
+    id: "artist-form",
+    lastResult: actionData?.result,
+    shouldValidate: "onBlur",
+    constraint: getZodConstraint(AddAlbumSchema),
+    onValidate({ formData: data }) {
+      return parseWithZod(data, { schema: AddAlbumSchema });
+    },
+    defaultValue: formData,
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   useEffect(() => {
     if (navigation.state === "idle" && actionData) {
@@ -165,16 +254,6 @@ export default function AddAlbum() {
     }
   }, [navigation.state, actionData, toast]);
 
-  const [form, fields] = useForm({
-    id: "artist-form",
-    lastResult: actionData?.result,
-    shouldValidate: "onBlur",
-    constraint: getZodConstraint(AddAlbumSchema),
-    onValidate({ formData }) {
-      return parseWithZod(formData, { schema: AddAlbumSchema });
-    },
-  });
-
   return (
     <main className="container flex min-h-screen items-center justify-center space-y-6">
       <Card className="w-full max-w-2xl border-border">
@@ -184,6 +263,49 @@ export default function AddAlbum() {
           </h1>
         </CardHeader>
         <CardContent>
+          <div className="mb-6 flex items-center gap-2">
+            <Switch
+              checked={useAppleMusic}
+              onCheckedChange={setUseAppleMusic}
+            />
+            <span className="text-sm">Use Apple Music URL</span>
+          </div>
+
+          {useAppleMusic && (
+            <Card>
+              <CardContent>
+                <fetcher.Form
+                  method="GET"
+                  action="/api/apple-music"
+                  className="space-y-4"
+                >
+                  <FormField
+                    labelIcon={Globe}
+                    label="Apple Music URL"
+                    name="appleMusicUrl"
+                    placeholder="https://music.apple.com/album/..."
+                    value={formData.appleMusicUrl}
+                    onChange={handleInputChange}
+                  />
+                  <Button type="submit" className="w-full">
+                    Submit URL
+                  </Button>
+                </fetcher.Form>
+                {fetcher.data && !fetcher.data.error && (
+                  <div className="mt-4 space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Album details found:
+                    </p>
+                    <p className="font-medium">{fetcher.data.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {fetcher.data.artistName}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           <Form
             method="post"
             encType="multipart/form-data"
@@ -202,31 +324,36 @@ export default function AddAlbum() {
                 labelIcon={Music}
                 label="Album name"
                 {...getInputProps(fields.title, { type: "text" })}
+                value={formData.title}
+                onChange={handleInputChange}
               />
               <FormField
                 labelIcon={Calendar}
                 label="Release year"
                 {...getInputProps(fields.releaseYear, { type: "text" })}
+                value={formData.releaseYear}
+                onChange={handleInputChange}
               />
               <FormField
                 labelIcon={Tag}
                 label="Genre"
                 {...getInputProps(fields.genre, { type: "text" })}
+                value={formData.genre}
+                onChange={handleInputChange}
               />
               <FormField
                 labelIcon={Globe}
                 label="Apple Music URL"
                 {...getInputProps(fields.appleMusicUrl, { type: "text" })}
-              />
-              <FormField
-                labelIcon={Music2}
-                label="Spotify ID"
-                {...getInputProps(fields.spotifyId, { type: "text" })}
+                value={formData.appleMusicUrl}
+                onChange={handleInputChange}
               />
               <FormField
                 labelIcon={User}
                 label="Artist"
                 {...getInputProps(fields.artistName, { type: "text" })}
+                value={formData.artistName}
+                onChange={handleInputChange}
               />
             </div>
             <Button className="w-full" type="submit" disabled={isSubmitting}>

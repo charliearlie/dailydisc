@@ -33,6 +33,7 @@ export const getAlbumTracks = async (albumId: number) => {
 };
 
 export const getAlbumDetails = async (albumId: number) => {
+  console.log("albumId", albumId);
   const res = await fetch(`https://itunes.apple.com/lookup?id=${albumId}`, {
     headers: {
       "Content-Type": "application/json",

@@ -79,6 +79,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     getAppleMusicCollectionIdFromUrl(appleMusicUrl);
 
   try {
+    const [album] = await db
+      .insert(albums)
+      .values({
+        title,
+        year: String(releaseYear),
+        genre,
+        image,
+        appleMusicUrl,
+        appleMusicCollectionId,
+      })
+      .returning();
+
     const artistInDb = await db.query.artists.findFirst({
       where: eq(artists.name, artistName.trim()),
     });
@@ -100,8 +112,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       ),
     });
 
-    console.log("albumInDb", albumInDb);
-
     if (albumInDb) {
       return json({
         result: submission.reply(),
@@ -109,18 +119,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         error: "This album already exists for this artist",
       });
     }
-
-    const [album] = await db
-      .insert(albums)
-      .values({
-        title,
-        year: String(releaseYear),
-        genre,
-        image,
-        appleMusicUrl,
-        appleMusicCollectionId,
-      })
-      .returning();
 
     if (artistInDb) {
       await db.insert(artistsToAlbums).values({
@@ -255,7 +253,7 @@ export default function AddAlbum() {
       } else if (actionData.status === "error") {
         toast({
           title: "Error",
-          description: "This album already exists for this artist",
+          description: "Failed to add album",
           variant: "destructive",
         });
       }

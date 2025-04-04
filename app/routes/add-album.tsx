@@ -1,5 +1,4 @@
-import { getFormProps, getInputProps, useForm } from "@conform-to/react";
-import { getZodConstraint, parseWithZod } from "@conform-to/zod";
+import { useEffect, useState } from "react";
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import {
   Form,
@@ -7,24 +6,23 @@ import {
   useFetcher,
   useNavigation,
 } from "@remix-run/react";
+import { getFormProps, getInputProps, useForm } from "@conform-to/react";
+import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { and, eq, exists } from "drizzle-orm";
-import { Calendar, Globe, Music, Tag, User, Loader2 } from "lucide-react";
+import { Calendar, Globe, Loader2, Music, Tag, User } from "lucide-react";
 import { z } from "zod";
-import { useEffect, useState } from "react";
 
 import { Button } from "~/components/common/ui/button";
 import { Card, CardContent, CardHeader } from "~/components/common/ui/card";
 import { FormField } from "~/components/form/form-field";
 import { ImageUpload } from "~/components/image-upload";
+import { Switch } from "~/components/common/ui/switch";
 import { useToast } from "~/components/common/ui/use-toast";
-
 import { db } from "~/drizzle/db.server";
 import { albums, artists, artistsToAlbums } from "~/drizzle/schema.server";
-
 import { uploadImages } from "~/services/cloudinary";
 import { getAppleMusicCollectionIdFromUrl } from "~/services/itunes.api.server";
 import { FileSchema } from "~/services/schemas";
-import { Switch } from "~/components/common/ui/switch";
 import { AlbumDetailsResponse } from "./api.apple-music";
 
 const AddAlbumSchema = z.object({
@@ -129,7 +127,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({
         result: submission.reply({ resetForm: true }),
         status: "success" as const,
-        album: { title, artistName, artwork: image }, // Return the created album
+        album: { title, artistName, artwork: image },
       });
     }
 
@@ -146,7 +144,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return json({
       result: submission.reply({ resetForm: true }),
       status: "success" as const,
-      album: { title, artistName, artwork: image }, // Return the created album
+      album: { title, artistName, artwork: image },
     });
   } catch (error) {
     console.error(error);
@@ -211,7 +209,6 @@ export default function AddAlbum() {
             ) as HTMLInputElement;
             if (fileInput) {
               fileInput.files = dataTransfer.files;
-              // Trigger change event to update the preview
               fileInput.dispatchEvent(new Event("change", { bubbles: true }));
             }
           })
@@ -265,120 +262,143 @@ export default function AddAlbum() {
   }, [navigation.state, actionData, toast]);
 
   return (
-    <main className="container flex min-h-screen items-center justify-center space-y-6">
-      <Card className="w-full max-w-2xl border-border">
-        <CardHeader>
-          <h1 className="text-center text-3xl font-bold leading-none tracking-tight">
-            Add Album
+    <main className="flex-1 bg-gradient-to-br from-background via-background/95 to-primary/15">
+      <div className="container mx-auto px-4 py-12 md:px-6 md:py-16">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+            Add <span className="text-primary">Album</span>
           </h1>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-6 flex items-center gap-2">
-            <Switch
-              checked={useAppleMusic}
-              onCheckedChange={setUseAppleMusic}
-            />
-            <span className="text-sm">Use Apple Music URL</span>
-          </div>
+          <p className="mx-auto mt-2 max-w-2xl text-muted-foreground">
+            Submit a new album to our collection
+          </p>
+        </div>
 
-          {useAppleMusic && (
-            <Card>
-              <CardContent>
-                <fetcher.Form
-                  method="GET"
-                  action="/api/apple-music"
-                  className="space-y-4"
-                >
-                  <FormField
-                    labelIcon={Globe}
-                    label="Apple Music URL"
-                    name="appleMusicUrl"
-                    placeholder="https://music.apple.com/album/..."
-                    value={formData.appleMusicUrl}
-                    onChange={handleInputChange}
-                  />
-                  <Button type="submit" className="w-full">
-                    Submit URL
-                  </Button>
-                </fetcher.Form>
-                {fetcher.data && !fetcher.data.error && (
-                  <div className="mt-4 space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      Album details found:
-                    </p>
-                    <p className="font-medium">{fetcher.data.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {fetcher.data.artistName}
-                    </p>
+        <Card className="mx-auto w-full max-w-2xl overflow-hidden border-border shadow-lg">
+          <CardContent className="p-6 sm:p-8">
+            <div className="mb-6 flex items-center gap-2">
+              <Switch
+                checked={useAppleMusic}
+                onCheckedChange={setUseAppleMusic}
+              />
+              <span className="text-sm font-medium">Use Apple Music URL</span>
+            </div>
+
+            {useAppleMusic && (
+              <Card className="mb-8 overflow-hidden border-border/50 bg-card/50 shadow-sm">
+                <CardContent className="p-4 sm:p-6">
+                  <fetcher.Form
+                    method="GET"
+                    action="/api/apple-music"
+                    className="space-y-4"
+                  >
+                    <FormField
+                      labelIcon={Globe}
+                      label="Apple Music URL"
+                      name="appleMusicUrl"
+                      placeholder="https://music.apple.com/album/..."
+                      value={formData.appleMusicUrl}
+                      onChange={handleInputChange}
+                    />
+                    <Button type="submit" className="w-full">
+                      {fetcher.state === "submitting" ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Fetching album details...
+                        </>
+                      ) : (
+                        "Fetch album details"
+                      )}
+                    </Button>
+                  </fetcher.Form>
+                  {fetcher.data && !fetcher.data.error && (
+                    <div className="mt-4 rounded-md bg-primary/5 p-3">
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Album details found:
+                      </p>
+                      <p className="font-medium">{fetcher.data.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {fetcher.data.artistName}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            <Form
+              method="post"
+              encType="multipart/form-data"
+              {...getFormProps(form)}
+            >
+              <div className="flex justify-center p-6">
+                <div className="relative">
+                  <div className="absolute -inset-1 rounded-lg bg-gradient-to-br from-primary via-primary/50 to-primary/20 opacity-50 blur transition duration-200 group-hover:opacity-75"></div>
+                  <div className="relative">
+                    <ImageUpload
+                      className="h-[192px] w-[192px] rounded-lg border-2 border-primary/20 shadow-md"
+                      fieldProps={{
+                        ...getInputProps(fields.artwork, { type: "file" }),
+                      }}
+                    />
                   </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <FormField
+                  labelIcon={Music}
+                  label="Album name"
+                  {...getInputProps(fields.title, { type: "text" })}
+                  value={formData.title}
+                  onChange={handleInputChange}
+                />
+                <FormField
+                  labelIcon={Calendar}
+                  label="Release year"
+                  {...getInputProps(fields.releaseYear, { type: "text" })}
+                  value={formData.releaseYear}
+                  onChange={handleInputChange}
+                />
+                <FormField
+                  labelIcon={Tag}
+                  label="Genre"
+                  {...getInputProps(fields.genre, { type: "text" })}
+                  value={formData.genre}
+                  onChange={handleInputChange}
+                />
+                <FormField
+                  labelIcon={User}
+                  label="Artist"
+                  {...getInputProps(fields.artistName, { type: "text" })}
+                  value={formData.artistName}
+                  onChange={handleInputChange}
+                />
+                <FormField
+                  labelIcon={Globe}
+                  label="Apple Music URL"
+                  {...getInputProps(fields.appleMusicUrl, { type: "text" })}
+                  value={formData.appleMusicUrl}
+                  onChange={handleInputChange}
+                  className="md:col-span-2"
+                />
+              </div>
+              <Button
+                className="mt-8 w-full bg-primary font-medium text-primary-foreground hover:bg-primary/90"
+                type="submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <span>Adding album...</span>
+                  </>
+                ) : (
+                  "Add album"
                 )}
-              </CardContent>
-            </Card>
-          )}
-
-          <Form
-            method="post"
-            encType="multipart/form-data"
-            {...getFormProps(form)}
-          >
-            <div className="flex justify-center p-8">
-              <ImageUpload
-                className="h-[172px] w-[172px] basis-1/4 rounded-lg"
-                fieldProps={{
-                  ...getInputProps(fields.artwork, { type: "file" }),
-                }}
-              />
-            </div>
-            <div className="grid grid-cols-1 gap-3">
-              <FormField
-                labelIcon={Music}
-                label="Album name"
-                {...getInputProps(fields.title, { type: "text" })}
-                value={formData.title}
-                onChange={handleInputChange}
-              />
-              <FormField
-                labelIcon={Calendar}
-                label="Release year"
-                {...getInputProps(fields.releaseYear, { type: "text" })}
-                value={formData.releaseYear}
-                onChange={handleInputChange}
-              />
-              <FormField
-                labelIcon={Tag}
-                label="Genre"
-                {...getInputProps(fields.genre, { type: "text" })}
-                value={formData.genre}
-                onChange={handleInputChange}
-              />
-              <FormField
-                labelIcon={Globe}
-                label="Apple Music URL"
-                {...getInputProps(fields.appleMusicUrl, { type: "text" })}
-                value={formData.appleMusicUrl}
-                onChange={handleInputChange}
-              />
-              <FormField
-                labelIcon={User}
-                label="Artist"
-                {...getInputProps(fields.artistName, { type: "text" })}
-                value={formData.artistName}
-                onChange={handleInputChange}
-              />
-            </div>
-            <Button className="w-full" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <span className="mr-2">Adding album...</span>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                </>
-              ) : (
-                "Add album"
-              )}
-            </Button>
-          </Form>
-        </CardContent>
-      </Card>
+              </Button>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
     </main>
   );
 }

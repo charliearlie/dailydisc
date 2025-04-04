@@ -1,6 +1,9 @@
 import { Link } from "@remix-run/react";
 import { format } from "date-fns";
-import { Star } from "lucide-react";
+import { CalendarDays, Headphones, Star } from "lucide-react";
+import { ArchiveAlbum } from "~/services/album.server";
+import { useUser } from "~/contexts/user-context";
+import { Badge } from "../common/ui/badge";
 import {
   Card,
   CardContent,
@@ -14,106 +17,96 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/common/ui/tooltip";
-import { Badge } from "../common/ui/badge";
-import { ArchiveAlbum } from "~/services/album.server";
-import { useUser } from "~/contexts/user-context";
-import { useState } from "react";
 
 export const AlbumPreviewCard = ({ album }: { album: ArchiveAlbum }) => {
   const user = useUser();
 
-  const [hoveredAlbum, setHoveredAlbum] = useState<number | null>(null);
-  const Artists = ({ artists }: { artists: string[] }) => {
-    return (
-      <p>
-        {artists.map((artist, index) => {
-          return (
-            <span key={artist}>
-              {artist}
-              {`${index === artists.length - 1 ? "" : ", "}`}
-            </span>
-          );
-        })}
-      </p>
-    );
+  const formatArtists = (artists: string[]) => {
+    if (artists.length === 0) return "";
+    if (artists.length === 1) return artists[0];
+    if (artists.length === 2) return `${artists[0]} & ${artists[1]}`;
+    return `${artists[0]} & ${artists.length - 1} more`;
   };
+
+  const formattedDate = format(album.listenDate!, "eee d MMM ''yy");
+  const isReviewed = !!album.userRating;
 
   return (
     <Link to={`/archive/${format(new Date(album.listenDate!), "yyyy-MM-dd")}`}>
-      <TooltipProvider>
-        <Card
-          key={album.id}
-          className="transform overflow-hidden text-left transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-xl"
-          onMouseEnter={() => setHoveredAlbum(album.id)}
-          onMouseLeave={() => setHoveredAlbum(null)}
-        >
-          <CardHeader className="relative p-0">
-            <div className="relative aspect-square">
+      <Card className="group h-full overflow-hidden transition-all duration-300 hover:shadow-lg">
+        <CardHeader className="relative p-0">
+          <div className="relative">
+            <div className="overflow-hidden">
               <CardImage
-                className="h-full w-full object-cover"
+                className="aspect-square h-full w-full transform object-cover transition-transform duration-700 group-hover:scale-110"
                 src={album.image!}
-                alt="Album Cover"
+                alt={`${album.title} album cover`}
               />
-              {hoveredAlbum === album.id && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70">
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    {album.userRating ? (
-                      <>
-                        <p className="text-sm text-white">Your rating</p>
-                        <div className="flex items-center gap-2 text-white">
-                          <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                          <span>{album.userRating / 2}</span>
-                        </div>
-                      </>
-                    ) : (
-                      <p className="text-white">Unreviewed</p>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
-            <Badge className="absolute right-2 top-2 bg-primary font-medium text-primary-foreground shadow-md">
-              {format(album.listenDate!, "eee d MMM ''yy")}
-            </Badge>
-            {album.userRating ? (
-              <Badge className="absolute left-2 top-2 bg-secondary text-secondary-foreground shadow-md sm:hidden">
-                My rating: {album.userRating / 2}
-              </Badge>
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+            {isReviewed ? (
+              <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-primary/90 px-2.5 py-1 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                <Star className="h-3.5 w-3.5 fill-white" />
+                <span className="text-xs font-medium">
+                  {(album.userRating || 0) / 2}
+                </span>
+              </div>
             ) : (
-              <Badge
-                className="absolute left-2 top-2 text-secondary-foreground shadow-md sm:hidden"
-                variant="destructive"
-              >
-                {user.userId ? "Unreviewed" : "Login to review"}
-              </Badge>
+              user.userId && (
+                <div className="absolute bottom-3 left-3 rounded-full bg-primary/90 px-2.5 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  Not rated
+                </div>
+              )
             )}
-          </CardHeader>
-          <CardContent className="p-4">
+
+            <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
+              <CalendarDays className="h-3 w-3" />
+              {formattedDate}
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-4">
+          <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <h3 className="truncate text-lg font-bold">{album.title}</h3>
+                <h3 className="line-clamp-1 text-lg font-bold leading-tight group-hover:text-primary">
+                  {album.title}
+                </h3>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{album.title}</p>
               </TooltipContent>
             </Tooltip>
-            <p className="text-sm text-muted-foreground">
-              <Artists artists={album.artists.map((artist) => artist.name)} />
-            </p>
-          </CardContent>
-          <CardFooter className="flex items-center justify-between p-4 pt-0">
-            <span className="text-sm text-muted-foreground">{album.year}</span>
-            {album.userRating || user.isUserAdmin ? (
-              <div className="flex items-center">
-                <span className="mr-1 text-muted-foreground">
-                  {album.averageRating}
-                </span>
-                <Star className="-mt-1 h-6 w-6 fill-yellow-400 text-yellow-400" />
-              </div>
-            ) : null}
-          </CardFooter>
-        </Card>
-      </TooltipProvider>
+          </TooltipProvider>
+
+          <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+            {formatArtists(album.artists.map((artist) => artist.name))}
+          </p>
+        </CardContent>
+
+        <CardFooter className="flex items-center justify-between border-t border-border/30 p-4 pt-3">
+          <div className="flex items-center gap-1">
+            <Badge variant="outline" className="px-2 py-0 text-xs">
+              {album.year}
+            </Badge>
+            {album.genre && (
+              <Badge variant="secondary" className="px-2 py-0 text-xs">
+                {album.genre}
+              </Badge>
+            )}
+          </div>
+
+          {(album.averageRating || 0) > 0 && (
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Star className="h-3.5 w-3.5" />
+              <span className="text-xs">{album.averageRating}</span>
+            </div>
+          )}
+        </CardFooter>
+      </Card>
     </Link>
   );
 };

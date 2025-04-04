@@ -1,39 +1,40 @@
+import { useMemo } from "react";
 import {
   ActionFunctionArgs,
   LoaderFunctionArgs,
   json,
   type MetaFunction,
 } from "@remix-run/node";
-import { useMemo } from "react";
 import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { parseWithZod } from "@conform-to/zod";
 import { format } from "date-fns";
+import { eq, sql } from "drizzle-orm";
+import { AvatarFallback } from "@radix-ui/react-avatar";
+import { Star } from "lucide-react";
 
+import { AlbumPopover } from "~/components/album/album-popover";
+import { Avatar, AvatarImage } from "~/components/common/ui/avatar";
 import { Badge } from "~/components/common/ui/badge";
 import { Button } from "~/components/common/ui/button";
-import { db } from "~/drizzle/db.server";
-import { albums, reviews } from "~/drizzle/schema.server";
-import { useUser } from "~/contexts/user-context";
-import { eq, sql } from "drizzle-orm";
-import { getUserFromRequestContext } from "~/services/session";
+import { Card, CardContent } from "~/components/common/ui/card";
 import { DatePicker } from "~/components/common/date-picker";
-import { ReviewList } from "~/components/reviews/review-list";
-import { getAlbumTracks } from "~/services/itunes.api.server";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "~/components/common/ui/tabs";
-import { AlbumPopover } from "~/components/album/album-popover";
-import { asset, removeFeaturedArtists } from "~/util/utils";
-import { ReviewFormSchema } from "~/components/reviews/types";
-import { ReviewForm } from "~/components/reviews/review-form";
 import { ErrorBoundaryComponent } from "~/components/error-boundary";
+import { ReviewForm } from "~/components/reviews/review-form";
+import { ReviewList } from "~/components/reviews/review-list";
+import { ReviewFormSchema } from "~/components/reviews/types";
+import { useUser } from "~/contexts/user-context";
+import { db } from "~/drizzle/db.server";
+import { albums, reviews } from "~/drizzle/schema.server";
+import { getAlbumTracks } from "~/services/itunes.api.server";
 import { getAlbumInfo } from "~/services/music-services/spotify.server";
-import { Avatar, AvatarImage } from "~/components/common/ui/avatar";
-import { AvatarFallback } from "@radix-ui/react-avatar";
-import { Card, CardContent } from "~/components/common/ui/card";
+import { getUserFromRequestContext } from "~/services/session";
+import { asset, removeFeaturedArtists } from "~/util/utils";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
@@ -197,7 +198,17 @@ export default function Index() {
 
   const handleDateChange = async (date: Date) => {
     const formattedDate = format(date, "yyyy-MM-dd");
-    navigate(`/?date=${formattedDate}`);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(date);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    if (selectedDate.getTime() === today.getTime()) {
+      navigate("/");
+    } else {
+      navigate(`/archive/${formattedDate}`);
+    }
   };
 
   const {
@@ -219,10 +230,9 @@ export default function Index() {
     year,
   } = album;
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const albumTracks = useMemo(() => {
-    if (tracks.length === 0) {
-      return extraInfo?.tracks.map((track) => ({
+    if (tracks.length === 0 && extraInfo?.tracks) {
+      return extraInfo.tracks.map((track) => ({
         artist: track.artists[0].name,
         id: track.id,
         title: track.name,
@@ -235,138 +245,194 @@ export default function Index() {
   }, [tracks, extraInfo?.tracks]);
 
   return (
-    <main className="flex-1 bg-gradient-to-tl from-background via-background to-gradientend">
-      <section className="container space-y-8 pt-8 text-center md:pt-16 lg:space-y-12">
-        <div className="flex flex-col items-center justify-center space-y-2">
-          <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl/none">
-            Album of the Day
+    <main className="flex-1 bg-gradient-to-br from-background via-background/95 to-primary/15">
+      <div className="container mx-auto px-4 py-12 md:px-6 md:py-16">
+        <div className="mb-12 text-center">
+          <h1 className="text-5xl font-bold tracking-tight md:text-6xl">
+            Album of the <span className="text-primary">Day</span>
           </h1>
-          <p className="mx-auto max-w-[600px] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-            Explore today&apos;s featured album and share your thoughts.
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+            Explore today's featured album and share your thoughts.
           </p>
-          <div className="mx-auto flex w-44">
-            <DatePicker
-              name="date"
-              defaultDate={new Date(archiveDate)}
-              onSelect={handleDateChange}
-              range={{ start: new Date("2024-04-22"), end: new Date() }}
-            />
+          <div className="mx-auto mt-6 flex w-auto items-center justify-center gap-3">
+            <div className="w-[120px] text-right">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const prevDay = new Date(archiveDate);
+                  prevDay.setDate(prevDay.getDate() - 1);
+                  handleDateChange(prevDay);
+                }}
+                className="flex items-center gap-1"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-chevron-left"
+                >
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+                Previous
+              </Button>
+            </div>
+            <div className="w-auto min-w-[200px] text-center">
+              <div className="inline-block">
+                <DatePicker
+                  key={archiveDate}
+                  name="date"
+                  defaultDate={new Date(archiveDate)}
+                  onSelect={handleDateChange}
+                  range={{ start: new Date("2024-04-22"), end: new Date() }}
+                />
+              </div>
+            </div>
+            <div className="w-[120px]"></div>
           </div>
         </div>
-        <div className="mx-auto max-w-sm space-y-4">
-          <AlbumPopover
-            image={image!}
-            title={title}
-            appleMusicId={appleMusicCollectionId!}
-            appleMusicUrl={appleMusicUrl!}
-          />
-          <h2 className="text-3xl font-bold tracking-tight">
-            <Link
-              aria-label={`View reviews for ${title}`}
-              to={`/album/${spotifyUrl}`}
-            >
-              {title}
-            </Link>
-          </h2>
-          {extraInfo ? (
-            <div className="flex justify-center gap-4">
-              {extraInfo.artists.map((artist) => (
-                <Link
-                  to={`/artist/${artist.id}`}
-                  className="flex flex-col items-center gap-2 hover:opacity-80"
-                  key={artist.id}
-                  aria-describedby="artist-name"
-                >
-                  <Avatar className="h-20 w-20 border border-primary bg-primary">
-                    <AvatarImage src={artist.images?.[0].url} />
-                    <AvatarFallback>{artist.name[0]}</AvatarFallback>
-                  </Avatar>
-                  <span
-                    id="artist-name"
-                    className="text-lg font-semibold leading-none tracking-tighter"
-                  >
-                    {artist.name}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <>
-              {artists.map((artist) => (
-                <p
-                  key={artist.id}
-                  className="text-lg font-semibold leading-none tracking-tighter"
-                >
-                  {artist.name}
-                </p>
-              ))}
-            </>
-          )}
 
-          <p className="text-sm font-semibold tracking-wider">{year}</p>
-          <Badge className="text-base">{genre}</Badge>
+        <div className="mb-16 grid items-center gap-8 md:mx-auto md:max-w-3xl lg:grid-cols-5">
+          <div className="relative flex justify-center lg:col-span-2">
+            <div className="group relative max-w-[400px]">
+              <div className="absolute -inset-1 rounded-lg bg-gradient-to-br from-primary via-primary/50 to-primary/20 opacity-75 blur transition duration-200 group-hover:opacity-100"></div>
+              <div className="relative">
+                <AlbumPopover
+                  image={image!}
+                  title={title}
+                  appleMusicId={appleMusicCollectionId!}
+                  appleMusicUrl={appleMusicUrl!}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col space-y-6 p-4 lg:col-span-3">
+            <div className="space-y-4 text-center lg:text-left">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                <Link
+                  aria-label={`View reviews for ${title}`}
+                  to={`/album/${spotifyUrl}`}
+                  className="hover:text-primary/90"
+                >
+                  {title}
+                </Link>
+              </h2>
+
+              <div className="flex flex-wrap justify-center gap-4 lg:justify-start">
+                {extraInfo
+                  ? extraInfo.artists.map((artist) => (
+                      <Link
+                        to={`/artist/${artist.id}`}
+                        className="flex items-center gap-3 rounded-full bg-card py-2 hover:bg-card/80"
+                        key={artist.id}
+                      >
+                        <Avatar className="h-8 w-8 border border-primary">
+                          <AvatarImage src={artist.images?.[0]?.url} />
+                          <AvatarFallback>{artist.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">{artist.name}</span>
+                      </Link>
+                    ))
+                  : artists.map((artist) => (
+                      <span
+                        key={artist.id}
+                        className="rounded-full bg-card py-2 font-medium"
+                      >
+                        {artist.name}
+                      </span>
+                    ))}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-3 lg:justify-start">
+              <Badge variant="outline" className="text-sm">
+                {year}
+              </Badge>
+              <Badge className="bg-primary/20 text-primary-foreground">
+                {genre}
+              </Badge>
+            </div>
+          </div>
         </div>
-      </section>
-      <section className="container max-w-screen-md space-y-8 lg:space-y-12">
+
         {isLoggedIn && !hasUserReviewed ? (
-          <Card className="mx-auto max-w-lg ">
-            <CardContent className="p-8">
-              <h3 className="py-4 text-start text-2xl font-semibold">
-                Review album
-              </h3>
-              <ReviewForm />
-            </CardContent>
-          </Card>
+          <div className="mb-16 md:mx-auto md:max-w-3xl">
+            <Card className="mx-auto max-w-xl overflow-visible shadow-lg">
+              <CardContent className="p-6 sm:p-8">
+                <h3 className="mb-6 text-center text-2xl font-semibold sm:text-left">
+                  Review this album
+                </h3>
+                <ReviewForm />
+              </CardContent>
+            </Card>
+          </div>
         ) : null}
+
         {!isLoggedIn && (
-          <div className="flex justify-center">
-            <Button asChild className="mx-auto">
+          <div className="mb-16 flex justify-center md:mx-auto md:max-w-3xl">
+            <Button
+              asChild
+              className="mx-auto bg-primary font-medium hover:bg-primary/90"
+            >
               <Link to="/signup">Login to submit a review</Link>
             </Button>
           </div>
         )}
-      </section>
-      <section className="container max-w-screen-md space-y-8 py-8 md:py-16 lg:space-y-12">
+
         <Tabs
           defaultValue={hasUserReviewed ? "reviews" : "tracklist"}
-          className="w-full"
+          className="mb-16 w-full md:mx-auto md:max-w-3xl"
         >
-          <TabsList className="w-full">
-            <TabsTrigger className="w-full" value="reviews">
+          <TabsList className="mb-6 w-full">
+            <TabsTrigger className="w-full text-base" value="reviews">
               Reviews
             </TabsTrigger>
-            <TabsTrigger className="w-full" value="tracklist">
+            <TabsTrigger className="w-full text-base" value="tracklist">
               Track list
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="reviews">
+
+          <TabsContent value="reviews" className="min-h-[300px]">
             <ReviewList
               hasUserReviewed={hasUserReviewed}
               reviews={albumReviews}
             />
           </TabsContent>
+
           <TabsContent value="tracklist">
-            <div className="flex flex-col space-y-4">
-              {albumTracks?.map((track) => {
-                return (
-                  <div
-                    key={track.id}
-                    className="flex items-center justify-between space-y-4"
-                  >
-                    <div className="flex flex-col">
-                      <p className="text-lg font-medium">{track.title}</p>
-                      <p className="m-0 text-xs font-light">{track.artist}</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {albumTracks?.map((track) => (
+                <div
+                  key={track.id}
+                  className="flex items-center justify-between rounded-lg border border-border/40 bg-card/50 p-3 transition-colors hover:bg-card"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
+                      {track.trackNumber}
+                    </span>
+                    <div>
+                      <p className="font-medium">{track.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {track.artist}
+                      </p>
                     </div>
-                    <p className="text-sm font-light">
-                      {format(new Date(track.trackTimeMillis!), "mm:ss")}
-                    </p>
                   </div>
-                );
-              })}
+                  <p className="text-sm text-muted-foreground">
+                    {format(new Date(track.trackTimeMillis!), "mm:ss")}
+                  </p>
+                </div>
+              ))}
             </div>
           </TabsContent>
         </Tabs>
-      </section>
+      </div>
     </main>
   );
 }

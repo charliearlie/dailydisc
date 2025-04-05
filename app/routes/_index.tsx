@@ -10,7 +10,6 @@ import { parseWithZod } from "@conform-to/zod";
 import { format } from "date-fns";
 import { eq, sql } from "drizzle-orm";
 import { AvatarFallback } from "@radix-ui/react-avatar";
-import { Star } from "lucide-react";
 
 import { AlbumPopover } from "~/components/album/album-popover";
 import { Avatar, AvatarImage } from "~/components/common/ui/avatar";
@@ -194,6 +193,27 @@ export default function Index() {
   const user = useUser();
   const isLoggedIn = Boolean(user?.username);
 
+  // Always initialize these variables regardless of loaderData
+  const albumData = loaderData?.album || { tracks: [] };
+  const extraInfoData = loaderData?.extraInfo;
+
+  // Use useMemo for tracks to avoid the hooks warning
+  const tracksData = useMemo(() => albumData.tracks || [], [albumData.tracks]);
+
+  // Always call useMemo hook regardless of loaderData
+  const albumTracks = useMemo(() => {
+    if (tracksData.length === 0 && extraInfoData?.tracks) {
+      return extraInfoData.tracks.map((track) => ({
+        artist: track.artists[0].name,
+        id: track.id,
+        title: track.name,
+        trackTimeMillis: track.durationMs,
+        trackNumber: track.trackNumber,
+      }));
+    }
+    return tracksData;
+  }, [tracksData, extraInfoData?.tracks]);
+
   if (!loaderData) return <p>Album has not been selected yet..</p>;
 
   const handleDateChange = async (date: Date) => {
@@ -226,23 +246,8 @@ export default function Index() {
     image,
     genre,
     spotifyUrl,
-    tracks,
     year,
   } = album;
-
-  const albumTracks = useMemo(() => {
-    if (tracks.length === 0 && extraInfo?.tracks) {
-      return extraInfo.tracks.map((track) => ({
-        artist: track.artists[0].name,
-        id: track.id,
-        title: track.name,
-        trackTimeMillis: track.durationMs,
-        trackNumber: track.trackNumber,
-      }));
-    }
-
-    return tracks;
-  }, [tracks, extraInfo?.tracks]);
 
   return (
     <main className="flex-1 bg-gradient-to-br from-background via-background/95 to-primary/15">
@@ -252,7 +257,7 @@ export default function Index() {
             Album of the <span className="text-primary">Day</span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Explore today's featured album and share your thoughts.
+            Explore today&apos;s featured album and share your thoughts.
           </p>
           <div className="mx-auto mt-6 flex w-auto items-center justify-center gap-3">
             <div className="w-[120px] text-right">

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@remix-run/react";
-import { Calendar, History, Search, User } from "lucide-react";
+import { Calendar, History, User } from "lucide-react";
 import { Button } from "../common/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../common/ui/popover";
 import { useUser } from "~/contexts/user-context";

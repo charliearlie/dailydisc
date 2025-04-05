@@ -174,11 +174,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       .join(" | "),
   });
 
-  const updatedAverageRating: { updatedRating: number | null }[] = await db
+  await db
     .update(albums)
     .set({ averageRating: newAverageRating / 2 })
-    .where(eq(albums.id, Number(albumId)))
-    .returning({ updatedRating: albums.averageRating });
+    .where(eq(albums.id, Number(albumId)));
 
   return json({
     result: submission.reply({ resetForm: true }),
@@ -240,7 +239,7 @@ export default function Index() {
             Album of the <span className="text-primary">Day</span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Explore today's featured album and share your thoughts.
+            Explore today&apos;s featured album and share your thoughts.
           </p>
           <div className="mx-auto mt-6 flex w-auto items-center justify-center gap-3">
             <div className="w-[120px] text-right">

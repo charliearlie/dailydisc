@@ -13,7 +13,7 @@ import { Calendar, Globe, Loader2, Music, Tag, User } from "lucide-react";
 import { z } from "zod";
 
 import { Button } from "~/components/common/ui/button";
-import { Card, CardContent, CardHeader } from "~/components/common/ui/card";
+import { Card, CardContent } from "~/components/common/ui/card";
 import { FormField } from "~/components/form/form-field";
 import { ImageUpload } from "~/components/image-upload";
 import { Switch } from "~/components/common/ui/switch";

@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
 import { format } from "date-fns";
-import { CalendarDays, Headphones, Star } from "lucide-react";
+import { CalendarDays, Star } from "lucide-react";
 import { ArchiveAlbum } from "~/services/album.server";
 import { useUser } from "~/contexts/user-context";
 import { Badge } from "../common/ui/badge";

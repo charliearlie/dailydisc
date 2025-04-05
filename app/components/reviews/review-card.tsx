@@ -4,9 +4,9 @@ import { useUser } from "~/contexts/user-context";
 import { Review } from "./types";
 import { ReviewDeleteDialog } from "./review-delete-dialog";
 import { ReviewEditDialog } from "./review-edit-dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "../common/ui/avatar";
+import { Avatar, AvatarFallback } from "../common/ui/avatar";
 import { Badge } from "../common/ui/badge";
-import { Card, CardContent, CardFooter, CardHeader } from "../common/ui/card";
+import { Card, CardContent, CardHeader } from "../common/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "../common/ui/popover";
 import { Separator } from "../common/ui/separator";
 

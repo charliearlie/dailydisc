@@ -154,7 +154,7 @@ export default function ArchivePage() {
         </div>
         {progressPercentage === 100 && (
           <p className="mt-2 text-center text-sm font-medium text-primary">
-            🎉 You've reviewed all albums! Amazing!
+            🎉 You&apos;ve reviewed all albums! Amazing!
           </p>
         )}
       </div>
@@ -239,7 +239,7 @@ export default function ArchivePage() {
 
           {!hasMore && albums.length > 0 && (
             <p className="mt-12 text-center text-sm text-muted-foreground">
-              You've reached the end of the archive.
+              You&apos;ve reached the end of the archive.
             </p>
           )}
         </section>

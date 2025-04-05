@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { json, LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import { format } from "date-fns";
 import { desc, eq, inArray } from "drizzle-orm";
 import { Music, Star, User, UserPlus } from "lucide-react";
 import {
@@ -15,12 +14,6 @@ import {
 } from "recharts";
 
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "~/components/common/ui/accordion";
-import {
   Avatar,
   AvatarFallback,
   AvatarImage,
@@ -32,7 +25,6 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
-  CardImage,
   CardTitle,
 } from "~/components/common/ui/card";
 import {
@@ -157,10 +149,12 @@ export default function ProfileRoute() {
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
 
   // For the chart's onClick handler with the appropriate typing
-  // Using the built-in recharts handler and accessing activePayload data
-  const handleBarClick = (_: unknown, { activePayload }: any) => {
-    if (activePayload && activePayload.length > 0) {
-      setSelectedRating(activePayload[0].payload.rating);
+  const handleBarClick = (
+    _: unknown,
+    event: { activePayload?: Array<{ payload: { rating: number } }> },
+  ) => {
+    if (event.activePayload && event.activePayload.length > 0) {
+      setSelectedRating(event.activePayload[0].payload.rating);
     }
   };
 
@@ -413,7 +407,7 @@ export default function ProfileRoute() {
                 {selectedRating && (
                   <div className="mt-4 rounded-md bg-muted/50 p-3 text-center">
                     <p className="text-sm">
-                      You've rated{" "}
+                      You&apos;ve rated{" "}
                       <span className="font-medium">{selectedRating}</span>{" "}
                       stars{" "}
                       <span className="font-medium">

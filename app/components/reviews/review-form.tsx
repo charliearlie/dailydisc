@@ -5,7 +5,6 @@ import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { Disc, Music, Plus, Star, X } from "lucide-react";
 
 import { FormField } from "../form/form-field";
-import { Label } from "../common/ui/label";
 import { ReviewFormSchema } from "./types";
 import { action, loader } from "../../routes/_index";
 import {
@@ -36,11 +35,14 @@ export const ReviewForm = () => {
   });
   const user = useUser();
 
-  if (!loaderData) return <p>Album has not been selected yet..</p>;
+  // Safely handle empty loaderData by providing default values
+  const album = loaderData?.album || { tracks: [] };
+  const extraInfo = loaderData?.extraInfo;
 
-  const { album, extraInfo } = loaderData;
-  const { tracks } = album;
+  // Use useMemo for tracks as well to avoid the hooks warning
+  const tracks = useMemo(() => album.tracks || [], [album.tracks]);
 
+  // Use useMemo with the resolved tracks variable in the dependency array
   const albumTracks = useMemo(() => {
     if (tracks.length === 0 && extraInfo?.tracks) {
       return extraInfo.tracks.map((track) => ({
@@ -51,9 +53,10 @@ export const ReviewForm = () => {
         trackNumber: track.trackNumber,
       }));
     }
-
     return tracks;
   }, [tracks, extraInfo?.tracks]);
+
+  if (!loaderData) return <p>Album has not been selected yet..</p>;
 
   const favouriteTracks = fields.favouriteTracks.getFieldList();
 

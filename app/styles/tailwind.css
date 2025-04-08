@@ -99,3 +99,8 @@
     @apply bg-background text-primary-text;
   }
 }
+
+@view-transition {
+    navigation: auto;
+}
+

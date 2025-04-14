@@ -169,8 +169,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     rating: Math.floor(rating * 2),
     review,
     favouriteTrack: favouriteTracks
-      .map((track) => removeFeaturedArtists(track))
-      .join(" | "),
+      ? favouriteTracks.map((track) => removeFeaturedArtists(track)).join(" | ")
+      : "",
   });
 
   await db

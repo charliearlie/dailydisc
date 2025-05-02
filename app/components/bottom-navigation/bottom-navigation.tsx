@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@remix-run/react";
-import { Calendar, History, User } from "lucide-react";
+import { Activity, Calendar, History, User } from "lucide-react";
 import { Button } from "../common/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../common/ui/popover";
 import { useUser } from "~/contexts/user-context";
@@ -12,7 +12,7 @@ export const BottomNavigation = () => {
 
   return (
     <nav className="sticky bottom-0 right-0 z-50 w-full border-t border-border/30 bg-background/80 backdrop-blur-md md:hidden">
-      <div className="grid h-16 w-full grid-cols-3 items-center justify-evenly">
+      <div className="grid h-16 w-full grid-cols-4 items-center justify-evenly">
         <Link
           className={cn(
             "flex h-full w-full flex-col items-center justify-center gap-1.5 text-muted-foreground transition-colors hover:text-primary",
@@ -47,6 +47,24 @@ export const BottomNavigation = () => {
             <History className="h-5 w-5" />
           </div>
           <span className="text-xs font-medium">Archive</span>
+        </Link>
+
+        <Link
+          className={cn(
+            "flex h-full w-full flex-col items-center justify-center gap-1.5 text-muted-foreground transition-colors hover:text-primary",
+            location.pathname === "/recent-activity" ? "text-primary" : "",
+          )}
+          to="/recent-activity"
+        >
+          <div
+            className={cn(
+              "rounded-full p-1.5",
+              location.pathname === "/recent-activity" ? "bg-primary/10" : "",
+            )}
+          >
+            <Activity className="h-5 w-5" />
+          </div>
+          <span className="text-xs font-medium">Activity</span>
         </Link>
 
         {isLoggedIn ? (

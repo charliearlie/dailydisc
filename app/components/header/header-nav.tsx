@@ -20,6 +20,12 @@ export const HeaderNav = () => {
       >
         Archive
       </Link>
+      <Link
+        className="text-sm font-medium text-white transition-colors"
+        to="/recent-activity"
+      >
+        Recent Activity
+      </Link>
       {isLoggedIn ? (
         <Popover>
           <PopoverTrigger asChild>

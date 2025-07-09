@@ -7,7 +7,7 @@ import {
 import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { parseWithZod } from "@conform-to/zod";
 import { format } from "date-fns";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, ne, and } from "drizzle-orm";
 import { AvatarFallback } from "@radix-ui/react-avatar";
 
 import { Badge } from "~/components/common/ui/badge";
@@ -93,6 +93,45 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 
       const hasUserReviewed = !!userReview;
 
+      // Check if this album was previously picked (same album, different date)
+      const previousPickings = await db.query.albums.findMany({
+        where: and(
+          eq(albums.id, albumOfTheDay.id),
+          ne(albums.listenDate, albumDate)
+        ),
+        columns: {
+          listenDate: true,
+        },
+        orderBy: albums.listenDate,
+      });
+
+      // Check if user reviewed this album on any previous date
+      const userPreviousReviews = user ? await db.query.reviews.findMany({
+        where: and(
+          eq(reviews.albumId, albumOfTheDay.id),
+          eq(reviews.userId, user.id)
+        ),
+        with: {
+          album: {
+            columns: {
+              listenDate: true,
+            },
+          },
+        },
+        orderBy: reviews.createdAt,
+      }) : [];
+
+      const hasUserPreviouslyReviewed = userPreviousReviews.length > 0;
+      const isAlbumRepicked = previousPickings.length > 0;
+
+      // Determine if user was active when album was first picked
+      const firstPickDate = previousPickings.length > 0 
+        ? new Date(previousPickings[0].listenDate!) 
+        : null;
+      const userWasActiveForFirstPick = user && firstPickDate 
+        ? new Date(user.createdAt) <= firstPickDate 
+        : false;
+
       const tracks = await getAlbumTracks(
         Number(albumOfTheDay.appleMusicCollectionId),
       );
@@ -110,6 +149,10 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
         albumReviews,
         hasUserReviewed,
         userReview,
+        isAlbumRepicked,
+        hasUserPreviouslyReviewed,
+        userWasActiveForFirstPick,
+        previousPickings,
         extraInfo: album.spotifyUrl
           ? await getAlbumInfo(album.spotifyUrl)
           : null,
@@ -170,8 +213,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     rating: Math.floor(rating * 2),
     review,
     favouriteTrack: favouriteTracks
-      .map((track) => removeFeaturedArtists(track))
-      .join(" | "),
+      ? favouriteTracks.map((track) => removeFeaturedArtists(track)).join(" | ")
+      : null,
   });
 
   await db
@@ -218,6 +261,10 @@ export default function Index() {
     artists,
     extraInfo,
     hasUserReviewed,
+    isAlbumRepicked,
+    hasUserPreviouslyReviewed,
+    userWasActiveForFirstPick,
+    previousPickings,
   } = loaderData;
   const {
     appleMusicCollectionId,
@@ -393,6 +440,11 @@ export default function Index() {
               <Badge className="bg-primary/20 text-primary-foreground">
                 {genre}
               </Badge>
+              {isAlbumRepicked && (
+                <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-200">
+                  🔄 Re-featured
+                </Badge>
+              )}
             </div>
           </div>
         </div>
@@ -403,8 +455,27 @@ export default function Index() {
             <Card className="mx-auto max-w-xl overflow-visible shadow-lg">
               <CardContent className="p-6 sm:p-8">
                 <h3 className="mb-6 text-center text-2xl font-semibold sm:text-left">
-                  Review this album
+                  {isAlbumRepicked && hasUserPreviouslyReviewed && userWasActiveForFirstPick
+                    ? "Review this album again"
+                    : "Review this album"}
                 </h3>
+                {isAlbumRepicked && (
+                  <div className="mb-4 rounded-lg bg-primary/10 p-3 text-sm">
+                    <p className="text-primary font-medium">
+                      🔄 This album was previously featured on{" "}
+                      {previousPickings.length > 0 && (
+                        <span>
+                          {new Date(previousPickings[0].listenDate!).toLocaleDateString()}
+                        </span>
+                      )}
+                      {hasUserPreviouslyReviewed && userWasActiveForFirstPick && (
+                        <span className="block mt-1 text-muted-foreground">
+                          You reviewed this album before - share your updated thoughts!
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                )}
                 <ReviewForm />
               </CardContent>
             </Card>

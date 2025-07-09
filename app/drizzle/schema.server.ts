@@ -37,6 +37,7 @@ export const albums = sqliteTable("albums", {
   appleMusicCollectionId: text("apple_music_collection_id"),
   spotifyUrl: text("spotify_url"),
   listenDate: integer("listen_date", { mode: "timestamp" }),
+  lastPickedDate: integer("last_picked_date", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),

@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs, json } from "@remix-run/node";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, sql, or, isNull, lt } from "drizzle-orm";
 import { db } from "~/drizzle/db.server";
 import { albums } from "~/drizzle/schema.server";
 
@@ -51,8 +51,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   if (scheduledAlbum) {
     selectedAlbum = scheduledAlbum;
   } else {
+    // Calculate one year ago from today
+    const oneYearAgo = new Date(todaysDate);
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
     selectedAlbum = await db.query.albums.findFirst({
-      where: eq(albums.archived, 0),
+      where: or(
+        // Never picked albums (priority 1)
+        and(eq(albums.archived, 0), isNull(albums.listenDate)),
+        // Albums last picked over 1 year ago (priority 2)
+        and(eq(albums.archived, 1), lt(albums.lastPickedDate, oneYearAgo))
+      ),
       with: {
         artistsToAlbums: {
           columns: {},
@@ -61,7 +70,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           },
         },
       },
-      orderBy: sql`RANDOM()`,
+      orderBy: [
+        // Prioritize never-picked albums (nulls first)
+        sql`CASE WHEN ${albums.lastPickedDate} IS NULL THEN 0 ELSE 1 END`,
+        sql`RANDOM()`
+      ],
     });
   }
 
@@ -74,6 +87,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     .set({
       active: 1,
       listenDate: todaysDate,
+      lastPickedDate: todaysDate,
+      archived: 0, // Reset archived status for re-picked albums
     })
     .where(eq(albums.id, selectedAlbum.id));
 

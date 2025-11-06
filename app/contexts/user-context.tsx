@@ -7,8 +7,11 @@ type UserContextType = {
   username?: string;
 };
 
-type UserProviderProps = UserContextType & {
+type UserProviderProps = {
   children: ReactNode;
+  isUserAdmin?: boolean;
+  userId?: number;
+  username?: string;
 };
 
 const UserContext = createContext<UserContextType | null>(null);

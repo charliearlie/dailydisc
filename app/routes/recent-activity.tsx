@@ -1,21 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { LoaderFunctionArgs, json } from "@remix-run/node";
 import { useLoaderData, useFetcher } from "@remix-run/react";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import { LoaderIcon } from "lucide-react";
 
 import { ReviewCard } from "~/components/reviews/review-card";
 import { db } from "~/drizzle/db.server";
-import { albums, reviews, users } from "~/drizzle/schema.server";
-import { getUserFromRequestContext } from "~/services/session";
+import { reviews } from "~/drizzle/schema.server";
+import { getOptionalAuth } from "~/services/auth.server";
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async (args: LoaderFunctionArgs) => {
+  const { request } = args;
   const url = new URL(request.url);
   const page = parseInt(url.searchParams.get("page") || "1", 10);
   const limit = 10;
   const offset = (page - 1) * limit;
 
-  const user = await getUserFromRequestContext(request);
+  const { user } = await getOptionalAuth(args);
 
   const recentReviews = await db.query.reviews.findMany({
     with: {

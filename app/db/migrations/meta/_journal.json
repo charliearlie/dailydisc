@@ -1,5 +1,27 @@
 {
   "version": "5",
   "dialect": "pg",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1753391563679,
+      "tag": "0000_unique_iron_lad",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1753391620934,
+      "tag": "0001_mixed_calypso",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1753391637570,
+      "tag": "0002_red_goliath",
+      "breakpoints": true
+    }
+  ]
 }

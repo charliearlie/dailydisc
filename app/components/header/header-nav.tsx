@@ -54,9 +54,9 @@ export const HeaderNav = () => {
       ) : (
         <Link
           className="text-sm font-medium text-white transition-colors"
-          to="/signup"
+          to="/sign-in"
         >
-          Login
+          Sign In
         </Link>
       )}
     </nav>

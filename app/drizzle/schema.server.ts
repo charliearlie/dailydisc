@@ -12,9 +12,10 @@ import {
  */
 export const users = sqliteTable("users", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  clerkId: text("clerk_id"),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
-  password: text("password").notNull(),
+  password: text("password"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
@@ -51,6 +52,7 @@ export const albums = sqliteTable("albums", {
     .notNull()
     .default(sql`(0)`),
   averageRating: integer("average_rating"),
+  averageRatingLegacy: integer("averageRating"),
 });
 
 export const albumsRelations = relations(albums, ({ many }) => ({

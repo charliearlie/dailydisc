@@ -4,20 +4,22 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  json,
   useLoaderData,
 } from "@remix-run/react";
+import { json, redirect } from "@remix-run/node";
 import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { Analytics } from "@vercel/analytics/react";
+import { ClerkApp } from "@clerk/remix";
+import { getAuth, rootAuthLoader } from "@clerk/remix/ssr.server";
 
 import stylesheet from "~/styles/tailwind.css?url";
 import fontStylesheet from "~/styles/fonts.css?url";
 import { Header } from "~/components/header/header";
 import { UserProvider } from "./contexts/user-context";
-import { getUserFromRequestContext } from "./services/session";
 import { ErrorBoundaryComponent } from "./components/error-boundary";
 import { Toaster } from "./components/common/ui/toaster";
 import { BottomNavigation } from "./components/bottom-navigation/bottom-navigation";
+import { getUserByClerkId } from "./services/user.server";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
@@ -28,12 +30,35 @@ export const links: LinksFunction = () => [
   },
 ];
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const user = await getUserFromRequestContext(request);
-  const isUserAdmin = user?.id === 2;
-  console.log({ user, isUserAdmin });
+export const loader = async (args: LoaderFunctionArgs) => {
+  const { userId } = await getAuth(args);
 
-  return json({ user, isUserAdmin });
+  // Define public routes that don't require authentication
+  const publicRoutes = ['/sign-in', '/sign-up', '/api/webhooks/clerk'];
+  const url = new URL(args.request.url);
+  const pathname = url.pathname;
+
+  // For now, let's be less aggressive with redirects to test the setup
+  // Comment out the redirect temporarily
+  // if (!userId && !publicRoutes.includes(pathname)) {
+  //   return redirect("/sign-in");
+  // }
+
+  // Get local user data if clerk user exists
+  let user = null;
+  let isUserAdmin = false;
+  if (userId) {
+    user = await getUserByClerkId(userId);
+    isUserAdmin = user?.id === 2;
+  }
+
+  // rootAuthLoader makes auth state available to the client  
+  return rootAuthLoader(args, () => {
+    return json({
+      user,
+      isUserAdmin,
+    });
+  });
 };
 
 function Document({ children }: { children: React.ReactNode }) {
@@ -101,17 +126,11 @@ export function Layout() {
   );
 }
 
-export default function App() {
-  const loaderData = useLoaderData<typeof loader>();
-  return (
-    <UserProvider
-      username={loaderData?.user?.username}
-      userId={loaderData?.user?.id}
-    >
-      <Outlet />
-    </UserProvider>
-  );
+function App() {
+  return <Outlet />;
 }
+
+export default ClerkApp(App);
 
 export function ErrorBoundary() {
   return (

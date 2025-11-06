@@ -26,6 +26,34 @@ export const getUserById = async (id: number) => {
   return user;
 };
 
+export const getUserByClerkId = async (clerkId: string) => {
+  const [user] = await db.select().from(users).where(eq(users.clerkId, clerkId));
+
+  return user;
+};
+
+export const createUserFromClerk = async ({
+  clerkId,
+  email,
+  username,
+}: {
+  clerkId: string;
+  email: string;
+  username: string;
+}) => {
+  const [user] = await db
+    .insert(users)
+    .values({
+      clerkId,
+      email,
+      username,
+      password: null, // No password needed for Clerk users
+    })
+    .returning();
+
+  return user;
+};
+
 export const getUserByUsername = async (username: string) => {
   const [user] = await db
     .select()
@@ -55,7 +83,7 @@ export const login = async ({
     .select()
     .from(users)
     .where(eq(users.username, username.trim()));
-  if (!user || !(await bcrypt.compare(password, user.password))) return null;
+  if (!user || !user.password || !(await bcrypt.compare(password, user.password))) return null;
 
   return user;
 };

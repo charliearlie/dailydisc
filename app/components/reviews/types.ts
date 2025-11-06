@@ -14,7 +14,7 @@ export type Review = {
     id: number;
     username: string;
     email: string;
-    password: string;
+    password: string | null;
     createdAt: string;
     updatedAt: string;
   };

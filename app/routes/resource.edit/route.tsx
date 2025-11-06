@@ -5,10 +5,12 @@ import { EditReviewFormSchema } from "~/components/reviews/types";
 import { db } from "~/drizzle/db.server";
 import { albums, reviews } from "~/drizzle/schema.server";
 import { getAverageRatingAndReviewCount } from "~/services/album.server";
-import { getUserId } from "~/services/session";
+import { requireUser } from "~/services/auth.server";
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const loggedInUserId = await getUserId(request);
+export const action = async (args: ActionFunctionArgs) => {
+  const { user } = await requireUser(args);
+  const loggedInUserId = user.id;
+  const { request } = args;
   const formData = await request.formData();
 
   const submission = await parseWithZod(formData, {

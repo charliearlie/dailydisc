@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "1dec1a8c-0adb-4c1c-989d-8b57f53b2b4f",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "37c937f2-80f3-4db5-a87b-4aa39d5a7d50",
+  "prevId": "1dec1a8c-0adb-4c1c-989d-8b57f53b2b4f",
   "tables": {
     "albums": {
       "name": "albums",
@@ -392,6 +392,13 @@
           "notNull": true,
           "autoincrement": true
         },
+        "clerk_id": {
+          "name": "clerk_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "username": {
           "name": "username",
           "type": "text",
@@ -410,7 +417,7 @@
           "name": "password",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "created_at": {
@@ -431,6 +438,13 @@
         }
       },
       "indexes": {
+        "users_clerk_id_unique": {
+          "name": "users_clerk_id_unique",
+          "columns": [
+            "clerk_id"
+          ],
+          "isUnique": true
+        },
         "users_username_unique": {
           "name": "users_username_unique",
           "columns": [
